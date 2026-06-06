@@ -1,0 +1,71 @@
+import { motion } from 'motion/react';
+import { MemorySpace as MemorySpaceType, Story } from '../types';
+import { ClueObject } from './ClueObject';
+import { ScanPlaceholder } from './ScanPlaceholder';
+
+interface MemorySpaceProps {
+  space: MemorySpaceType;
+  story: Story;
+  collectedIds: string[];
+  onCollect: (clueId: string) => void;
+}
+
+export function MemorySpace({ space, story, collectedIds, onCollect }: MemorySpaceProps) {
+  return (
+    <motion.div
+      key={space.id}
+      className="relative w-full h-full rounded-3xl overflow-hidden shadow-xl border border-muctim/10"
+      initial={{ opacity: 0, scale: 0.97 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.97 }}
+      transition={{ duration: 0.35, ease: 'easeOut' }}
+      style={{ background: space.bgGradient }}
+    >
+      {/* Subtle noise texture overlay */}
+      <div className="absolute inset-0 giay-oly opacity-10 pointer-events-none mix-blend-overlay" />
+
+      {/* Vintage vignette */}
+      <div className="absolute inset-0 vintage-vignette pointer-events-none z-10" />
+
+      {/* Space label top-left */}
+      <div className="absolute top-4 left-4 z-20 bg-white/80 backdrop-blur-sm rounded-2xl px-4 py-2 shadow-sm border border-muctim/10">
+        <p className="font-mono text-[9px] text-muctim-faded uppercase tracking-widest">
+          {story.narrator} · {story.title}
+        </p>
+        <h2 className="font-serif text-base font-bold text-muctim leading-tight">{space.label}</h2>
+        <p className="font-serif text-[11px] text-muctim-faded">{space.sublabel}</p>
+      </div>
+
+      {/* Clue count top-right */}
+      <div className="absolute top-4 right-4 z-20 bg-white/80 backdrop-blur-sm rounded-2xl px-3 py-2 shadow-sm border border-muctim/10 text-center">
+        <p className="font-mono text-[8px] text-muctim-faded uppercase tracking-widest">Mảnh ghép</p>
+        <p className="font-serif text-sm font-bold text-muctim">
+          {space.clues.filter((c) => collectedIds.includes(c.id)).length}
+          <span className="text-muctim-faded font-normal">/{space.clues.length}</span>
+        </p>
+      </div>
+
+      {/* 3D scan placeholder bottom-right */}
+      <div className="absolute bottom-4 right-4 z-20 w-32">
+        <ScanPlaceholder label={space.label} />
+      </div>
+
+      {/* Clue hotspots — positioned absolutely over the scene */}
+      {space.clues.map((clue) => (
+        <ClueObject
+          key={clue.id}
+          clue={clue}
+          collected={collectedIds.includes(clue.id)}
+          onCollect={onCollect}
+        />
+      ))}
+
+      {/* Bottom narrative strip */}
+      <div className="absolute bottom-0 left-0 right-0 z-20 p-4 bg-gradient-to-t from-black/30 to-transparent">
+        <p className="font-handwritten text-white/80 text-sm text-center drop-shadow">
+          Nhấp vào những điểm sáng để tìm mảnh ký ức
+        </p>
+      </div>
+    </motion.div>
+  );
+}

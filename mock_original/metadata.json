@@ -1,0 +1,6 @@
+{
+  "name": "Trang Ký Ức Hà Nội",
+  "description": "An interactive, nostalgic journey through Hanoi's collective childhood memories, featuring the 'Đông Tây Nam Bắc' fortune teller, hand-drawn neighborhood maps, and an immersive soundscape of old quarters.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
