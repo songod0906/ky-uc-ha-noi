@@ -62,6 +62,7 @@ export function ClueObject({ clue, collected, onCollect }: ClueObjectProps) {
         whileTap={{ scale: 0.95 }}
         onClick={handleMarkerClick}
         title={clue.label}
+        data-tutorial="clue"
       >
         <motion.div
           className={`w-10 h-10 rounded-full flex items-center justify-center text-lg shadow-lg border-2 transition-all duration-300 ${

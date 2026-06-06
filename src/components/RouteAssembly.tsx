@@ -99,7 +99,7 @@ export function RouteAssembly({ story, collectedIds, onSuccess, onBackToExplore 
         </div>
 
         {/* Slot labels + slots */}
-        <div className="grid grid-cols-3 gap-3 mb-6">
+        <div className="grid grid-cols-3 gap-3 mb-6" data-tutorial="slots">
           {story.routeSlotLabels.map((label, i) => {
             const placed = getClue(slots[i]);
             return (
@@ -155,7 +155,7 @@ export function RouteAssembly({ story, collectedIds, onSuccess, onBackToExplore 
           <p className="font-mono text-[10px] text-muctim-faded uppercase tracking-widest mb-3 text-center">
             Các mảnh ký ức đã thu thập — nhấn để đặt vào ô trống tiếp theo
           </p>
-          <div className="flex flex-wrap gap-2 justify-center">
+          <div className="flex flex-wrap gap-2 justify-center" data-tutorial="chips">
             {collectedClues.map((clue) => {
               const isPlaced = slots.includes(clue.id);
               const nextEmptySlot = slots.findIndex((s) => s === null);

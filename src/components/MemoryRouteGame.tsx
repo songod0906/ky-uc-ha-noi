@@ -7,10 +7,54 @@ import { NotebookInventory } from './NotebookInventory';
 import { RouteAssembly } from './RouteAssembly';
 import { EndingCannotBeMoved } from './EndingCannotBeMoved';
 import { CompassMotif } from './CompassMotif';
+import { TutorialOverlay, TutorialStep } from './TutorialOverlay';
 import { AudioSynth } from '../utils/AudioSynth';
 import { BookOpen, Puzzle, ChevronLeft } from 'lucide-react';
 
 type Phase = 'explore' | 'assemble' | 'ending';
+
+const EXPLORE_TUTORIAL: TutorialStep[] = [
+  {
+    id: 'clue',
+    selector: '[data-tutorial="clue"]',
+    placement: 'below',
+    title: 'Mảnh ký ức ẩn ở đây',
+    body: 'Những điểm sáng này chứa mảnh ký ức. Nhấp vào để nghe câu chuyện và thu thập.',
+  },
+  {
+    id: 'notebook',
+    selector: '[data-tutorial="notebook"]',
+    placement: 'below',
+    title: 'Sổ tay của bạn',
+    body: 'Mảnh ký ức thu được lưu vào đây. Cần ít nhất 4 mảnh để mở câu đố lắp ráp.',
+  },
+  {
+    id: 'nav',
+    selector: '[data-tutorial="nav"]',
+    placement: 'above',
+    title: 'Di chuyển giữa các không gian',
+    body: 'Dùng các nút này để đi qua ba không gian trong câu chuyện. Mỗi nơi có mảnh ký ức riêng.',
+    cta: 'Bắt đầu khám phá!',
+  },
+];
+
+const ASSEMBLE_TUTORIAL: TutorialStep[] = [
+  {
+    id: 'slots',
+    selector: '[data-tutorial="slots"]',
+    placement: 'below',
+    title: 'Ghép lại một ngày',
+    body: 'Ba ô này là ba thời điểm trong ngày bình thường. Xếp đúng thứ tự để mở câu chuyện.',
+  },
+  {
+    id: 'chips',
+    selector: '[data-tutorial="chips"]',
+    placement: 'above',
+    title: 'Mảnh ký ức đã thu thập',
+    body: 'Nhấp vào từng mảnh để đặt vào ô tiếp theo. Đặt sai? Nhấn "xóa" rồi thử lại.',
+    cta: 'Hiểu rồi, thử nào!',
+  },
+];
 
 interface MemoryRouteGameProps {
   story: Story;
@@ -22,6 +66,8 @@ export function MemoryRouteGame({ story, onBack }: MemoryRouteGameProps) {
   const [spaceIndex, setSpaceIndex] = useState(0);
   const [collectedIds, setCollectedIds] = useState<string[]>([]);
   const [notebookOpen, setNotebookOpen] = useState(false);
+  const [exploreTutorialDone, setExploreTutorialDone] = useState(false);
+  const [assembleTutorialDone, setAssembleTutorialDone] = useState(false);
 
   const totalClues = story.spaces.flatMap((s) => s.clues).length;
   const canUnlock = collectedIds.length >= story.cluesNeededToUnlock;
@@ -57,12 +103,20 @@ export function MemoryRouteGame({ story, onBack }: MemoryRouteGameProps) {
 
   if (phase === 'assemble') {
     return (
-      <RouteAssembly
-        story={story}
-        collectedIds={collectedIds}
-        onSuccess={handleAssemblySuccess}
-        onBackToExplore={() => setPhase('explore')}
-      />
+      <>
+        <RouteAssembly
+          story={story}
+          collectedIds={collectedIds}
+          onSuccess={handleAssemblySuccess}
+          onBackToExplore={() => setPhase('explore')}
+        />
+        {!assembleTutorialDone && (
+          <TutorialOverlay
+            steps={ASSEMBLE_TUTORIAL}
+            onDone={() => setAssembleTutorialDone(true)}
+          />
+        )}
+      </>
     );
   }
 
@@ -106,6 +160,7 @@ export function MemoryRouteGame({ story, onBack }: MemoryRouteGameProps) {
           <button
             onClick={() => setNotebookOpen(true)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-nangthu-glow/70 border border-nangthu/20 text-sm font-serif text-terracotta hover:bg-nangthu-glow transition-all"
+            data-tutorial="notebook"
           >
             <BookOpen className="w-4 h-4" />
             <span className="font-bold">{collectedIds.length}</span>
@@ -167,7 +222,7 @@ export function MemoryRouteGame({ story, onBack }: MemoryRouteGameProps) {
         </div>
 
         {/* Navigation */}
-        <div className="w-full max-w-2xl">
+        <div className="w-full max-w-2xl" data-tutorial="nav">
           <MovementControls
             spaces={story.spaces}
             currentIndex={spaceIndex}
@@ -215,6 +270,14 @@ export function MemoryRouteGame({ story, onBack }: MemoryRouteGameProps) {
           />
         )}
       </AnimatePresence>
+
+      {/* Tutorial overlay for explore phase */}
+      {!exploreTutorialDone && (
+        <TutorialOverlay
+          steps={EXPLORE_TUTORIAL}
+          onDone={() => setExploreTutorialDone(true)}
+        />
+      )}
     </div>
   );
 }
