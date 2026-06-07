@@ -259,14 +259,20 @@ export function RouteAssembly({ story, collectedIds, onSuccess, onBackToExplore 
 
                 {showLocationHint && (
                   <div className="grid grid-cols-3 gap-2 text-center">
-                    {story.routeSlotLabels.map((label, i) => (
-                      <div key={i} className="flex flex-col gap-1">
-                        <p className="font-handwritten text-[10px] text-muctim-faded">{label}</p>
-                        <div className="bg-white/70 rounded-xl px-2 py-1.5">
-                          <p className="font-serif text-xs font-semibold text-muctim">{slotSpaceHint(i)}</p>
+                    {story.routeClueIds.map((correctId, i) => {
+                      const correctClue = allClues.find((c) => c.id === correctId);
+                      return (
+                        <div key={i} className="flex flex-col gap-1">
+                          <p className="font-handwritten text-[10px] text-muctim-faded">{story.routeSlotLabels[i]}</p>
+                          <div className="bg-white/80 rounded-xl px-2 py-2 border border-nangthu/40">
+                            <p className="font-mono text-[9px] text-muctim-faded uppercase tracking-wide mb-0.5">{slotSpaceHint(i)}</p>
+                            <p className="font-serif text-xs font-bold text-muctim leading-snug">
+                              {correctClue ? `${CLUE_ICONS[correctClue.type]} ${correctClue.label}` : '?'}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
 
