@@ -14,7 +14,7 @@ export function GameStart({ onBegin }: GameStartProps) {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-6 py-12 relative overflow-hidden">
+    <div className="h-screen flex flex-col items-center justify-center px-6 py-12 relative overflow-hidden">
       <div className="absolute inset-0 giay-oly opacity-30 pointer-events-none" />
       <div className="absolute inset-0 vintage-vignette pointer-events-none" />
 

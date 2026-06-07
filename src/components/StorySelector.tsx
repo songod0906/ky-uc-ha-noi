@@ -15,7 +15,7 @@ const COVER_IMAGES = {
 
 export function StorySelector({ onSelect }: StorySelectorProps) {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-6 py-12 relative">
+    <div className="h-screen flex flex-col items-center justify-center px-6 py-12 relative overflow-hidden">
       <div className="absolute inset-0 giay-oly opacity-20 pointer-events-none" />
 
       <motion.div

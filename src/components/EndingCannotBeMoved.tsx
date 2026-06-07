@@ -19,7 +19,7 @@ export function EndingCannotBeMoved({ story, onRestart, onChooseOther }: EndingC
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-6 py-16 relative overflow-hidden">
+    <div className="h-screen flex flex-col items-center justify-center px-6 py-16 relative overflow-auto">
       <div className="absolute inset-0 giay-oly opacity-30 pointer-events-none" />
       <div className="absolute inset-0 vintage-vignette pointer-events-none" />
       {/* Dark gradient from top for gravity */}

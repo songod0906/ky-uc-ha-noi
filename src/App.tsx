@@ -22,7 +22,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FCFAF2] text-muctim overflow-x-hidden relative selection:bg-nangthu-glow selection:text-muctim">
+    <div className="h-screen overflow-hidden bg-[#FCFAF2] text-muctim selection:bg-nangthu-glow selection:text-muctim">
       <AnimatePresence mode="wait">
         {phase === 'start' && (
           <GameStart key="start" onBegin={() => setPhase('select')} />

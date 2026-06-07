@@ -14,7 +14,7 @@ export function MemorySpace({ space, story, collectedIds, onCollect }: MemorySpa
   return (
     <motion.div
       key={space.id}
-      className="relative w-full h-full rounded-3xl overflow-hidden shadow-xl border border-muctim/10"
+      className="relative w-full h-full overflow-hidden"
       initial={{ opacity: 0, scale: 0.97 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.97 }}

@@ -131,7 +131,7 @@ export function MemoryRouteGame({ story, onBack }: MemoryRouteGameProps) {
   }
 
   return (
-    <div className="min-h-screen flex flex-col relative bg-[#FCFAF2]">
+    <div className="h-screen flex flex-col relative bg-[#FCFAF2] overflow-hidden">
       <div className="absolute inset-0 giay-oly opacity-20 pointer-events-none" />
       <div className="absolute inset-0 vintage-vignette pointer-events-none z-50" />
 
@@ -206,10 +206,10 @@ export function MemoryRouteGame({ story, onBack }: MemoryRouteGameProps) {
         )}
       </AnimatePresence>
 
-      {/* Main scene area */}
-      <main className="flex-1 flex flex-col items-center justify-center px-4 py-4 gap-4 relative z-10">
-        {/* Scene panel — fixed tall ratio */}
-        <div className="w-full max-w-2xl" style={{ height: 'clamp(340px, 55vh, 520px)' }}>
+      {/* Main scene area — fills all remaining height */}
+      <main className="flex-1 flex flex-col min-h-0 relative z-10">
+        {/* Scene panel — expands to fill all available space */}
+        <div className="flex-1 min-h-0 w-full">
           <AnimatePresence mode="wait">
             <MemorySpace
               key={story.spaces[spaceIndex].id}
@@ -221,41 +221,44 @@ export function MemoryRouteGame({ story, onBack }: MemoryRouteGameProps) {
           </AnimatePresence>
         </div>
 
-        {/* Navigation */}
-        <div className="w-full max-w-2xl" data-tutorial="nav">
-          <MovementControls
-            spaces={story.spaces}
-            currentIndex={spaceIndex}
-            onMove={handleMoveToSpace}
-          />
-        </div>
+        {/* Compact bottom bar: nav + space chips */}
+        <div className="shrink-0 bg-[#FCFAF2]/95 backdrop-blur-sm border-t border-muctim/10 px-4 pt-2 pb-3">
+          {/* Navigation */}
+          <div data-tutorial="nav">
+            <MovementControls
+              spaces={story.spaces}
+              currentIndex={spaceIndex}
+              onMove={handleMoveToSpace}
+            />
+          </div>
 
-        {/* Space list chips */}
-        <div className="w-full max-w-2xl flex gap-3 justify-center flex-wrap">
-          {story.spaces.map((space, i) => {
-            const spaceCollected = space.clues.filter((c) => collectedIds.includes(c.id)).length;
-            const isCurrent = i === spaceIndex;
-            return (
-              <button
-                key={space.id}
-                onClick={() => handleMoveToSpace(i)}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl border text-xs font-serif transition-all ${
-                  isCurrent
-                    ? 'bg-muctim text-white border-muctim shadow'
-                    : 'bg-white/60 border-muctim/15 text-muctim hover:border-muctim/30'
-                }`}
-              >
-                <span>{space.label}</span>
-                <span
-                  className={`font-mono text-[9px] px-1.5 py-0.5 rounded-full ${
-                    isCurrent ? 'bg-white/20 text-white' : 'bg-muctim/10 text-muctim-faded'
+          {/* Space list chips */}
+          <div className="flex gap-2 justify-center flex-wrap mt-2">
+            {story.spaces.map((space, i) => {
+              const spaceCollected = space.clues.filter((c) => collectedIds.includes(c.id)).length;
+              const isCurrent = i === spaceIndex;
+              return (
+                <button
+                  key={space.id}
+                  onClick={() => handleMoveToSpace(i)}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-serif transition-all ${
+                    isCurrent
+                      ? 'bg-muctim text-white border-muctim shadow'
+                      : 'bg-white/60 border-muctim/15 text-muctim hover:border-muctim/30'
                   }`}
                 >
-                  {spaceCollected}/{space.clues.length}
-                </span>
-              </button>
-            );
-          })}
+                  <span>{space.label}</span>
+                  <span
+                    className={`font-mono text-[9px] px-1.5 py-0.5 rounded-full ${
+                      isCurrent ? 'bg-white/20 text-white' : 'bg-muctim/10 text-muctim-faded'
+                    }`}
+                  >
+                    {spaceCollected}/{space.clues.length}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </main>
 
