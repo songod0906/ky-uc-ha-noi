@@ -13,3 +13,7 @@ coverage/
 # editor / OS
 .vscode/
 *.swp
+
+# 360 panorama viewer — local dev only, not deployed until scan assets are ready
+src/components/PanoramaViewer.tsx
+public/tours/
