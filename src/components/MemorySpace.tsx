@@ -1,19 +1,14 @@
+import { lazy, Suspense } from 'react';
 import { motion } from 'motion/react';
 import { MemorySpace as MemorySpaceType, Story } from '../types';
 import { ClueObject } from './ClueObject';
 import { ScanPlaceholder } from './ScanPlaceholder';
 
-// PanoramaViewer (React Three Fiber, DJI Osmo 360 equirectangular JPEGs) is intentionally
-// NOT imported here. It lives in src/components/PanoramaViewer.tsx locally but is
-// gitignored and not deployed — no actual scan assets exist yet.
-// After Wednesday's shoot:
-//   1. Drop processed node-XX.jpg files into public/tours/<location>/
-//   2. Add bgTourNodes + bgTourAmbient to the relevant space in stories.ts
-//   3. Uncomment the lazy import below and swap the render logic in this file
-//
-// const PanoramaViewer = lazy(() =>
-//   import('./PanoramaViewer').then((m) => ({ default: m.PanoramaViewer }))
-// );
+// LOCAL TEST ONLY — PanoramaViewer.tsx is gitignored, do NOT push this import.
+// Revert to the commented-out version before committing.
+const PanoramaViewer = lazy(() =>
+  import('./PanoramaViewer').then((m) => ({ default: m.PanoramaViewer }))
+);
 
 interface MemorySpaceProps {
   space: MemorySpaceType;
@@ -23,6 +18,8 @@ interface MemorySpaceProps {
 }
 
 export function MemorySpace({ space, story, collectedIds, onCollect }: MemorySpaceProps) {
+  const hasTour = !!space.bgTourNodes?.length;
+
   return (
     <motion.div
       key={space.id}
@@ -32,13 +29,29 @@ export function MemorySpace({ space, story, collectedIds, onCollect }: MemorySpa
       exit={{ opacity: 0, scale: 0.97 }}
       transition={{ duration: 0.35, ease: 'easeOut' }}
       style={
-        space.bgStreetView || space.bgImage
-          ? {} // background handled by iframe or bg-image below
+        hasTour || space.bgStreetView || space.bgImage
+          ? {}
           : { background: space.bgGradient }
       }
     >
+      {hasTour ? (
+        <Suspense fallback={
+          <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+            <p className="font-serif text-white/60 text-sm">Đang tải không gian 360°...</p>
+          </div>
+        }>
+          <PanoramaViewer
+            nodes={space.bgTourNodes!}
+            collectedIds={collectedIds}
+            onCollect={onCollect}
+            ambient={space.bgTourAmbient}
+            allClues={space.clues}
+          />
+        </Suspense>
+      ) : null}
+
       {/* Street View panorama — Google Maps embed, placeholder until 360 scan is ready */}
-      {space.bgStreetView && (
+      {!hasTour && space.bgStreetView && (
         <iframe
           src={space.bgStreetView}
           className="absolute inset-0 w-full h-full border-0 z-0"
@@ -51,7 +64,7 @@ export function MemorySpace({ space, story, collectedIds, onCollect }: MemorySpa
       )}
 
       {/* Static photo background — fallback when no Street View */}
-      {!space.bgStreetView && space.bgImage && (
+      {!hasTour && !space.bgStreetView && space.bgImage && (
         <div
           className="absolute inset-0 z-0"
           style={{
@@ -63,7 +76,7 @@ export function MemorySpace({ space, story, collectedIds, onCollect }: MemorySpa
       )}
 
       {/* Overlay — darkens edges for readability over both Street View and photos */}
-      {(space.bgStreetView || space.bgImage) && (
+      {!hasTour && (space.bgStreetView || space.bgImage) && (
         <div
           className="absolute inset-0 pointer-events-none z-[1]"
           style={
@@ -80,9 +93,9 @@ export function MemorySpace({ space, story, collectedIds, onCollect }: MemorySpa
       )}
 
       {/* Subtle noise texture */}
-      <div className="absolute inset-0 giay-oly opacity-10 pointer-events-none mix-blend-overlay z-[2]" />
+      {!hasTour && <div className="absolute inset-0 giay-oly opacity-10 pointer-events-none mix-blend-overlay z-[2]" />}
       {/* Vintage vignette */}
-      <div className="absolute inset-0 vintage-vignette pointer-events-none z-[3]" />
+      {!hasTour && <div className="absolute inset-0 vintage-vignette pointer-events-none z-[3]" />}
 
       {/* Space label top-left */}
       <div className="absolute top-4 left-4 z-[20] bg-white/80 backdrop-blur-sm rounded-2xl px-4 py-2 shadow-sm border border-muctim/10">
@@ -102,27 +115,27 @@ export function MemorySpace({ space, story, collectedIds, onCollect }: MemorySpa
         </p>
       </div>
 
-      {/* 3D scan placeholder bottom-right */}
-      <div className="absolute bottom-4 right-4 z-20 w-32">
-        <ScanPlaceholder label={space.label} />
-      </div>
-
-      {/* Clue hotspots */}
-      {space.clues.map((clue) => (
-        <ClueObject
-          key={clue.id}
-          clue={clue}
-          collected={collectedIds.includes(clue.id)}
-          onCollect={onCollect}
-        />
-      ))}
-
-      {/* Bottom narrative strip */}
-      <div className="absolute bottom-0 left-0 right-0 z-20 p-4 bg-gradient-to-t from-black/30 to-transparent">
-        <p className="font-handwritten text-white/80 text-sm text-center drop-shadow">
-          Nhấp vào những điểm sáng để tìm mảnh ký ức
-        </p>
-      </div>
+      {/* Scan placeholder + HTML clue hotspots + bottom strip — placeholder mode only */}
+      {!hasTour && (
+        <>
+          <div className="absolute bottom-4 right-4 z-20 w-32">
+            <ScanPlaceholder label={space.label} />
+          </div>
+          {space.clues.map((clue) => (
+            <ClueObject
+              key={clue.id}
+              clue={clue}
+              collected={collectedIds.includes(clue.id)}
+              onCollect={onCollect}
+            />
+          ))}
+          <div className="absolute bottom-0 left-0 right-0 z-20 p-4 bg-gradient-to-t from-black/30 to-transparent">
+            <p className="font-handwritten text-white/80 text-sm text-center drop-shadow">
+              Nhấp vào những điểm sáng để tìm mảnh ký ức
+            </p>
+          </div>
+        </>
+      )}
     </motion.div>
   );
 }

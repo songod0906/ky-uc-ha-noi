@@ -94,6 +94,50 @@ const TRANG: Story = {
       bgGradient: 'linear-gradient(160deg, #2a1f3d 0%, #3d2f5c 50%, #1a1228 100%)',
       bgTone: '#1a1228',
       bgImage: '/images/quan-net.jpg',
+      // TEST WALK — 4 connected nodes simulating a street walk.
+      // node-01: radio dish desert (Pannellum alma.jpg)
+      // node-02: Paris Montmartre market street
+      // node-03: Durlach market square, Germany
+      // node-04: Braunschweig pedestrian street
+      // Real DJI Osmo 360 shots replace this after Wednesday's shoot.
+      bgTourNodes: [
+        {
+          id: 'node-01',
+          panorama: '/tours/test/node-01.jpg',
+          clueAnchors: [
+            { clueId: 'trang-tieng-chui', yaw: 30,  pitch: -5 },
+          ],
+          navAnchors: [
+            { toNodeId: 'node-02', yaw: 0, pitch: -8, label: 'Đi vào trong ngõ' },
+          ],
+        },
+        {
+          id: 'node-02',
+          panorama: '/tours/test/node-02.jpg',
+          clueAnchors: [
+            { clueId: 'trang-choi-net', yaw: -40, pitch: 0 },
+          ],
+          navAnchors: [
+            { toNodeId: 'node-01', yaw: 180, pitch: -8, label: 'Quay lại' },
+            { toNodeId: 'node-03', yaw: 0,   pitch: -8, label: 'Tiếp tục' },
+          ],
+        },
+        {
+          id: 'node-03',
+          panorama: '/tours/test/node-03.jpg',
+          navAnchors: [
+            { toNodeId: 'node-02', yaw: 180, pitch: -8, label: 'Quay lại' },
+            { toNodeId: 'node-04', yaw: 0,   pitch: -8, label: 'Tiếp tục' },
+          ],
+        },
+        {
+          id: 'node-04',
+          panorama: '/tours/test/node-04.jpg',
+          navAnchors: [
+            { toNodeId: 'node-03', yaw: 180, pitch: -8, label: 'Quay lại' },
+          ],
+        },
+      ],
       clues: [
         {
           id: 'trang-tieng-chui',

@@ -14,6 +14,5 @@ coverage/
 .vscode/
 *.swp
 
-# 360 panorama viewer — local dev only, not deployed until scan assets are ready
-src/components/PanoramaViewer.tsx
-public/tours/
+# Real DJI scan assets — too large for git, add after shoot
+# public/tours/
