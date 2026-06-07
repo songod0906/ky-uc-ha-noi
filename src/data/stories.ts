@@ -16,7 +16,8 @@ const TRANG: Story = {
       bgGradient: 'linear-gradient(160deg, #f5e6c8 0%, #e8d5a3 40%, #d4b896 100%)',
       bgTone: '#c8a96e',
       bgImage: '/images/cong-truong.jpg',
-      bgStreetView: 'https://www.google.com/maps/embed?pb=!4v1780816817432!6m8!1m7!1s3YyWvaBXRXJ8A-mbd_qZsA!2m2!1d21.01568407082178!2d105.836506289968!3f248.56649336369705!4f-7.036063571100286!5f0.7820865974627469',
+      // Street View: Trường THCS Thành Công (correct panorama provided by Trang)
+      bgStreetView: 'https://www.google.com/maps/embed?pb=!4v1780819620031!6m8!1m7!1sIiZLPt3-ifENZXNWcTQdxg!2m2!1d21.02304508332172!2d105.8139626145351!3f260.49747!4f0!5f0.7820865974627469',
       clues: [
         {
           id: 'trang-an-vat',
@@ -273,4 +274,143 @@ const ESSY: Story = {
   cluesNeededToUnlock: 4,
 };
 
-export const ALL_STORIES: Story[] = [TRANG, ESSY];
+// Story C — Trang / Khu Thái Thịnh
+// Narrator: Trang. Daily route: học thêm → sân chơi (nhìn từ xa) → quán ốc với mẹ
+// Narrative arc: archiving memory = journey of rediscovering forgotten memory
+const TRANG_THAI_THINH: Story = {
+  id: 'thai-thinh',
+  narrator: 'Trang',
+  title: 'Khu Thái Thịnh',
+  subtitle: 'Những mảnh ghép tuổi thơ Trang đã quên — cho đến khi bắt đầu lưu trữ',
+  coverColor: '#5a7a5a',
+  spaces: [
+    {
+      id: 'nha-hoc-them',
+      label: 'Nhà học thêm',
+      sublabel: 'Khu nhà Trang học thêm để vào lớp 1',
+      bgGradient: 'linear-gradient(160deg, #f0e4c8 0%, #d9c49a 40%, #c4a870 100%)',
+      bgTone: '#c4a870',
+      bgImage: '/images/cong-truong.jpg', // placeholder — replace when Street View added
+      // TODO Street View: search "Yên Lãng Thịnh Quang Đống Đa Hà Nội" on Google Maps,
+      // find the alley/street near Tiểu học Thái Thịnh (56 Yên Lãng), get Street View embed
+      // bgStreetView: 'PASTE_EMBED_SRC_HERE',
+      clues: [
+        {
+          id: 'thai-thinh-hoc-them',
+          type: 'routine',
+          label: 'Bài học thuộc lòng trước lớp 1',
+          quote: '"Mình phải học thêm trước khi vào lớp 1 — đọc, viết, đếm — trong khi bạn bè còn đang chơi."',
+          voiceNote:
+            'Trang nhớ lại: cái nhà học thêm nhỏ trong ngõ Thái Thịnh, cô giáo bắt đọc bảng chữ cái và đếm số mỗi buổi sáng hè. Lúc đó Trang chưa hiểu vì sao mình phải học khi mùa hè. Bây giờ mới thấy đó là một phần của tuổi thơ.',
+          ambient: 'plucks',
+          x: 38,
+          y: 55,
+        },
+        {
+          id: 'thai-thinh-pho-khong-xe',
+          type: 'place',
+          label: 'Con phố không có xe ô tô',
+          quote: '"Những năm 2010, con phố này không có một chiếc xe ô tô nào đi qua cả."',
+          voiceNote:
+            'Trang kể: hồi đó phố Thái Thịnh yên tĩnh lạ. Xe đạp, xe máy, người đi bộ — không có ô tô. Bọn trẻ chạy giữa đường vẫn an toàn. Cái sự yên tĩnh đó bây giờ không còn nữa.',
+          ambient: 'wind',
+          x: 65,
+          y: 42,
+        },
+        {
+          id: 'thai-thinh-khong-duoc-choi',
+          type: 'loss',
+          label: 'Cảm giác không được chơi',
+          quote: '"Các bạn khác được nghỉ hè — còn mình thì phải học. Hồi đó mình không vui lắm."',
+          voiceNote:
+            'Qua project này, Trang mới nhận ra đây là một mảnh ký ức quan trọng mà mình đã không để ý. Cái cảm giác bị bỏ lỡ tuổi thơ — dù chỉ một mùa hè — vẫn còn đọng lại đâu đó.',
+          ambient: 'wind',
+          x: 28,
+          y: 35,
+        },
+      ],
+    },
+    {
+      id: 'san-choi-tap-the',
+      label: 'Sân chơi khu tập thể',
+      sublabel: 'Chỗ bạn bè chơi — còn Trang phải đi học thêm',
+      bgGradient: 'linear-gradient(160deg, #b8d4b0 0%, #8aba88 40%, #6a9866 100%)',
+      bgTone: '#6a9866',
+      bgImage: '/images/gieng-khu-choi.jpg', // placeholder — replace when Street View added
+      // TODO Street View: search "131A Phố Thái Thịnh Đống Đa Hà Nội" on Google Maps,
+      // navigate to the courtyard/playground area of the khu tập thể, get Street View embed
+      // bgStreetView: 'PASTE_EMBED_SRC_HERE',
+      clues: [
+        {
+          id: 'thai-thinh-san-choi',
+          type: 'place',
+          label: 'Sân chơi dưới sân tập thể',
+          quote: '"Cái sân chơi đó nằm ngay giữa khu — tôi nhìn thấy nhưng không được vào chơi."',
+          voiceNote:
+            'Trang kể: sân chơi khu tập thể Thái Thịnh có cầu trượt và xích đu cũ. Buổi sáng hè, bạn bè ùa xuống chơi còn Trang phải đi học thêm. Trang hay đi qua nhìn vào nhưng không dám dừng lại.',
+          ambient: 'kids-laughter',
+          x: 50,
+          y: 58,
+        },
+        {
+          id: 'thai-thinh-tieng-cuoi',
+          type: 'sound',
+          label: 'Tiếng cười từ sân chơi',
+          quote: '"Tiếng bạn bè cười đùa vang lên từ dưới sân — mình nghe thấy khi đi học qua."',
+          voiceNote:
+            'Âm thanh đó — tiếng trẻ con chơi trong sân tập thể mùa hè — là thứ Trang đã quên mất cho đến khi bắt đầu dự án này. Lưu trữ ký ức đôi khi là cách nhặt lại những thứ tưởng đã không còn quan trọng.',
+          ambient: 'kids-laughter',
+          x: 72,
+          y: 40,
+        },
+      ],
+    },
+    {
+      id: 'quan-oc-violin',
+      label: 'Quán ốc ông violin',
+      sublabel: 'Ngõ 41 Thái Hà — ăn ốc, nghe violin, đi với mẹ',
+      bgGradient: 'linear-gradient(160deg, #e8c890 0%, #d4a060 40%, #b87840 100%)',
+      bgTone: '#c48040',
+      bgImage: '/images/nha-ngo-alley.jpg', // placeholder — replace when Street View added
+      // TODO Street View: search "Ngõ 41 Thái Hà Trung Liệt Đống Đa Hà Nội" on Google Maps,
+      // find the snail restaurant alley entrance, get Street View embed
+      // bgStreetView: 'PASTE_EMBED_SRC_HERE',
+      clues: [
+        {
+          id: 'thai-thinh-vio-oc',
+          type: 'sound',
+          label: 'Tiếng violin trong ngõ ốc',
+          quote: '"Ông chủ quán vừa mang ốc ra vừa kéo đàn — giữa cái ngõ nhỏ Thái Hà."',
+          voiceNote:
+            'Quán ốc nhỏ trong ngõ 41 Thái Hà — ông Vũ Văn Sỹ vừa bán vừa chơi violin cho khách nghe. Trang đi với mẹ nhiều lần. Cái hình ảnh ông bưng ốc một tay, kéo đàn một tay là thứ Trang không bao giờ quên, dù đã không nhớ ra cho đến lúc kể chuyện này.',
+          ambient: 'violin',
+          x: 45,
+          y: 55,
+        },
+        {
+          id: 'thai-thinh-di-voi-me',
+          type: 'routine',
+          label: 'Đi ăn ốc với mẹ',
+          quote: '"Đây là tuổi thơ của Trang — ăn ốc ở cái ngõ nhỏ, nghe nhạc, không lo gì cả."',
+          voiceNote:
+            'Trang nhớ lại: những buổi tối đi ăn ốc với mẹ ở ngõ Thái Hà là khoảng thời gian yên bình nhất. Không cần đi đâu xa, chỉ cần cái ngõ quen, bát ốc nóng, và tiếng violin vọng ra. Đó là những thứ không thể mang đi khi khu phố biến mất.',
+          ambient: 'violin',
+          x: 65,
+          y: 45,
+        },
+      ],
+    },
+  ],
+  routeClueIds: ['thai-thinh-hoc-them', 'thai-thinh-san-choi', 'thai-thinh-vio-oc'],
+  routeSlotLabels: ['Buổi sáng đi học thêm...', 'Ghé nhìn sân chơi...', 'Tối đi với mẹ...'],
+  cannotBeMoved: [
+    'Con phố Thái Thịnh năm 2010 — không một chiếc xe ô tô nào đi qua.',
+    'Tiếng violin cổ điển vang ra từ ngõ 41 Thái Hà hòa với tiếng người ăn ốc.',
+    'Cái sân chơi tập thể Trang nhìn thấy mỗi ngày nhưng không được vào chơi.',
+    'Những mảnh ký ức tưởng không quan trọng — chỉ tìm lại được khi bắt đầu kể chuyện.',
+    'Hành trình lưu trữ ký ức, thực ra, cũng là hành trình khám phá lại chính mình.',
+  ],
+  cluesNeededToUnlock: 4,
+};
+
+export const ALL_STORIES: Story[] = [TRANG, TRANG_THAI_THINH, ESSY];

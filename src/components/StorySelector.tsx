@@ -8,8 +8,12 @@ interface StorySelectorProps {
   onSelect: (story: Story) => void;
 }
 
-const COVER_IMAGES = {
-  trang: 'https://images.unsplash.com/photo-1596401057633-5310d57f2615?auto=format&fit=crop&w=600&q=80',
+const COVER_IMAGES: Record<string, string> = {
+  // Trang / Khu Thành Công — lake + school area
+  trang: 'https://images.unsplash.com/photo-1557750255-c76072a7aad1?auto=format&fit=crop&w=600&q=80',
+  // Trang / Khu Thái Thịnh — old Hanoi alley courtyard feel
+  'thai-thinh': 'https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=600&q=80',
+  // Essy / Ngõ–Chợ–Giếng
   essy: 'https://images.unsplash.com/photo-1505995433366-e12047f3f144?auto=format&fit=crop&w=600&q=80',
 };
 
@@ -19,7 +23,7 @@ export function StorySelector({ onSelect }: StorySelectorProps) {
       <div className="absolute inset-0 giay-oly opacity-20 pointer-events-none" />
 
       <motion.div
-        className="relative z-10 w-full max-w-3xl"
+        className="relative z-10 w-full max-w-5xl"
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
@@ -27,11 +31,11 @@ export function StorySelector({ onSelect }: StorySelectorProps) {
         <div className="text-center mb-10">
           <h2 className="font-serif text-3xl font-bold text-muctim">Chọn câu chuyện</h2>
           <p className="font-serif text-muctim-faded mt-2 text-sm">
-            Hai người, hai khu phố, một ngày bình thường sắp biến mất.
+            Hai người, ba khu phố, những ngày bình thường sắp biến mất.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {ALL_STORIES.map((story, i) => (
             <motion.button
               key={story.id}
@@ -46,12 +50,18 @@ export function StorySelector({ onSelect }: StorySelectorProps) {
               }}
             >
               {/* Cover image */}
-              <div className="relative h-44 overflow-hidden">
-                <img
-                  src={(COVER_IMAGES as Record<string, string>)[story.id]}
-                  alt={story.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
+              <div
+                className="relative h-44 overflow-hidden"
+                style={{ background: `${story.coverColor}33` }}
+              >
+                {COVER_IMAGES[story.id] && (
+                  <img
+                    src={COVER_IMAGES[story.id]}
+                    alt={story.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                  />
+                )}
                 <div
                   className="absolute inset-0 opacity-60"
                   style={{
