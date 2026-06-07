@@ -24,7 +24,7 @@ const EXPLORE_TUTORIAL: TutorialStep[] = [
   {
     id: 'notebook',
     selector: '[data-tutorial="notebook"]',
-    placement: 'below',
+    placement: 'left',
     title: 'Sổ tay của bạn',
     body: 'Mảnh ký ức thu được lưu vào đây. Cần ít nhất 4 mảnh để mở câu đố lắp ráp.',
   },

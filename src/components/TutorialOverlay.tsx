@@ -21,11 +21,19 @@ interface Rect {
   height: number;
 }
 
-const PAD = 10; // px padding around the spotlight rect
+const PAD = 10;           // px padding around the spotlight rect
+const TOOLTIP_W = 288;    // w-72 = 18rem = 288px
+const TOOLTIP_MARGIN = 12; // min gap to viewport edges
 
 interface TutorialOverlayProps {
   steps: TutorialStep[];
   onDone: () => void;
+}
+
+interface Layout {
+  tooltipStyle: React.CSSProperties;
+  /** How far the arrow should be shifted along the tooltip's main axis (px) */
+  arrowShift: number;
 }
 
 export function TutorialOverlay({ steps, onDone }: TutorialOverlayProps) {
@@ -35,7 +43,8 @@ export function TutorialOverlay({ steps, onDone }: TutorialOverlayProps) {
 
   const step = steps[stepIdx];
 
-  // Measure the target element on each step change
+  // Measure the target element on each step change.
+  // Uses a rAF retry to catch elements that mount on the same frame.
   const measure = useCallback(() => {
     if (!step) return;
     const el = document.querySelector(step.selector);
@@ -51,8 +60,12 @@ export function TutorialOverlay({ steps, onDone }: TutorialOverlayProps) {
 
   useEffect(() => {
     measure();
+    const rafId = requestAnimationFrame(measure); // retry after paint
     window.addEventListener('resize', measure);
-    return () => window.removeEventListener('resize', measure);
+    return () => {
+      cancelAnimationFrame(rafId);
+      window.removeEventListener('resize', measure);
+    };
   }, [measure]);
 
   const advance = () => {
@@ -65,57 +78,106 @@ export function TutorialOverlay({ steps, onDone }: TutorialOverlayProps) {
 
   if (!step) return null;
 
-  // Tooltip position relative to the spotlight rect
-  const tooltipStyle = (): React.CSSProperties => {
-    if (!rect) return { top: '50%', left: '50%', transform: 'translate(-50%,-50%)' };
+  // Compute tooltip position with viewport clamping.
+  // arrowShift: positive = shift arrow toward positive axis (right for h, down for v).
+  const computeLayout = (): Layout => {
     const GAP = 20;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+
+    if (!rect) {
+      return {
+        tooltipStyle: { position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)' },
+        arrowShift: 0,
+      };
+    }
+
+    const spotCX = rect.left + rect.width / 2;
+    const spotCY = rect.top + rect.height / 2;
+
     switch (step.placement) {
-      case 'above':
+      case 'above': {
+        // Tooltip sits above the spotlight, centered on spotCX
+        const idealLeft = spotCX;
+        const clampedLeft = Math.max(
+          TOOLTIP_W / 2 + TOOLTIP_MARGIN,
+          Math.min(vw - TOOLTIP_W / 2 - TOOLTIP_MARGIN, idealLeft),
+        );
         return {
-          position: 'fixed',
-          top: rect.top - GAP,
-          left: rect.left + rect.width / 2,
-          transform: 'translate(-50%, -100%)',
+          tooltipStyle: {
+            position: 'fixed',
+            top: Math.max(TOOLTIP_MARGIN, rect.top - GAP),
+            left: clampedLeft,
+            transform: 'translate(-50%, -100%)',
+          },
+          arrowShift: idealLeft - clampedLeft, // arrow shifts right by this amount
         };
-      case 'below':
+      }
+      case 'below': {
+        const idealLeft = spotCX;
+        const clampedLeft = Math.max(
+          TOOLTIP_W / 2 + TOOLTIP_MARGIN,
+          Math.min(vw - TOOLTIP_W / 2 - TOOLTIP_MARGIN, idealLeft),
+        );
         return {
-          position: 'fixed',
-          top: rect.top + rect.height + GAP,
-          left: rect.left + rect.width / 2,
-          transform: 'translateX(-50%)',
+          tooltipStyle: {
+            position: 'fixed',
+            top: rect.top + rect.height + GAP,
+            left: clampedLeft,
+            transform: 'translateX(-50%)',
+          },
+          arrowShift: idealLeft - clampedLeft,
         };
-      case 'left':
+      }
+      case 'left': {
+        // Compute explicit top so tooltip stays on screen even when target is near top/bottom.
+        // Estimated tooltip height: 220px.
+        const TOOLTIP_EST_H = 220;
+        const idealTop = spotCY - TOOLTIP_EST_H / 2;
+        const clampedTop = Math.max(TOOLTIP_MARGIN, Math.min(vh - TOOLTIP_EST_H - TOOLTIP_MARGIN, idealTop));
+        // arrowShift: how far the arrow centre deviates from 50% of the tooltip height
+        const arrowShift = spotCY - (clampedTop + TOOLTIP_EST_H / 2);
         return {
-          position: 'fixed',
-          top: rect.top + rect.height / 2,
-          left: rect.left - GAP,
-          transform: 'translate(-100%, -50%)',
+          tooltipStyle: {
+            position: 'fixed',
+            top: clampedTop,
+            left: Math.max(TOOLTIP_MARGIN, rect.left - GAP - TOOLTIP_W),
+            // No translateY — top is already the absolute position
+          },
+          arrowShift,
         };
-      case 'right':
+      }
+      case 'right': {
+        const TOOLTIP_EST_H = 220;
+        const idealTop = spotCY - TOOLTIP_EST_H / 2;
+        const clampedTop = Math.max(TOOLTIP_MARGIN, Math.min(vh - TOOLTIP_EST_H - TOOLTIP_MARGIN, idealTop));
+        const arrowShift = spotCY - (clampedTop + TOOLTIP_EST_H / 2);
         return {
-          position: 'fixed',
-          top: rect.top + rect.height / 2,
-          left: rect.left + rect.width + GAP,
-          transform: 'translateY(-50%)',
+          tooltipStyle: {
+            position: 'fixed',
+            top: clampedTop,
+            left: Math.min(vw - TOOLTIP_W - TOOLTIP_MARGIN, rect.left + rect.width + GAP),
+          },
+          arrowShift,
         };
+      }
     }
   };
 
-  // CSS triangle pointing toward the spotlight
+  const { tooltipStyle, arrowShift } = computeLayout();
+
+  // CSS triangle pointing toward the spotlight.
+  // arrowShift adjusts position along the tooltip edge so it still points at the target
+  // even when the tooltip has been clamped away from its ideal centered position.
   const arrowStyle = (): React.CSSProperties => {
     const size = 10;
-    const base: React.CSSProperties = {
-      position: 'absolute',
-      width: 0,
-      height: 0,
-      pointerEvents: 'none',
-    };
+    const base: React.CSSProperties = { position: 'absolute', width: 0, height: 0, pointerEvents: 'none' };
     switch (step.placement) {
       case 'above':
         return {
           ...base,
           bottom: -size,
-          left: '50%',
+          left: `calc(50% + ${arrowShift}px)`,
           transform: 'translateX(-50%)',
           borderLeft: `${size}px solid transparent`,
           borderRight: `${size}px solid transparent`,
@@ -125,7 +187,7 @@ export function TutorialOverlay({ steps, onDone }: TutorialOverlayProps) {
         return {
           ...base,
           top: -size,
-          left: '50%',
+          left: `calc(50% + ${arrowShift}px)`,
           transform: 'translateX(-50%)',
           borderLeft: `${size}px solid transparent`,
           borderRight: `${size}px solid transparent`,
@@ -135,7 +197,7 @@ export function TutorialOverlay({ steps, onDone }: TutorialOverlayProps) {
         return {
           ...base,
           right: -size,
-          top: '50%',
+          top: `calc(50% + ${arrowShift}px)`,
           transform: 'translateY(-50%)',
           borderTop: `${size}px solid transparent`,
           borderBottom: `${size}px solid transparent`,
@@ -145,7 +207,7 @@ export function TutorialOverlay({ steps, onDone }: TutorialOverlayProps) {
         return {
           ...base,
           left: -size,
-          top: '50%',
+          top: `calc(50% + ${arrowShift}px)`,
           transform: 'translateY(-50%)',
           borderTop: `${size}px solid transparent`,
           borderBottom: `${size}px solid transparent`,
@@ -156,14 +218,14 @@ export function TutorialOverlay({ steps, onDone }: TutorialOverlayProps) {
 
   return (
     <div ref={containerRef} className="fixed inset-0 z-[200] pointer-events-none">
-      {/* Dark overlay — click-through except the bottom dismiss */}
+      {/* Dark overlay — clicking it advances to next step */}
       <div className="absolute inset-0 bg-muctim/70" style={{ pointerEvents: 'all' }} onClick={advance} />
 
       {/* Spotlight cutout via box-shadow trick */}
       {rect && (
         <motion.div
           key={step.id + '-spotlight'}
-          className="absolute rounded-2xl pointer-events-none"
+          className="absolute pointer-events-none"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.25 }}
@@ -184,7 +246,7 @@ export function TutorialOverlay({ steps, onDone }: TutorialOverlayProps) {
         <motion.div
           key={step.id}
           className="relative bg-[#FCFAF2] rounded-2xl shadow-2xl border border-muctim/10 p-5 w-72"
-          style={{ ...tooltipStyle(), zIndex: 202, pointerEvents: 'all' }}
+          style={{ ...tooltipStyle, zIndex: 202, pointerEvents: 'all' }}
           initial={{ opacity: 0, scale: 0.9, y: step.placement === 'above' ? 8 : -8 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.9 }}
