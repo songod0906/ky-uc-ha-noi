@@ -34,7 +34,7 @@ export function MemorySpace({ space, story, collectedIds, onCollect }: MemorySpa
           loading="lazy"
           referrerPolicy="no-referrer-when-downgrade"
           title={space.label}
-          style={{ pointerEvents: 'none' }}
+          style={{ pointerEvents: 'all' }}
         />
       )}
 
