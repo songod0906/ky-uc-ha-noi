@@ -14,7 +14,8 @@ const TRANG: Story = {
       label: 'Cổng trường',
       sublabel: 'Đồ ăn vặt trước Trường THCS Thành Công',
       bgGradient: 'linear-gradient(160deg, #f5e6c8 0%, #e8d5a3 40%, #d4b896 100%)',
-      bgTone: '#e8d5a3',
+      bgTone: '#c8a96e',
+      bgImage: '/images/cong-truong.jpg',
       clues: [
         {
           id: 'trang-an-vat',
@@ -45,7 +46,8 @@ const TRANG: Story = {
       label: 'Hồ Thành Công',
       sublabel: 'Nơi tập xe đạp và nghe nhạc aerobic',
       bgGradient: 'linear-gradient(160deg, #c8dde8 0%, #a3c4d5 40%, #7eaabf 100%)',
-      bgTone: '#a3c4d5',
+      bgTone: '#5a7a8a',
+      bgImage: '/images/ho-thanh-cong.jpg',
       clues: [
         {
           id: 'trang-xe-dap',
@@ -87,7 +89,8 @@ const TRANG: Story = {
       label: 'Quán net',
       sublabel: 'Góc phố quen thuộc, tiếng phím lách cách',
       bgGradient: 'linear-gradient(160deg, #2a1f3d 0%, #3d2f5c 50%, #1a1228 100%)',
-      bgTone: '#2a1f3d',
+      bgTone: '#1a1228',
+      bgImage: '/images/quan-net.jpg',
       clues: [
         {
           id: 'trang-tieng-chui',
@@ -141,7 +144,8 @@ const ESSY: Story = {
       label: 'Nhà / Ngõ',
       sublabel: 'Ngõ khó tìm, ngập mưa, và những quán cà phê nhỏ',
       bgGradient: 'linear-gradient(160deg, #d4c5a9 0%, #c5b08a 40%, #b09060 100%)',
-      bgTone: '#c5b08a',
+      bgTone: '#6b5a3e',
+      bgImage: '/images/nha-ngo-alley.jpg',
       clues: [
         {
           id: 'essy-ngo-kho',
@@ -183,7 +187,8 @@ const ESSY: Story = {
       label: 'Chợ tạm',
       sublabel: 'Chợ họp sáng, hoạt động thường ngày của cả khu',
       bgGradient: 'linear-gradient(160deg, #e8c87e 0%, #d4a84b 40%, #c08a2a 100%)',
-      bgTone: '#d4a84b',
+      bgTone: '#8a6020',
+      bgImage: '/images/cho-tam.jpg',
       clues: [
         {
           id: 'essy-cho-sang',
@@ -214,7 +219,8 @@ const ESSY: Story = {
       label: 'Giếng / Khu vui chơi',
       sublabel: 'Giếng cũ biến thành sân chơi — nơi bọn trẻ tụ tập',
       bgGradient: 'linear-gradient(160deg, #a8c5a0 0%, #7da87a 40%, #5a8a56 100%)',
-      bgTone: '#7da87a',
+      bgTone: '#3a6a36',
+      bgImage: '/images/gieng-khu-choi.jpg',
       clues: [
         {
           id: 'essy-tre-con-gieng',

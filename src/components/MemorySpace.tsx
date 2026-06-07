@@ -19,16 +19,35 @@ export function MemorySpace({ space, story, collectedIds, onCollect }: MemorySpa
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.97 }}
       transition={{ duration: 0.35, ease: 'easeOut' }}
-      style={{ background: space.bgGradient }}
+      style={
+        space.bgImage
+          ? {
+              backgroundImage: `url(${space.bgImage})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            }
+          : { background: space.bgGradient }
+      }
     >
+      {/* Photo overlay — sepia + dark tone so UI elements stay readable */}
+      {space.bgImage && (
+        <div
+          className="absolute inset-0 pointer-events-none z-[1]"
+          style={{
+            background: `linear-gradient(160deg, ${space.bgTone}99 0%, ${space.bgTone}44 50%, rgba(0,0,0,0.35) 100%)`,
+            mixBlendMode: 'multiply',
+          }}
+        />
+      )}
+
       {/* Subtle noise texture overlay */}
-      <div className="absolute inset-0 giay-oly opacity-10 pointer-events-none mix-blend-overlay" />
+      <div className="absolute inset-0 giay-oly opacity-10 pointer-events-none mix-blend-overlay z-[2]" />
 
       {/* Vintage vignette */}
-      <div className="absolute inset-0 vintage-vignette pointer-events-none z-10" />
+      <div className="absolute inset-0 vintage-vignette pointer-events-none z-[3]" />
 
       {/* Space label top-left */}
-      <div className="absolute top-4 left-4 z-20 bg-white/80 backdrop-blur-sm rounded-2xl px-4 py-2 shadow-sm border border-muctim/10">
+      <div className="absolute top-4 left-4 z-[20] bg-white/80 backdrop-blur-sm rounded-2xl px-4 py-2 shadow-sm border border-muctim/10">
         <p className="font-mono text-[9px] text-muctim-faded uppercase tracking-widest">
           {story.narrator} · {story.title}
         </p>

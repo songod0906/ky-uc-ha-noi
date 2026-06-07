@@ -24,8 +24,9 @@ export interface MemorySpace {
   id: string;
   label: string;
   sublabel: string;
-  bgGradient: string; // CSS gradient placeholder until real scan arrives
-  bgTone: string; // single CSS color for tinting
+  bgGradient: string; // CSS gradient fallback
+  bgTone: string;     // single CSS color for tinting
+  bgImage?: string;   // optional real photo path (public/images/...)
   clues: Clue[];
 }
 
