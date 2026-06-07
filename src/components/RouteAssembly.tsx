@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Story, Clue } from '../types';
 import { AudioSynth } from '../utils/AudioSynth';
-import { ArrowRight, RotateCcw, CheckCircle, XCircle, ChevronLeft } from 'lucide-react';
+import { ArrowRight, RotateCcw, CheckCircle, XCircle, ChevronLeft, Lightbulb } from 'lucide-react';
 
 const CLUE_ICONS: Record<string, string> = {
   place: '📍',
@@ -23,6 +23,8 @@ export function RouteAssembly({ story, collectedIds, onSuccess, onBackToExplore 
   // Slots: array of 3, each holds a clue id or null
   const [slots, setSlots] = useState<(string | null)[]>([null, null, null]);
   const [feedback, setFeedback] = useState<'idle' | 'wrong' | 'correct'>('idle');
+  const [wrongCount, setWrongCount] = useState(0);
+  const [showLocationHint, setShowLocationHint] = useState(false);
 
   const allClues = story.spaces.flatMap((s) => s.clues);
   const collectedClues = allClues.filter((c) => collectedIds.includes(c.id));
@@ -59,10 +61,19 @@ export function RouteAssembly({ story, collectedIds, onSuccess, onBackToExplore 
       AudioSynth.playGuitarArpeggio();
       setTimeout(() => onSuccess(), 1800);
     } else {
+      const newCount = wrongCount + 1;
+      setWrongCount(newCount);
       setFeedback('wrong');
       AudioSynth.playSnap();
       setTimeout(() => setFeedback('idle'), 1200);
     }
+  };
+
+  // Returns which space label is correct for a given slot (hint without giving exact clue)
+  const slotSpaceHint = (slotIdx: number): string => {
+    const correctId = story.routeClueIds[slotIdx];
+    const space = story.spaces.find((s) => s.clues.some((c) => c.id === correctId));
+    return space?.label ?? '?';
   };
 
   const getClue = (id: string | null): Clue | undefined =>
@@ -187,9 +198,10 @@ export function RouteAssembly({ story, collectedIds, onSuccess, onBackToExplore 
 
         {/* Check button */}
         <div className="flex flex-col items-center gap-3">
-          <AnimatePresence>
+          <AnimatePresence mode="wait">
             {feedback === 'correct' && (
               <motion.div
+                key="correct"
                 className="flex items-center gap-2 text-sage font-serif font-semibold"
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -200,13 +212,78 @@ export function RouteAssembly({ story, collectedIds, onSuccess, onBackToExplore 
             )}
             {feedback === 'wrong' && (
               <motion.div
-                className="flex items-center gap-2 text-terracotta font-serif text-sm"
+                key="wrong"
+                className="flex flex-col items-center gap-1 text-center"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
               >
-                <XCircle className="w-4 h-4" />
-                Chưa đúng — thứ tự này không khớp với một ngày của {story.narrator}.
+                <div className="flex items-center gap-2 text-terracotta font-serif text-sm">
+                  <XCircle className="w-4 h-4" />
+                  {wrongCount === 1
+                    ? `Chưa đúng — thứ tự này không khớp với một ngày của ${story.narrator}.`
+                    : wrongCount === 2
+                    ? 'Bạn đã rất gần rồi. Thử nghĩ theo trình tự thời gian trong ngày.'
+                    : 'Ký ức đôi khi cần thêm một chút trợ giúp.'}
+                </div>
+                {wrongCount >= 2 && (
+                  <p className="font-serif text-xs text-muctim-faded italic">
+                    Gợi ý: mỗi ô tương ứng với một địa điểm khác nhau.
+                  </p>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Hint panel — appears after 3 wrong attempts */}
+          <AnimatePresence>
+            {wrongCount >= 3 && (
+              <motion.div
+                key="hint-panel"
+                className="w-full rounded-2xl border border-nangthu/30 bg-nangthu-glow/30 p-4 flex flex-col gap-3"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+              >
+                <div className="flex items-center gap-2 text-muctim">
+                  <Lightbulb className="w-4 h-4 text-nangthu flex-shrink-0" />
+                  <p className="font-serif text-sm font-semibold">Gợi ý theo địa điểm</p>
+                </div>
+
+                <button
+                  className="font-serif text-xs text-muctim-faded underline text-left"
+                  onClick={() => setShowLocationHint((v) => !v)}
+                >
+                  {showLocationHint ? 'Ẩn gợi ý' : '🔍 Xem gợi ý — địa điểm cho mỗi ô'}
+                </button>
+
+                {showLocationHint && (
+                  <div className="grid grid-cols-3 gap-2 text-center">
+                    {story.routeSlotLabels.map((label, i) => (
+                      <div key={i} className="flex flex-col gap-1">
+                        <p className="font-handwritten text-[10px] text-muctim-faded">{label}</p>
+                        <div className="bg-white/70 rounded-xl px-2 py-1.5">
+                          <p className="font-serif text-xs font-semibold text-muctim">{slotSpaceHint(i)}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div className="border-t border-muctim/10 pt-2">
+                  <p className="font-serif text-[11px] text-muctim-faded mb-2 text-center">
+                    "Có lẽ ký ức không phải lúc nào cũng được sắp xếp đúng thứ tự."
+                  </p>
+                  <button
+                    className="w-full py-2 rounded-xl font-serif text-xs text-muctim-faded border border-muctim/20 hover:bg-muctim/5 transition-colors"
+                    onClick={() => {
+                      AudioSynth.playGuitarArpeggio();
+                      setTimeout(() => onSuccess(), 600);
+                    }}
+                  >
+                    📖 Tiếp tục theo cách của riêng mình →
+                  </button>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>

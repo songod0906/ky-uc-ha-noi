@@ -290,10 +290,7 @@ const TRANG_THAI_THINH: Story = {
       sublabel: 'Khu nhà Trang học thêm để vào lớp 1',
       bgGradient: 'linear-gradient(160deg, #f0e4c8 0%, #d9c49a 40%, #c4a870 100%)',
       bgTone: '#c4a870',
-      bgImage: '/images/cong-truong.jpg', // placeholder — replace when Street View added
-      // TODO Street View: search "Yên Lãng Thịnh Quang Đống Đa Hà Nội" on Google Maps,
-      // find the alley/street near Tiểu học Thái Thịnh (56 Yên Lãng), get Street View embed
-      // bgStreetView: 'PASTE_EMBED_SRC_HERE',
+      bgStreetView: 'https://www.google.com/maps/embed?pb=!4v1780820583291!6m8!1m7!1snheqPSx9wL8wlbrOwbyaPA!2m2!1d21.00703573799342!2d105.8209283929959!3f95.24497199044959!4f8.04312926871205!5f0.7820865974627469',
       clues: [
         {
           id: 'thai-thinh-hoc-them',
@@ -336,10 +333,7 @@ const TRANG_THAI_THINH: Story = {
       sublabel: 'Chỗ bạn bè chơi — còn Trang phải đi học thêm',
       bgGradient: 'linear-gradient(160deg, #b8d4b0 0%, #8aba88 40%, #6a9866 100%)',
       bgTone: '#6a9866',
-      bgImage: '/images/gieng-khu-choi.jpg', // placeholder — replace when Street View added
-      // TODO Street View: search "131A Phố Thái Thịnh Đống Đa Hà Nội" on Google Maps,
-      // navigate to the courtyard/playground area of the khu tập thể, get Street View embed
-      // bgStreetView: 'PASTE_EMBED_SRC_HERE',
+      bgStreetView: 'https://www.google.com/maps/embed?pb=!4v1780820391133!6m8!1m7!1sCAoSFENJSE0wb2dLRUlDQWdJRHFoWWNy!2m2!1d21.00737043585037!2d105.8205676505939!3f24.670416281318587!4f-21.52419316897445!5f0.7820865974627469',
       clues: [
         {
           id: 'thai-thinh-san-choi',
@@ -371,10 +365,7 @@ const TRANG_THAI_THINH: Story = {
       sublabel: 'Ngõ 41 Thái Hà — ăn ốc, nghe violin, đi với mẹ',
       bgGradient: 'linear-gradient(160deg, #e8c890 0%, #d4a060 40%, #b87840 100%)',
       bgTone: '#c48040',
-      bgImage: '/images/nha-ngo-alley.jpg', // placeholder — replace when Street View added
-      // TODO Street View: search "Ngõ 41 Thái Hà Trung Liệt Đống Đa Hà Nội" on Google Maps,
-      // find the snail restaurant alley entrance, get Street View embed
-      // bgStreetView: 'PASTE_EMBED_SRC_HERE',
+      bgStreetView: 'https://www.google.com/maps/embed?pb=!4v1780820625916!6m8!1m7!1sBlkVKUqklBllqb97pCc7CA!2m2!1d21.01136206591828!2d105.820488192404!3f132.81658590355357!4f-8.126131387858834!5f0.7820865974627469',
       clues: [
         {
           id: 'thai-thinh-vio-oc',
