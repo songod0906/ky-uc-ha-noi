@@ -80,14 +80,22 @@ export function TutorialOverlay({ steps, onDone }: TutorialOverlayProps) {
 
   // Compute tooltip position with viewport clamping.
   // arrowShift: positive = shift arrow toward positive axis (right for h, down for v).
+  // NOTE: Do NOT use CSS `transform` in tooltipStyle — Framer Motion overrides the
+  // entire transform property with its own animation values, silently dropping any
+  // CSS translate/translateY you set here. All positioning must be pure pixel values.
   const computeLayout = (): Layout => {
     const GAP = 20;
+    const TOOLTIP_EST_H = 220;
     const vw = window.innerWidth;
     const vh = window.innerHeight;
 
     if (!rect) {
       return {
-        tooltipStyle: { position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)' },
+        tooltipStyle: {
+          position: 'fixed',
+          top: Math.round((vh - TOOLTIP_EST_H) / 2),
+          left: Math.round((vw - TOOLTIP_W) / 2),
+        },
         arrowShift: 0,
       };
     }
@@ -95,70 +103,45 @@ export function TutorialOverlay({ steps, onDone }: TutorialOverlayProps) {
     const spotCX = rect.left + rect.width / 2;
     const spotCY = rect.top + rect.height / 2;
 
+    // Horizontal: clamp so tooltip never clips viewport edges
+    const hCenter = (cx: number) =>
+      Math.max(TOOLTIP_MARGIN, Math.min(vw - TOOLTIP_W - TOOLTIP_MARGIN, cx - TOOLTIP_W / 2));
+
     switch (step.placement) {
       case 'above': {
-        // Tooltip sits above the spotlight, centered on spotCX
-        const idealLeft = spotCX;
-        const clampedLeft = Math.max(
-          TOOLTIP_W / 2 + TOOLTIP_MARGIN,
-          Math.min(vw - TOOLTIP_W / 2 - TOOLTIP_MARGIN, idealLeft),
-        );
+        const left = hCenter(spotCX);
+        // Bottom of tooltip sits GAP above spotlight top; shift up by estimated height
+        const top = Math.max(TOOLTIP_MARGIN, rect.top - GAP - TOOLTIP_EST_H);
         return {
-          tooltipStyle: {
-            position: 'fixed',
-            top: Math.max(TOOLTIP_MARGIN, rect.top - GAP),
-            left: clampedLeft,
-            transform: 'translate(-50%, -100%)',
-          },
-          arrowShift: idealLeft - clampedLeft, // arrow shifts right by this amount
+          tooltipStyle: { position: 'fixed', top, left },
+          arrowShift: spotCX - (left + TOOLTIP_W / 2),
         };
       }
       case 'below': {
-        const idealLeft = spotCX;
-        const clampedLeft = Math.max(
-          TOOLTIP_W / 2 + TOOLTIP_MARGIN,
-          Math.min(vw - TOOLTIP_W / 2 - TOOLTIP_MARGIN, idealLeft),
+        const left = hCenter(spotCX);
+        const top = Math.min(
+          vh - TOOLTIP_EST_H - TOOLTIP_MARGIN,
+          rect.top + rect.height + GAP,
         );
         return {
-          tooltipStyle: {
-            position: 'fixed',
-            top: rect.top + rect.height + GAP,
-            left: clampedLeft,
-            transform: 'translateX(-50%)',
-          },
-          arrowShift: idealLeft - clampedLeft,
+          tooltipStyle: { position: 'fixed', top, left },
+          arrowShift: spotCX - (left + TOOLTIP_W / 2),
         };
       }
       case 'left': {
-        // Compute explicit top so tooltip stays on screen even when target is near top/bottom.
-        // Estimated tooltip height: 220px.
-        const TOOLTIP_EST_H = 220;
-        const idealTop = spotCY - TOOLTIP_EST_H / 2;
-        const clampedTop = Math.max(TOOLTIP_MARGIN, Math.min(vh - TOOLTIP_EST_H - TOOLTIP_MARGIN, idealTop));
-        // arrowShift: how far the arrow centre deviates from 50% of the tooltip height
-        const arrowShift = spotCY - (clampedTop + TOOLTIP_EST_H / 2);
+        const top = Math.max(TOOLTIP_MARGIN, Math.min(vh - TOOLTIP_EST_H - TOOLTIP_MARGIN, spotCY - TOOLTIP_EST_H / 2));
+        const left = Math.max(TOOLTIP_MARGIN, rect.left - GAP - TOOLTIP_W);
         return {
-          tooltipStyle: {
-            position: 'fixed',
-            top: clampedTop,
-            left: Math.max(TOOLTIP_MARGIN, rect.left - GAP - TOOLTIP_W),
-            // No translateY — top is already the absolute position
-          },
-          arrowShift,
+          tooltipStyle: { position: 'fixed', top, left },
+          arrowShift: spotCY - (top + TOOLTIP_EST_H / 2),
         };
       }
       case 'right': {
-        const TOOLTIP_EST_H = 220;
-        const idealTop = spotCY - TOOLTIP_EST_H / 2;
-        const clampedTop = Math.max(TOOLTIP_MARGIN, Math.min(vh - TOOLTIP_EST_H - TOOLTIP_MARGIN, idealTop));
-        const arrowShift = spotCY - (clampedTop + TOOLTIP_EST_H / 2);
+        const top = Math.max(TOOLTIP_MARGIN, Math.min(vh - TOOLTIP_EST_H - TOOLTIP_MARGIN, spotCY - TOOLTIP_EST_H / 2));
+        const left = Math.min(vw - TOOLTIP_W - TOOLTIP_MARGIN, rect.left + rect.width + GAP);
         return {
-          tooltipStyle: {
-            position: 'fixed',
-            top: clampedTop,
-            left: Math.min(vw - TOOLTIP_W - TOOLTIP_MARGIN, rect.left + rect.width + GAP),
-          },
-          arrowShift,
+          tooltipStyle: { position: 'fixed', top, left },
+          arrowShift: spotCY - (top + TOOLTIP_EST_H / 2),
         };
       }
     }

@@ -24,9 +24,10 @@ export interface MemorySpace {
   id: string;
   label: string;
   sublabel: string;
-  bgGradient: string; // CSS gradient fallback
-  bgTone: string;     // single CSS color for tinting
-  bgImage?: string;   // optional real photo path (public/images/...)
+  bgGradient: string;     // CSS gradient fallback
+  bgTone: string;         // single CSS color for tinting
+  bgImage?: string;       // static photo path (public/images/...) — used when no Street View
+  bgStreetView?: string;  // Google Maps Street View embed URL — takes priority over bgImage
   clues: Clue[];
 }
 

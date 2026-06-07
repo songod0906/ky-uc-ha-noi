@@ -20,23 +20,52 @@ export function MemorySpace({ space, story, collectedIds, onCollect }: MemorySpa
       exit={{ opacity: 0, scale: 0.97 }}
       transition={{ duration: 0.35, ease: 'easeOut' }}
       style={
-        space.bgImage
-          ? {
-              backgroundImage: `url(${space.bgImage})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-            }
+        space.bgStreetView || space.bgImage
+          ? {} // background handled by iframe or bg-image below
           : { background: space.bgGradient }
       }
     >
-      {/* Photo overlay — sepia + dark tone so UI elements stay readable */}
-      {space.bgImage && (
+      {/* Street View panorama — real Google Maps embed of the actual location */}
+      {space.bgStreetView && (
+        <iframe
+          src={space.bgStreetView}
+          className="absolute inset-0 w-full h-full border-0 z-0"
+          allowFullScreen
+          loading="lazy"
+          referrerPolicy="no-referrer-when-downgrade"
+          title={space.label}
+          style={{ pointerEvents: 'none' }}
+        />
+      )}
+
+      {/* Static photo background — fallback when no Street View */}
+      {!space.bgStreetView && space.bgImage && (
+        <div
+          className="absolute inset-0 z-0"
+          style={{
+            backgroundImage: `url(${space.bgImage})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }}
+        />
+      )}
+
+      {/* Overlay — darkens edges for readability over both Street View and photos */}
+      {(space.bgStreetView || space.bgImage) && (
         <div
           className="absolute inset-0 pointer-events-none z-[1]"
-          style={{
-            background: `linear-gradient(160deg, ${space.bgTone}99 0%, ${space.bgTone}44 50%, rgba(0,0,0,0.35) 100%)`,
-            mixBlendMode: 'multiply',
-          }}
+          style={
+            space.bgStreetView
+              ? {
+                  // Subtle vignette only — don't tint live Street View
+                  background: 'linear-gradient(to bottom, rgba(0,0,0,0.25) 0%, transparent 25%, transparent 65%, rgba(0,0,0,0.45) 100%)',
+                }
+              : {
+                  // Photo: colour-tone overlay as before
+                  background: `linear-gradient(160deg, ${space.bgTone}99 0%, ${space.bgTone}44 50%, rgba(0,0,0,0.35) 100%)`,
+                  mixBlendMode: 'multiply',
+                }
+          }
         />
       )}
 

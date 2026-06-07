@@ -16,6 +16,7 @@ const TRANG: Story = {
       bgGradient: 'linear-gradient(160deg, #f5e6c8 0%, #e8d5a3 40%, #d4b896 100%)',
       bgTone: '#c8a96e',
       bgImage: '/images/cong-truong.jpg',
+      bgStreetView: 'https://www.google.com/maps/embed?pb=!4v1780816817432!6m8!1m7!1s3YyWvaBXRXJ8A-mbd_qZsA!2m2!1d21.01568407082178!2d105.836506289968!3f248.56649336369705!4f-7.036063571100286!5f0.7820865974627469',
       clues: [
         {
           id: 'trang-an-vat',
@@ -48,6 +49,7 @@ const TRANG: Story = {
       bgGradient: 'linear-gradient(160deg, #c8dde8 0%, #a3c4d5 40%, #7eaabf 100%)',
       bgTone: '#5a7a8a',
       bgImage: '/images/ho-thanh-cong.jpg',
+      bgStreetView: 'https://www.google.com/maps/embed?pb=!4v1780816975400!6m8!1m7!1sCAoSFkNJSE0wb2dLRUlDQWdJRFdzS0RJYVE.!2m2!1d21.01870719079754!2d105.8130115710941!3f69.82684308992756!4f-2.586612419766098!5f0.7820865974627469',
       clues: [
         {
           id: 'trang-xe-dap',
@@ -146,6 +148,7 @@ const ESSY: Story = {
       bgGradient: 'linear-gradient(160deg, #d4c5a9 0%, #c5b08a 40%, #b09060 100%)',
       bgTone: '#6b5a3e',
       bgImage: '/images/nha-ngo-alley.jpg',
+      bgStreetView: 'https://www.google.com/maps/embed?pb=!4v1780817061285!6m8!1m7!1s6dL2vzb0aYEtr1gNc0a2bw!2m2!1d21.01342417728203!2d105.8361921928282!3f51.4559087277337!4f-12.848211852718478!5f0.7820865974627469',
       clues: [
         {
           id: 'essy-ngo-kho',
