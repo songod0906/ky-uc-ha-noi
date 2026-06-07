@@ -20,14 +20,38 @@ export interface Clue {
   y: number; // % from top
 }
 
+// --- 360 panorama tour types ---
+export interface TourClueAnchor {
+  clueId: string;
+  yaw: number;    // degrees: 0 = forward, positive = right
+  pitch: number;  // degrees: 0 = horizon, positive = up
+}
+
+export interface TourNavAnchor {
+  toNodeId: string;
+  yaw: number;
+  pitch: number;
+  label?: string;
+}
+
+export interface TourNode {
+  id: string;
+  panorama: string;              // '/tours/location-name/node-01.jpg'
+  clueAnchors?: TourClueAnchor[];
+  navAnchors?: TourNavAnchor[];
+}
+// --------------------------------
+
 export interface MemorySpace {
   id: string;
   label: string;
   sublabel: string;
-  bgGradient: string;     // CSS gradient fallback
-  bgTone: string;         // single CSS color for tinting
-  bgImage?: string;       // static photo path (public/images/...) — used when no Street View
-  bgStreetView?: string;  // Google Maps Street View embed URL — takes priority over bgImage
+  bgGradient: string;        // CSS gradient fallback
+  bgTone: string;            // single CSS color for tinting
+  bgImage?: string;          // static photo — used when no Street View and no tour
+  bgStreetView?: string;     // Google Maps Street View embed — placeholder until tour is ready
+  bgTourNodes?: TourNode[];  // 360 panorama tour — takes priority over everything
+  bgTourAmbient?: string;    // '/tours/location-name/ambient.mp3'
   clues: Clue[];
 }
 
