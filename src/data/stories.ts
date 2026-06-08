@@ -1,43 +1,42 @@
 import { Story } from '../types';
 
-// Story A — Trang / Khu Thành Công
-// Narrator: Trang. Daily route: ăn vặt → tập xe đạp ở hồ → chơi net
+// Story A — LTK (Trang's brother) / Khu Thành Công
+// Narrator: LTK. Daily route: ăn vặt cổng trường → hồ Thành Công → quán net
 const TRANG: Story = {
   id: 'trang',
-  narrator: 'Trang',
+  narrator: 'LTK',
   title: 'Khu Thành Công',
-  subtitle: 'Một ngày bình thường hồi bé của Trang',
+  subtitle: 'Một ngày bình thường hồi bé của LTK',
   coverColor: '#4a3e75',
   spaces: [
     {
       id: 'cong-truong',
       label: 'Cổng trường',
-      sublabel: 'Đồ ăn vặt trước Trường THCS Thành Công',
+      sublabel: 'Trường Tiểu học Thành Công — kem chanh, con quay, truyện Doraemon',
       bgGradient: 'linear-gradient(160deg, #f5e6c8 0%, #e8d5a3 40%, #d4b896 100%)',
       bgTone: '#c8a96e',
       bgImage: '/images/cong-truong.jpg',
-      // Street View: Trường THCS Thành Công (correct panorama provided by Trang)
       bgStreetView: 'https://www.google.com/maps/embed?pb=!4v1780819620031!6m8!1m7!1sIiZLPt3-ifENZXNWcTQdxg!2m2!1d21.02304508332172!2d105.8139626145351!3f260.49747!4f0!5f0.7820865974627469',
       clues: [
         {
           id: 'trang-an-vat',
           type: 'routine',
-          label: 'Ăn vặt sau giờ học',
-          quote: '"Cứ tan học là mình chạy ra đây mua mấy cái bánh tráng trộn."',
+          label: 'Kem chanh cổng trường',
+          quote: '"Tan học là chạy thẳng ra mua kem chanh — đứng ăn luôn ngoài cổng, không về nhà trước."',
           voiceNote:
-            'Trang nhớ lại: cái hàng ăn vặt nhỏ xíu trước cổng trường THCS Thành Công — không có ghế ngồi, mọi người đứng ăn, đứng cười, đứng chờ nhau. Đó là khoảng 15 phút tự do nhất trong ngày.',
+            'LTK nhớ cái hàng kem chanh nhỏ trước cổng trường — loại kem đá chua ngọt bọc trong miếng giấy bóng. Hồi đó còn có hàng thuê truyện tranh Doraemon, mua con quay, yoyo. Đó là khoảng 15 phút tự do nhất trong ngày, trước khi về nhà.',
           ambient: 'wind',
           x: 28,
           y: 58,
         },
         {
-          id: 'trang-tieng-xich-lo',
+          id: 'trang-tieng-trong',
           type: 'sound',
-          label: 'Tiếng xích lô cọc cạch',
-          quote: '"Hồi đó còn có xích lô chạy trong khu, tiếng bánh xe trên đá thật đặc biệt."',
+          label: 'Tiếng trống trường và không khí nóng',
+          quote: '"Hồi đó lớp không có điều hòa, nên nghe được tất cả — tiếng trống, tiếng xe ngoài phố, tiếng người."',
           voiceNote:
-            'Trước cổng trường buổi chiều, tiếng xích lô đạp chậm rãi trên nền đá lát cũ, hòa cùng tiếng trẻ con ùa ra tan học. Âm thanh đó bây giờ không còn nữa.',
-          ambient: 'plucks',
+            'Trường tiểu học Thành Công không có điều hòa. Cửa sổ luôn mở, tiếng trống báo giờ vang to khắp khu. LTK kể vì vậy mà nhớ rất rõ âm thanh của khu phố hồi bé — thứ mà bây giờ lớp học nào cũng đóng cửa bật máy lạnh, không còn nghe được nữa.',
+          ambient: 'wind',
           x: 68,
           y: 42,
         },
@@ -46,7 +45,7 @@ const TRANG: Story = {
     {
       id: 'ho-thanh-cong',
       label: 'Hồ Thành Công',
-      sublabel: 'Nơi tập xe đạp và nghe nhạc aerobic',
+      sublabel: 'Tập xe đạp, mùi tanh, nhiều chó — và hàng rào ngăn không vào được',
       bgGradient: 'linear-gradient(160deg, #c8dde8 0%, #a3c4d5 40%, #7eaabf 100%)',
       bgTone: '#5a7a8a',
       bgImage: '/images/ho-thanh-cong.jpg',
@@ -55,10 +54,10 @@ const TRANG: Story = {
         {
           id: 'trang-xe-dap',
           type: 'routine',
-          label: 'Tập xe đạp quanh hồ',
-          quote: '"Mình học đi xe đạp ở bờ hồ này, ngã cũng ở đây mà."',
+          label: 'Tập xe đạp — và không thích',
+          quote: '"Bị bắt ra hồ tập xe đạp. Mình không thích lắm — hồ tanh, nhiều chó, và có hàng rào khắp nơi khó vào."',
           voiceNote:
-            'Bờ hồ Thành Công những chiều hè — đường quanh hồ đủ rộng để bọn trẻ con tập xe, và đủ vắng để không sợ xe máy. Trang kể mình ngã không biết bao nhiêu lần trước khi đi được.',
+            'LTK không thích ra hồ Thành Công hồi nhỏ. Hồ có mùi tanh, nhiều chó lang thang, và bờ hồ bị chắn bởi hàng rào sắt gỉ khiến khó tiếp cận. Bây giờ hàng rào đã được tháo bỏ — nhưng cái ký ức về việc không thể đến gần mặt nước thì vẫn còn.',
           ambient: 'cicadas',
           x: 45,
           y: 62,
@@ -66,10 +65,10 @@ const TRANG: Story = {
         {
           id: 'trang-nhac-aerobic',
           type: 'sound',
-          label: 'Tiếng nhạc aerobic ngoài hồ',
-          quote: '"Buổi chiều nào cũng có nhạc aerobic vang ra từ cái loa sắt cũ ở sân."',
+          label: 'Tiếng nhạc aerobic chiều',
+          quote: '"Buổi chiều nào cũng có nhạc aerobic vang ra từ cái loa sắt cũ ở sân — đó là dấu hiệu chiều đã về."',
           voiceNote:
-            'Mỗi chiều 5 giờ, cái loa ở sân cộng đồng cạnh hồ lại vang nhạc nhảy aerobic rộn rã. Các cô các bà nhảy đều đặn, bọn trẻ trêu đùa bắt chước. Tiếng nhạc đó là dấu hiệu chiều đã về.',
+            'Mỗi chiều 5 giờ, cái loa cộng đồng cạnh hồ lại bật nhạc aerobic. Các cô các bà tập đều đặn, bọn trẻ đứng nhìn. Tiếng nhạc đó vang khắp khu tập thể — ai ở đây cũng nhớ. Bây giờ không còn nghe nữa.',
           ambient: 'aerobic',
           x: 72,
           y: 38,
@@ -80,7 +79,7 @@ const TRANG: Story = {
           label: 'Cả khu biết nhau',
           quote: '"Khu tập thể đặc biệt lắm — cả phố là một nhà, ai cũng biết tên nhau."',
           voiceNote:
-            'Trong tương lai, khu Thành Công sẽ không còn như cũ. Trang tiếc không chỉ vì những âm thanh hồi bé mà vì cả một mô hình sống — khu tập thể nơi mọi người biết nhau, sinh hoạt cùng nhau trong một phố nhỏ — điều đó rất hiếm và sắp biến mất.',
+            'Khu Thành Công sẽ không còn như cũ. LTK tiếc không chỉ vì những âm thanh hồi bé mà vì cả một mô hình sống — khu tập thể nơi mọi người biết nhau, sinh hoạt chỉ trong một phố nhỏ. Khi giải tỏa, không chỉ nhà mất đi — cái cách người ta sống cùng nhau cũng mất theo.',
           ambient: 'wind',
           x: 30,
           y: 35,
@@ -142,10 +141,10 @@ const TRANG: Story = {
         {
           id: 'trang-tieng-chui',
           type: 'sound',
-          label: 'Tiếng chửi nhau trong quán net',
-          quote: '"Chơi game thua là chửi nhau, đó là một phần của ký ức quán net rồi."',
+          label: 'Tiếng chửi và tiếng phím Audition',
+          quote: '"Tiếng chửi nhau khi thua game, tiếng phím gõ Audition — đó là âm thanh của quán net hồi đó."',
           voiceNote:
-            'Trang cười khi nhớ lại: quán net mái tôn ở góc phố, quạt trần quay ầm ĩ, mùi thuốc lá và khói màn hình. Tiếng chửi nhau của các anh chơi game, tiếng bàn phím gõ lách cách — đó là âm thanh của một buổi chiều tự do.',
+            'LTK nhớ rất rõ: quán net mái tôn góc phố, máy tính cũ to đùng màn hình lồi, quạt trần quay ầm ĩ. Tiếng bàn phím gõ lách cách khi chơi Audition, tiếng các anh chửi nhau khi thua — đó là âm thanh của một buổi chiều tự do.',
           ambient: 'keyboard',
           x: 35,
           y: 55,
@@ -153,10 +152,10 @@ const TRANG: Story = {
         {
           id: 'trang-choi-net',
           type: 'routine',
-          label: 'Trốn học chơi net',
-          quote: '"Cứ bốn rưỡi chiều tan học là cả đám trốn học, đạp xe ra hàng net."',
+          label: 'Tan học chỉ muốn về chơi net',
+          quote: '"Tan học xong là chỉ muốn một thứ — chạy thẳng ra quán net, không về nhà trước."',
           voiceNote:
-            'Không phải ngày nào cũng đi, nhưng đủ nhiều để thành thói quen. Bài Audition Please Tell Me Why vang lên là biết hôm nay sẽ là buổi chiều tốt. Lo âu học hành tan biến.',
+            'Không phải ngày nào cũng đi được, nhưng đủ nhiều để thành thói quen. Ngồi vào cái ghế nhựa trước màn hình CRT to đùng, bài Audition "Please Tell Me Why" vang lên — lo âu học hành tan biến. LTK kể đó là khoảng thời gian tự do nhất trong ngày.',
           ambient: 'keyboard',
           x: 62,
           y: 48,
@@ -166,30 +165,33 @@ const TRANG: Story = {
   ],
   // Assembly answer: the correct 3 clue IDs for the day-route in order
   routeClueIds: ['trang-an-vat', 'trang-xe-dap', 'trang-choi-net'],
-  routeSlotLabels: ['Vừa tan học...', 'Rồi ra hồ...', 'Cuối ngày...'],
+  routeSlotLabels: ['Tan học, chạy ra...', 'Ghé qua hồ...', 'Cuối ngày...'],
   cannotBeMoved: [
-    'Tiếng nhạc aerobic chiều của các cô bà tập cộng đồng ở sân hồ.',
-    'Mùi mồ hôi và mùi bụi đá của bờ hồ khi đạp xe lần đầu tiên.',
-    'Cái cảm giác cả khu phố biết tên mình — hàng xóm, cô bán hàng, bác tài xích lô.',
-    'Tiếng chửi nhau trong quán net và việc không ai thực sự giận.',
-    'Khu tập thể Thành Công nguyên vẹn như cũ — một phố, một thế giới.',
+    'Mùi kem chanh chua ngọt đứng ăn trước cổng trường — không có ghế, không cần ghế.',
+    'Tiếng trống trường vang ra qua cửa sổ mở vì lớp không có điều hòa.',
+    'Tiếng nhạc aerobic chiều 5 giờ từ cái loa sắt cũ ở sân hồ.',
+    'Mùi tanh của hồ và hàng rào sắt gỉ ngăn không cho lại gần mặt nước.',
+    'Tiếng phím gõ Audition và tiếng chửi nhau trong quán net mái tôn — và việc không ai thực sự giận.',
+    'Khu tập thể Thành Công nguyên vẹn — một phố, mọi người biết tên nhau.',
   ],
   cluesNeededToUnlock: 4,
 };
 
 // Story B — Essy / Ngõ - Giếng - Chợ tạm
-// Narrator: Essy. Daily route: nhà/ngõ → chợ tạm → giếng/khu vui chơi
+// Narrator: Essy. Two identified losses: (1) kinh nghiệm navigate ngõ của người bản địa,
+// (2) không gian xanh tạo ra bởi ngõ ngách và cây.
+// Recording is exploratory (walk-around), not strictly chronological — puzzle is spatial not time-based.
 const ESSY: Story = {
   id: 'essy',
   narrator: 'Essy',
   title: 'Ngõ – Chợ – Giếng',
-  subtitle: 'Ba địa điểm quen thuộc trong một khu ngõ sẽ mất',
+  subtitle: 'Những thứ chỉ người sống ở đây mới biết — và sắp mất',
   coverColor: '#7d9b84',
   spaces: [
     {
       id: 'nha-ngo',
       label: 'Nhà / Ngõ',
-      sublabel: 'Ngõ khó tìm, ngập mưa, và những quán cà phê nhỏ',
+      sublabel: 'Ngõ khó tìm, cây xanh chen vào ngách, và những quán cà phê khuất',
       bgGradient: 'linear-gradient(160deg, #d4c5a9 0%, #c5b08a 40%, #b09060 100%)',
       bgTone: '#6b5a3e',
       bgImage: '/images/nha-ngo-alley.jpg',
@@ -198,42 +200,42 @@ const ESSY: Story = {
         {
           id: 'essy-ngo-kho',
           type: 'place',
-          label: 'Ngõ khó tìm đường',
-          quote: '"Mấy anh Be không bao giờ tìm được nhà mình."',
+          label: 'Chỉ người trong ngõ mới biết đường',
+          quote: '"Mấy anh Be không bao giờ tìm được nhà mình. Phải gọi điện ít nhất một lần."',
           voiceNote:
-            'Essy kể: khu ngõ này nổi tiếng là khó tìm đường. Xe ôm, xe công nghệ — tất cả đều phải gọi điện thêm ít nhất một lần. Đó không phải điều bất tiện, đó là tính cách của khu ngõ.',
+            'Khu ngõ này có một loại kiến thức riêng — cách navigate qua những hẻm ngoặt không có tên, không có số nhà rõ ràng. Chỉ người sống ở đây mới biết đi như thế nào. Essy gọi đó là kinh nghiệm của người bản địa. Khi khu bị giải tỏa, kinh nghiệm đó cũng mất theo — không ai cần nó nữa.',
           ambient: 'wind',
           x: 40,
           y: 60,
         },
         {
+          id: 'essy-cay-xanh-ngo',
+          type: 'place',
+          label: 'Không gian xanh trong ngõ hẹp',
+          quote: '"Ngõ hẹp nhưng đâu đâu cũng có cây — cây mọc ra từ tường, từ mái, từ góc sân."',
+          voiceNote:
+            'Một trong hai thứ Essy xác định sẽ mất nhất: không gian xanh tạo ra bởi sự kết hợp giữa ngõ ngách và cây cối. Không phải công viên, không phải vườn — là cây mọc tự nhiên trong những khe hở của khu dân cư dày đặc. Thứ xanh đó không thể trồng lại ở chỗ khác.',
+          ambient: 'wind',
+          x: 25,
+          y: 38,
+        },
+        {
           id: 'essy-ngap-mua',
           type: 'place',
-          label: 'Ngập lũ mùa mưa',
+          label: 'Ngập mùa mưa — khổ nhưng là nhà',
           quote: '"Vào mùa mưa, ngõ sâu hay bị ngập — nhưng đó là một phần của nhà."',
           voiceNote:
-            'Mùa mưa ở Hà Nội, những ngõ sâu như ngõ này hay bị ngập. Essy nhớ hình ảnh nước dâng đến mắt cá chân, mấy đứa trẻ lội nước về nhà. Khổ nhưng vui.',
+            'Mùa mưa ở Hà Nội, những ngõ sâu như ngõ này hay bị ngập. Essy nhớ nước dâng đến mắt cá chân, mấy đứa trẻ lội nước về nhà. Khổ, nhưng đó là thứ mọi người ở đây đều biết và chịu đựng cùng nhau.',
           ambient: 'kids-laughter',
           x: 65,
           y: 45,
-        },
-        {
-          id: 'essy-quan-ca-phe',
-          type: 'place',
-          label: 'Quán cà phê nhỏ trong ngõ',
-          quote: '"Trong này có rất nhiều quán cà phê nhỏ, tất cả đều khuất trong hẻm."',
-          voiceNote:
-            'Khu ngõ này có một điểm đặc biệt: rất nhiều quán cà phê nhỏ ẩn mình trong các hẻm sâu. Gần một di tích quốc gia, nhưng không ai biết. Cái di tích đó sắp thành mặt đường.',
-          ambient: 'plucks',
-          x: 25,
-          y: 38,
         },
       ],
     },
     {
       id: 'cho-tam',
       label: 'Chợ tạm',
-      sublabel: 'Chợ họp sáng, hoạt động thường ngày của cả khu',
+      sublabel: 'Chợ họp tự nhiên mỗi sáng — không tên, không biển hiệu',
       bgGradient: 'linear-gradient(160deg, #e8c87e 0%, #d4a84b 40%, #c08a2a 100%)',
       bgTone: '#8a6020',
       bgImage: '/images/cho-tam.jpg',
@@ -241,10 +243,10 @@ const ESSY: Story = {
         {
           id: 'essy-cho-sang',
           type: 'routine',
-          label: 'Hoạt động hằng ngày ở chợ',
-          quote: '"Chợ họp từ sáng sớm, bao nhiêu năm rồi vẫn thế."',
+          label: 'Chợ họp không cần ai tổ chức',
+          quote: '"Chợ họp từ sáng sớm, bao nhiêu năm rồi vẫn thế — không có ai ra lệnh, tự nhiên mà thành."',
           voiceNote:
-            'Essy tả chợ tạm: một khu chợ nhỏ không có tên chính thức, họp tự nhiên mỗi sáng. Người bán người mua quen nhau nhiều năm. Nó không phải chợ lớn, nhưng là trung tâm sinh hoạt của cả khu ngõ.',
+            'Essy tả chợ tạm: không có tên chính thức, không có biển hiệu, họp tự nhiên mỗi sáng từ nhiều năm nay. Người bán người mua quen nhau. Nó không phải chợ lớn — nó là trung tâm sinh hoạt của cả khu ngõ, thứ không thể copy sang chỗ mới.',
           ambient: 'wind',
           x: 50,
           y: 55,
@@ -252,10 +254,10 @@ const ESSY: Story = {
         {
           id: 'essy-tieng-cho',
           type: 'sound',
-          label: 'Âm thanh của chợ sáng',
-          quote: '"Tiếng kêu, tiếng trả giá, tiếng rổ chén lanh canh — đó là buổi sáng của khu này."',
+          label: 'Tiếng chợ thay đồng hồ báo thức',
+          quote: '"Tiếng trả giá, tiếng rổ chén lanh canh — đó là buổi sáng. Khi chợ tan, biết là đã trưa."',
           voiceNote:
-            'Không cần đặt đồng hồ. Tiếng chợ sáng — tiếng người, tiếng xe máy đỗ, tiếng chén bát — là đồng hồ tự nhiên của cả khu ngõ. Khi chợ tan, biết là đã trưa.',
+            'Không cần đặt đồng hồ. Tiếng chợ sáng là nhịp thời gian của cả khu — tiếng người, tiếng xe máy dừng, tiếng chén bát. Essy nhớ rằng khi còn ngủ cũng nghe được chợ từ trong nhà.',
           ambient: 'kids-laughter',
           x: 73,
           y: 40,
@@ -307,12 +309,13 @@ const ESSY: Story = {
     },
   ],
   routeClueIds: ['essy-ngo-kho', 'essy-cho-sang', 'essy-tre-con-gieng'],
-  routeSlotLabels: ['Từ nhà đi ra...', 'Ghé qua...', 'Rồi đến...'],
+  routeSlotLabels: ['Bắt đầu từ ngõ...', 'Đi qua chợ...', 'Đến giếng...'],
   cannotBeMoved: [
-    'Cái ngõ sâu không tên trên bản đồ — chỉ người trong khu mới biết đường vào.',
-    'Tiếng chợ sáng vang ra khỏi cổng ngõ — cái đồng hồ không dùng pin.',
-    'Bọn trẻ con chơi quanh cái giếng cũ không ai còn dùng.',
-    'Mùi ngập lũ sau cơn mưa lớn — mùi bùn, mùi đất ẩm, mùi nhà.',
+    'Kinh nghiệm navigate ngõ — cái bản đồ trong đầu chỉ người sống ở đây mới có.',
+    'Cây mọc trong khe tường, góc sân, mái nhà — không gian xanh không ai trồng mà tự thành.',
+    'Tiếng chợ sáng vang ra từ trong ngõ — đồng hồ báo thức không cần pin.',
+    'Bọn trẻ con chơi quanh cái giếng cũ không ai còn dùng — trung tâm không chính thức.',
+    'Mùi bùn sau mưa lớn ngập ngõ — khổ, nhưng là mùi của nhà.',
     'Di tích quốc gia ẩn trong ngõ hẻm mà hầu hết người Hà Nội không biết là tồn tại.',
   ],
   cluesNeededToUnlock: 4,
