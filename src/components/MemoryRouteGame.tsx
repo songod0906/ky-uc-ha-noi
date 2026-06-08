@@ -10,9 +10,12 @@ import { CompassMotif } from './CompassMotif';
 import { TutorialOverlay, TutorialStep } from './TutorialOverlay';
 import { AudioSynth } from '../utils/AudioSynth';
 import { BookOpen, Puzzle, ChevronLeft } from 'lucide-react';
+import { FortuneFolder } from './FortuneFolder';
+import { TRANG_FORTUNE, TRANG_DIR_SPACES } from '../data/fortuneContent';
 
 type Phase = 'explore' | 'assemble' | 'ending';
 
+// Tutorial for stories with arrow-based navigation (non-TRANG)
 const EXPLORE_TUTORIAL: TutorialStep[] = [
   {
     id: 'clue',
@@ -34,6 +37,32 @@ const EXPLORE_TUTORIAL: TutorialStep[] = [
     placement: 'above',
     title: 'Di chuyển giữa các không gian',
     body: 'Dùng các nút này để đi qua ba không gian trong câu chuyện. Mỗi nơi có mảnh ký ức riêng.',
+    cta: 'Bắt đầu khám phá!',
+  },
+];
+
+// Tutorial for TRANG story — fortune folder is the only way to navigate
+const FORTUNE_EXPLORE_TUTORIAL: TutorialStep[] = [
+  {
+    id: 'clue',
+    selector: '[data-tutorial="clue"]',
+    placement: 'below',
+    title: 'Mảnh ký ức ẩn ở đây',
+    body: 'Những điểm sáng này chứa mảnh ký ức. Nhấp vào để nghe câu chuyện và thu thập.',
+  },
+  {
+    id: 'notebook',
+    selector: '[data-tutorial="notebook"]',
+    placement: 'left',
+    title: 'Sổ tay của bạn',
+    body: 'Mảnh ký ức thu được lưu vào đây. Cần ít nhất 4 mảnh để mở câu đố lắp ráp.',
+  },
+  {
+    id: 'fortune',
+    selector: '[data-tutorial="fortune"]',
+    placement: 'left',
+    title: 'Dùng bói giấy để di chuyển',
+    body: 'Chọn một hướng (BẮC / NAM / TÂY / ĐÔNG) → chọn số bước → xem giấy mở ra → chọn một ô bên trong để khám phá ký ức. Mỗi hướng dẫn tới một không gian khác nhau.',
     cta: 'Bắt đầu khám phá!',
   },
 ];
@@ -68,6 +97,10 @@ export function MemoryRouteGame({ story, onBack }: MemoryRouteGameProps) {
   const [notebookOpen, setNotebookOpen] = useState(false);
   const [exploreTutorialDone, setExploreTutorialDone] = useState(false);
   const [assembleTutorialDone, setAssembleTutorialDone] = useState(false);
+  // Which space the fortune folder is hinting at (subtle glow on the space chip)
+  const [hintedSpaceId, setHintedSpaceId] = useState<string | undefined>(undefined);
+
+  const hasFortune = story.id === 'trang';
 
   const totalClues = story.spaces.flatMap((s) => s.clues).length;
   const canUnlock = collectedIds.length >= story.cluesNeededToUnlock;
@@ -82,6 +115,13 @@ export function MemoryRouteGame({ story, onBack }: MemoryRouteGameProps) {
     AudioSynth.playSnap();
     AudioSynth.startAmbient('wind');
     setSpaceIndex(idx);
+  };
+
+  // Called by FortuneFolder after counting finishes — navigate to the space
+  const handleFortuneNavigate = (spaceId: string | null) => {
+    if (!spaceId) return; // ĐÔNG direction: no navigation, just reveals memory
+    const idx = story.spaces.findIndex((s) => s.id === spaceId);
+    if (idx !== -1) handleMoveToSpace(idx);
   };
 
   const handleStartAssembly = () => {
@@ -207,59 +247,112 @@ export function MemoryRouteGame({ story, onBack }: MemoryRouteGameProps) {
       </AnimatePresence>
 
       {/* Main scene area — fills all remaining height */}
-      <main className="flex-1 flex flex-col min-h-0 relative z-10">
-        {/* Scene panel — expands to fill all available space */}
-        <div className="flex-1 min-h-0 w-full">
-          <AnimatePresence mode="wait">
-            <MemorySpace
-              key={story.spaces[spaceIndex].id}
-              space={story.spaces[spaceIndex]}
-              story={story}
-              collectedIds={collectedIds}
-              onCollect={handleCollect}
-            />
-          </AnimatePresence>
-        </div>
+      <main className="flex-1 flex min-h-0 relative z-10">
 
-        {/* Compact bottom bar: nav + space chips */}
-        <div className="shrink-0 bg-[#FCFAF2]/95 backdrop-blur-sm border-t border-muctim/10 px-4 pt-2 pb-3">
-          {/* Navigation */}
-          <div data-tutorial="nav">
-            <MovementControls
-              spaces={story.spaces}
-              currentIndex={spaceIndex}
-              onMove={handleMoveToSpace}
-            />
+        {/* ── Left column: scene + bottom nav ── */}
+        <div className="flex-1 flex flex-col min-h-0">
+          {/* Scene panel */}
+          <div className="flex-1 min-h-0 w-full">
+            <AnimatePresence mode="wait">
+              <MemorySpace
+                key={story.spaces[spaceIndex].id}
+                space={story.spaces[spaceIndex]}
+                story={story}
+                collectedIds={collectedIds}
+                onCollect={handleCollect}
+              />
+            </AnimatePresence>
           </div>
 
-          {/* Space list chips */}
-          <div className="flex gap-2 justify-center flex-wrap mt-2">
-            {story.spaces.map((space, i) => {
-              const spaceCollected = space.clues.filter((c) => collectedIds.includes(c.id)).length;
-              const isCurrent = i === spaceIndex;
-              return (
-                <button
-                  key={space.id}
-                  onClick={() => handleMoveToSpace(i)}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-serif transition-all ${
-                    isCurrent
-                      ? 'bg-muctim text-white border-muctim shadow'
-                      : 'bg-white/60 border-muctim/15 text-muctim hover:border-muctim/30'
-                  }`}
-                >
-                  <span>{space.label}</span>
-                  <span
-                    className={`font-mono text-[9px] px-1.5 py-0.5 rounded-full ${
-                      isCurrent ? 'bg-white/20 text-white' : 'bg-muctim/10 text-muctim-faded'
+          {/* Compact bottom bar: nav + space chips */}
+          <div className="shrink-0 bg-[#FCFAF2]/95 backdrop-blur-sm border-t border-muctim/10 px-4 pt-2 pb-3">
+            {/* Navigation arrows — hidden for TRANG (fortune folder is the nav) */}
+            {!hasFortune && (
+              <div data-tutorial="nav">
+                <MovementControls
+                  spaces={story.spaces}
+                  currentIndex={spaceIndex}
+                  onMove={handleMoveToSpace}
+                />
+              </div>
+            )}
+
+            {/* Space list chips */}
+            <div className={`flex gap-2 justify-center flex-wrap ${hasFortune ? '' : 'mt-2'}`}>
+              {story.spaces.map((space, i) => {
+                const spaceCollected = space.clues.filter((c) => collectedIds.includes(c.id)).length;
+                const isCurrent = i === spaceIndex;
+                const isHinted = hintedSpaceId === space.id && !isCurrent;
+                // For TRANG: chips are visual-only indicators (fortune teller navigates)
+                return (
+                  <motion.button
+                    key={space.id}
+                    onClick={hasFortune ? undefined : () => handleMoveToSpace(i)}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-serif transition-all ${
+                      hasFortune ? 'cursor-default' : 'cursor-pointer'
+                    } ${
+                      isCurrent
+                        ? 'bg-muctim text-white border-muctim shadow'
+                        : isHinted
+                          ? 'bg-nangthu-glow/60 border-nangthu/40 text-muctim'
+                          : 'bg-white/60 border-muctim/15 text-muctim'
                     }`}
+                    animate={
+                      isHinted
+                        ? { boxShadow: ['0 0 0 0px rgba(180,150,50,0)', '0 0 0 4px rgba(180,150,50,0.2)', '0 0 0 0px rgba(180,150,50,0)'] }
+                        : { boxShadow: '0 0 0 0px rgba(0,0,0,0)' }
+                    }
+                    transition={isHinted ? { duration: 1.8, repeat: Infinity } : {}}
                   >
-                    {spaceCollected}/{space.clues.length}
-                  </span>
-                </button>
-              );
-            })}
+                    <span>{space.label}</span>
+                    <span
+                      className={`font-mono text-[9px] px-1.5 py-0.5 rounded-full ${
+                        isCurrent ? 'bg-white/20 text-white' : 'bg-muctim/10 text-muctim-faded'
+                      }`}
+                    >
+                      {spaceCollected}/{space.clues.length}
+                    </span>
+                  </motion.button>
+                );
+              })}
+            </div>
           </div>
         </div>
+
+        {/* ── Right panel: Fortune Folder (TRANG story only) ── */}
+        {hasFortune && (
+          <div
+            data-tutorial="fortune"
+            className="shrink-0 flex flex-col items-center justify-center border-l border-muctim/8 bg-[#FAF7EE]/80 backdrop-blur-sm"
+            style={{ width: 192 }}
+          >
+            {/* Aged paper label above */}
+            <p
+              className="mb-3 tracking-[0.22em] font-bold"
+              style={{
+                fontFamily: "'Noto Serif', serif",
+                fontSize: '7.5px',
+                color: '#8a7050',
+                opacity: 0.55,
+                letterSpacing: '0.22em',
+              }}
+            >
+              ĐÔNG · TÂY · NAM · BẮC
+            </p>
+
+            <FortuneFolder
+              contentMap={TRANG_FORTUNE}
+              dirSpaces={TRANG_DIR_SPACES}
+              currentSpaceId={story.spaces[spaceIndex].id}
+              onNavigate={handleFortuneNavigate}
+              onReveal={(_dir, _panel, content) => {
+                // Glow the hinted space chip after reveal
+                if (content.spaceHint) setHintedSpaceId(content.spaceHint);
+                setTimeout(() => setHintedSpaceId(undefined), 5000);
+              }}
+            />
+          </div>
+        )}
       </main>
 
       {/* Notebook overlay */}
@@ -274,10 +367,10 @@ export function MemoryRouteGame({ story, onBack }: MemoryRouteGameProps) {
         )}
       </AnimatePresence>
 
-      {/* Tutorial overlay for explore phase */}
+      {/* Tutorial overlay for explore phase — fortune variant for TRANG */}
       {!exploreTutorialDone && (
         <TutorialOverlay
-          steps={EXPLORE_TUTORIAL}
+          steps={hasFortune ? FORTUNE_EXPLORE_TUTORIAL : EXPLORE_TUTORIAL}
           onDone={() => setExploreTutorialDone(true)}
         />
       )}
