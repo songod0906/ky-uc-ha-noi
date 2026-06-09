@@ -4,12 +4,25 @@ import { Story } from './types';
 import { GameStart } from './components/GameStart';
 import { StorySelector } from './components/StorySelector';
 import { MemoryRouteGame } from './components/MemoryRouteGame';
+import { ScanViewer } from './components/ScanViewer';
+
+// ?scan=<url> in the URL shows the 3D scan viewer directly (dev testing only)
+const scanUrl = new URLSearchParams(window.location.search).get('scan');
 
 type AppPhase = 'start' | 'select' | 'play';
 
 export default function App() {
   const [phase, setPhase] = useState<AppPhase>('start');
   const [activeStory, setActiveStory] = useState<Story | null>(null);
+
+  // Dev shortcut: localhost:5173/?scan renders the scan viewer fullscreen
+  if (scanUrl !== null) {
+    return (
+      <div className="h-screen w-screen relative">
+        <ScanViewer url={scanUrl || '/test-scan.glb'} />
+      </div>
+    );
+  }
 
   const handleSelectStory = (story: Story) => {
     setActiveStory(story);
