@@ -13,20 +13,20 @@ interface MapIntroViewProps {
 // Real Hanoi coordinates for each story location
 const STORY_PINS: Record<string, { lat: number; lng: number; zone: string; color: string }> = {
   trang: {
-    lat: 21.0270,
-    lng: 105.8218,
+    lat: 21.0233,
+    lng: 105.8127,
     zone: 'Ba Đình',
     color: '#C8A882',
   },
   essy: {
-    lat: 21.0430,
-    lng: 105.8340,
+    lat: 21.0412,
+    lng: 105.8164,
     zone: 'Ba Đình',
     color: '#8BAF9A',
   },
   'thai-thinh': {
-    lat: 21.0178,
-    lng: 105.8398,
+    lat: 21.0104,
+    lng: 105.8191,
     zone: 'Đống Đa',
     color: '#B09EC3',
   },
@@ -106,7 +106,7 @@ export function MapIntroView({ onSelect }: MapIntroViewProps) {
     }
 
     const map = L.map(mapContainerRef.current, {
-      center: [21.031, 105.828],
+      center: [21.025, 105.816],
       zoom: 14,
       zoomControl: true,
       attributionControl: true,

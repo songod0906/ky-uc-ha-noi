@@ -52,8 +52,6 @@ function applyYaws(
 // ─── LTK panorama sequences ──────────────────────────────────────────────────
 const ltk_cong_truong = [
   '/tours/ltk/truoc-cong-truong/shot-01.jpg',
-  '/tours/ltk/truoc-cong-truong/shot-02.jpg',
-  '/tours/ltk/truoc-cong-truong/shot-03.jpg',
   '/tours/ltk/quan-an-vat/shot-01.jpg',
   '/tours/ltk/quan-an-vat/shot-02.jpg',
   '/tours/ltk/quan-an-vat/shot-03.jpg',
@@ -172,27 +170,38 @@ const TT_OC_YAWS: Record<string, { fwd: number; back: number }> = {
 // ─── Essy calibrated yaws (derived from user's turn-by-turn description) ─────
 // es-ng-01→02: straight; 02→03: turn left; 04→05: turn right;
 // 07→08: turn left; 08→09: turn right; 09→10: curve right; 10→11: turn right
+// Yaws recalibrated after inserting 4 new frames (new-09..new-12) between shot-08/09 and shot-09/10.
+// es-ng-08 now goes straight to new-09; old right-turn is gone.
+// new-09 (0262): turn left ~-65° based on GPS bearing change.
+// es-ng-11 (old shot-09): continues to new-11 with right turn.
+// new-11 (0267): sharp right turn; new-12 (0268): straight; es-ng-14 (old shot-10): right into house.
 const ES_NG_YAWS: Record<string, { fwd: number; back: number }> = {
-  'es-ng-02': { fwd: -80, back:  100 },
-  'es-ng-04': { fwd:  80, back: -100 },
-  'es-ng-07': { fwd: -80, back:  100 },
-  'es-ng-08': { fwd:  75, back: -105 },
-  'es-ng-09': { fwd:  35, back: -145 },
-  'es-ng-10': { fwd:  80, back: -100 },
+  'es-ng-02': { fwd: -80, back:  100 },   // turn left 2→3
+  'es-ng-04': { fwd:  80, back: -100 },   // curve right 4→5
+  'es-ng-07': { fwd: -80, back:  100 },   // turn left 7→8
+  'es-ng-08': { fwd:   0, back:  180 },   // straight to new-09 (0262)
+  'es-ng-09': { fwd: -65, back:  115 },   // 0262: turn left to new-10 (0263)
+  'es-ng-11': { fwd:  80, back: -100 },   // old shot-09: turn right to new-11 (0267)
+  'es-ng-12': { fwd:  90, back:  -90 },   // 0267: sharp right to new-12 (0268)
+  'es-ng-14': { fwd:  80, back: -100 },   // old shot-10: turn right into Essy house
 };
 
 const essy_duong_vao_nha = [
-  '/tours/essy/duong-vao-nha/shot-01.jpg',
-  '/tours/essy/duong-vao-nha/shot-02.jpg',
-  '/tours/essy/duong-vao-nha/shot-03.jpg',
-  '/tours/essy/duong-vao-nha/shot-04.jpg',
-  '/tours/essy/duong-vao-nha/shot-05.jpg',
-  '/tours/essy/duong-vao-nha/shot-06.jpg',
-  '/tours/essy/duong-vao-nha/shot-07.jpg',
-  '/tours/essy/duong-vao-nha/shot-08.jpg',
-  '/tours/essy/duong-vao-nha/shot-09.jpg',
-  '/tours/essy/duong-vao-nha/shot-10.jpg',
-  '/tours/essy/duong-vao-nha/shot-11.jpg',
+  '/tours/essy/duong-vao-nha/shot-01.jpg',        // es-ng-01  start (21.041177, 105.816422)
+  '/tours/essy/duong-vao-nha/shot-02.jpg',        // es-ng-02  turn left
+  '/tours/essy/duong-vao-nha/shot-03.jpg',        // es-ng-03
+  '/tours/essy/duong-vao-nha/shot-04.jpg',        // es-ng-04  curve right
+  '/tours/essy/duong-vao-nha/shot-05.jpg',        // es-ng-05
+  '/tours/essy/duong-vao-nha/shot-06.jpg',        // es-ng-06
+  '/tours/essy/duong-vao-nha/shot-07.jpg',        // es-ng-07  turn left
+  '/tours/essy/duong-vao-nha/shot-08.jpg',        // es-ng-08  (21.041013, 105.817661)
+  '/tours/essy/duong-vao-nha/all/new-09.jpg',     // es-ng-09  0262 (21.041006, 105.817918) turn left
+  '/tours/essy/duong-vao-nha/all/new-10.jpg',     // es-ng-10  0263 (21.041089, 105.817963) straight
+  '/tours/essy/duong-vao-nha/shot-09.jpg',        // es-ng-11  turn right to 0267
+  '/tours/essy/duong-vao-nha/all/new-11.jpg',     // es-ng-12  0267 (21.041601, 105.817944) right
+  '/tours/essy/duong-vao-nha/all/new-12.jpg',     // es-ng-13  0268 (21.041330, 105.817918) straight
+  '/tours/essy/duong-vao-nha/shot-10.jpg',        // es-ng-14  turn right into house hẻm
+  '/tours/essy/duong-vao-nha/shot-11.jpg',        // es-ng-15  Essy house (21.041427, 105.817931)
 ];
 
 const essy_de_la_thanh = [
@@ -240,10 +249,10 @@ const TRANG: Story = {
       bgGradient: 'linear-gradient(160deg, #f5e6c8 0%, #e8d5a3 40%, #d4b896 100%)',
       bgTone: '#c8a96e',
       bgTourNodes: makeNodes(ltk_cong_truong, [
-        { idx: 1, clueId: 'trang-an-vat', yaw: 45, pitch: -20},
-        { idx: 5, clueId: 'trang-tieng-trong', yaw: -30, pitch: -20},
+        { idx: 1, clueId: 'trang-an-vat',      yaw: 45,  pitch: -20 },
+        { idx: 3, clueId: 'trang-tieng-trong',  yaw: -30, pitch: -20 },
       ], 'ct', [
-        { idx: 6, scanUrl: '/scans/quan-an-vat.glb', label: 'Xem quán ăn vặt 3D', yaw: 0, pitch: -10 },
+        { idx: 4, scanUrl: '/scans/quan-an-vat.glb', label: 'Xem quán ăn vặt 3D', yaw: 0, pitch: -10 },
       ]),
       clues: [
         {
@@ -271,6 +280,47 @@ const TRANG: Story = {
           audioSrc: '/audio/trang-tieng-trong.mp3',
           x: 68,
           y: 42,
+        },
+      ],
+    },
+    {
+      id: 'quan-net',
+      label: 'Quán net — nhà mình mở',
+      sublabel: 'Màn hình CRT to đùng, tiếng Audition "cọc cọc cọc" — và nhà mình mở quán',
+      bgGradient: 'linear-gradient(160deg, #2a1f3d 0%, #3d2f5c 50%, #1a1228 100%)',
+      bgTone: '#1a1228',
+      bgTourNodes: applyYaws(makeNodes(ltk_quan_net, [
+        { idx: 14, clueId: 'trang-tieng-chui', yaw: 45,  pitch: -20 },
+        { idx: 15, clueId: 'trang-choi-net',   yaw: -30, pitch: -20 },
+      ], 'qn', [
+        { idx: 16, scanUrl: '/scans/quan-net.glb', label: 'Xem quán net 3D', yaw: 0, pitch: -10 },
+      ]), QN_YAWS),
+      clues: [
+        {
+          id: 'trang-tieng-chui',
+          type: 'sound',
+          label: 'Hai tiếng của quán net',
+          quote:
+            '"Tiếng ở trong quán net chỉ có hai thứ: tiếng hi hi ha ha chửi nhau — và tiếng gõ phím của mấy chị chơi Audition, cọc cọc cọc cọc."',
+          voiceNote:
+            'Quán net nhà LTK: full suit gồm màn hình CRT rất lồi và cục máy to đùng phía sau — "cái cây càng to thì cái màn hình càng bé." Con chuột, bàn phím, tai nghe, webcam. Hai âm thanh duy nhất: tiếng chửi khi thua game và tiếng gõ Audition "cọc cọc cọc cọc" — "rất là chất nghệ." Bố chỉ cho chơi một tiếng rồi căn giờ đón về ăn cơm.',
+          ambient: 'keyboard',
+          audioSrc: '/audio/trang-tieng-chui.mp3',
+          x: 35,
+          y: 55,
+        },
+        {
+          id: 'trang-choi-net',
+          type: 'routine',
+          label: 'Nhà mình mở quán net',
+          quote:
+            '"Come out luôn là nhà mình mở quán net. Đấy là một tuổi thơ tuyệt vời. Quán net còn có điều hòa."',
+          voiceNote:
+            'Điều LTK không nói thẳng từ đầu: tan học không phải đến quán net — là về nhà. Nhà mở quán net. Đó là lý do mỗi ngày tan học đều muốn về ngay — "anh rất hào hứng về nhà chơi điện tử." Và câu kết luận cho cả ngày: trường không có điều hòa, hồ bê tông gập ghềnh nhiều chó mùi tanh — nhưng nhà thì có điều hòa. "Quán net còn có điều hòa."',
+          ambient: 'keyboard',
+          audioSrc: '/audio/trang-choi-net.mp3',
+          x: 62,
+          y: 48,
         },
       ],
     },
@@ -327,50 +377,9 @@ const TRANG: Story = {
         },
       ],
     },
-    {
-      id: 'quan-net',
-      label: 'Quán net — nhà mình mở',
-      sublabel: 'Màn hình CRT to đùng, tiếng Audition "cọc cọc cọc" — và nhà mình mở quán',
-      bgGradient: 'linear-gradient(160deg, #2a1f3d 0%, #3d2f5c 50%, #1a1228 100%)',
-      bgTone: '#1a1228',
-      bgTourNodes: applyYaws(makeNodes(ltk_quan_net, [
-        { idx: 14, clueId: 'trang-tieng-chui', yaw: 45,  pitch: -20 },
-        { idx: 15, clueId: 'trang-choi-net',   yaw: -30, pitch: -20 },
-      ], 'qn', [
-        { idx: 16, scanUrl: '/scans/quan-net.glb', label: 'Xem quán net 3D', yaw: 0, pitch: -10 },
-      ]), QN_YAWS),
-      clues: [
-        {
-          id: 'trang-tieng-chui',
-          type: 'sound',
-          label: 'Hai tiếng của quán net',
-          quote:
-            '"Tiếng ở trong quán net chỉ có hai thứ: tiếng hi hi ha ha chửi nhau — và tiếng gõ phím của mấy chị chơi Audition, cọc cọc cọc cọc."',
-          voiceNote:
-            'Quán net nhà LTK: full suit gồm màn hình CRT rất lồi và cục máy to đùng phía sau — "cái cây càng to thì cái màn hình càng bé." Con chuột, bàn phím, tai nghe, webcam. Hai âm thanh duy nhất: tiếng chửi khi thua game và tiếng gõ Audition "cọc cọc cọc cọc" — "rất là chất nghệ." Bố chỉ cho chơi một tiếng rồi căn giờ đón về ăn cơm.',
-          ambient: 'keyboard',
-          audioSrc: '/audio/trang-tieng-chui.mp3',
-          x: 35,
-          y: 55,
-        },
-        {
-          id: 'trang-choi-net',
-          type: 'routine',
-          label: 'Nhà mình mở quán net',
-          quote:
-            '"Come out luôn là nhà mình mở quán net. Đấy là một tuổi thơ tuyệt vời. Quán net còn có điều hòa."',
-          voiceNote:
-            'Điều LTK không nói thẳng từ đầu: tan học không phải đến quán net — là về nhà. Nhà mở quán net. Đó là lý do mỗi ngày tan học đều muốn về ngay — "anh rất hào hứng về nhà chơi điện tử." Và câu kết luận cho cả ngày: trường không có điều hòa, hồ bê tông gập ghềnh nhiều chó mùi tanh — nhưng nhà thì có điều hòa. "Quán net còn có điều hòa."',
-          ambient: 'keyboard',
-          audioSrc: '/audio/trang-choi-net.mp3',
-          x: 62,
-          y: 48,
-        },
-      ],
-    },
   ],
-  routeClueIds: ['trang-an-vat', 'trang-xe-dap', 'trang-choi-net'],
-  routeSlotLabels: ['Tan học, chạy ra...', 'Ghé qua hồ...', 'Cuối ngày...'],
+  routeClueIds: ['trang-an-vat', 'trang-choi-net', 'trang-xe-dap'],
+  routeSlotLabels: ['Tan học, chạy ra...', 'Ghé vào quán net...', 'Rồi ra hồ...'],
   cannotBeMoved: [
     'Tiệm thuê truyện Doraemon ở cổng trường — hai nghìn một ngày, "sharing economy trước khi có Grab." Mất trước khi LTK hết cấp một.',
     'Kem chanh mua vì lớp không có điều hòa — khi trường lắp điều hòa, không ai bán kem chanh nữa.',
@@ -397,11 +406,11 @@ const ESSY: Story = {
       bgGradient: 'linear-gradient(160deg, #d4c5a9 0%, #c5b08a 40%, #b09060 100%)',
       bgTone: '#6b5a3e',
       bgTourNodes: applyYaws(makeNodes(essy_duong_vao_nha, [
-        { idx: 2, clueId: 'essy-ngo-kho',      yaw:  20, pitch: -20 },
-        { idx: 5, clueId: 'essy-cay-xanh-ngo', yaw: -20, pitch: -20 },
-        { idx: 8, clueId: 'essy-ngap-mua',     yaw:  15, pitch: -20 },
+        { idx: 2,  clueId: 'essy-ngo-kho',      yaw:  20, pitch: -20 },
+        { idx: 5,  clueId: 'essy-cay-xanh-ngo', yaw: -20, pitch: -20 },
+        { idx: 10, clueId: 'essy-ngap-mua',     yaw:  15, pitch: -20 },
       ], 'es-ng', [
-        { idx: 10, scanUrl: '/scans/nha-essy.glb', label: 'Xem nhà Essy 3D', yaw: 0, pitch: -10 },
+        { idx: 14, scanUrl: '/scans/nha-essy.glb', label: 'Xem nhà Essy 3D', yaw: 0, pitch: -10 },
       ]), ES_NG_YAWS),
       clues: [
         {
