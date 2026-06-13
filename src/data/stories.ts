@@ -487,6 +487,7 @@ const ESSY: Story = {
       sublabel: 'Con đường chỉ người trong khu mới biết — dẫn ra giếng cũ nay thành sân tập thể',
       lat: 21.040723, lng: 105.818568,
       audioSegment: { src: '/audio/oral-history/hoang-hoa-tham.m4a', startSec: 299 },
+      videoClip: '/video/gieng-khu-choi.mp4',
       narratorBio: [
         'Từ Văn Cao có một con đường nhỏ dẫn ra giếng cũ — chỉ người trong khu mới biết tồn tại.',
         'Bên trong: nhiều cây, tòa nhà che nắng, mát hơn ngoài đường. Giờ là sân tập thể dục.',
@@ -613,6 +614,7 @@ const TRANG_THAI_THINH: Story = {
       label: 'Sân chơi khu tập thể',
       sublabel: 'Đi qua vô số lần — chưa bao giờ được vào chơi một lần nào',
       lat: 21.010665, lng: 105.818798,
+      minimapFlipX: true,
       audioSegment: { src: '/audio/oral-history/trung-liet.m4a', startSec: 227 },
       narratorBio: [
         'Trên đường học thêm mỗi buổi chiều, nhìn thấy các bạn chơi trong sân — không được dừng lại.',

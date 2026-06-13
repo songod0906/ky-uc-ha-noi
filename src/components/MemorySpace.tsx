@@ -48,6 +48,7 @@ export function MemorySpace({ space, story, collectedIds, onCollect, onClueModal
             onCollect={onCollect}
             ambient={space.bgTourAmbient}
             allClues={space.clues}
+            minimapFlipX={space.minimapFlipX}
           />
         </Suspense>
       ) : null}

@@ -69,6 +69,7 @@ export interface MemorySpace {
   bgTourNodes?: TourNode[];  // 360 panorama tour — takes priority over everything
   bgTourAmbient?: string;    // '/tours/location-name/ambient.mp3'
   videoClip?: string;        // '/video/xxx.mp4' — short ambient clip shown inside space
+  minimapFlipX?: boolean;    // mirror the minimap path horizontally (when physical path goes left)
   audioSegment?: AudioSegment; // oral history segment for this space
   narratorBio?: string[];    // 2-3 bullet lines for the dossier card
   clues: Clue[];

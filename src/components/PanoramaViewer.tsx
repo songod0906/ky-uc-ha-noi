@@ -377,7 +377,7 @@ function computePath(nodes: TourNode[]): [number, number][] {
   return pts;
 }
 
-function PathMap({ nodes, currentIndex }: { nodes: TourNode[]; currentIndex: number }) {
+function PathMap({ nodes, currentIndex, flipX = false }: { nodes: TourNode[]; currentIndex: number; flipX?: boolean }) {
   const W = 110, H = 80, PAD = 10;
   const pts = computePath(nodes);
 
@@ -394,7 +394,7 @@ function PathMap({ nodes, currentIndex }: { nodes: TourNode[]; currentIndex: num
   const polyline = pts.map(([x, y]) => `${tx(x).toFixed(1)},${ty(y).toFixed(1)}`).join(' ');
 
   return (
-    <div className="absolute bottom-16 right-3 z-30 pointer-events-none">
+    <div className="absolute bottom-16 right-3 z-30 pointer-events-none" style={flipX ? { transform: 'scaleX(-1)' } : undefined}>
       <div className="bg-black/55 backdrop-blur-sm rounded-xl overflow-hidden border border-white/10">
         <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`}>
           {/* Path line */}
@@ -463,6 +463,7 @@ export function PanoramaViewer({
   onCollect,
   ambient,
   allClues,
+  minimapFlipX = false,
 }: {
   nodes: TourNode[];
   startNodeId?: string;
@@ -470,6 +471,7 @@ export function PanoramaViewer({
   onCollect: (clueId: string) => void;
   ambient?: string;
   allClues: Clue[];
+  minimapFlipX?: boolean;
 }) {
   // Stable key for this sequence (e.g. "ct" from "ct-01"), used for localStorage
   const seqKey = useRef(nodes[0]?.id.replace(/-\d+$/, '') ?? 'seq').current;
@@ -807,7 +809,7 @@ export function PanoramaViewer({
 
       {/* Path mini-map */}
       {localNodes.length > 1 && !CALIB_MODE && (
-        <PathMap nodes={localNodes} currentIndex={nodeIndex} />
+        <PathMap nodes={localNodes} currentIndex={nodeIndex} flipX={minimapFlipX} />
       )}
 
       {/* Node progress dots (only if multi-node) */}
