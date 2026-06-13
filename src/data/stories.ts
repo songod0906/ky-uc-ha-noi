@@ -246,6 +246,7 @@ const TRANG: Story = {
       id: 'cong-truong',
       label: 'Cổng trường',
       sublabel: 'Trường Tiểu học Thành Công A — tiệm thuê truyện, thẻ sưu tầm, kem son, kem chanh',
+      lat: 21.023324, lng: 105.812746,
       bgGradient: 'linear-gradient(160deg, #f5e6c8 0%, #e8d5a3 40%, #d4b896 100%)',
       bgTone: '#c8a96e',
       bgTourNodes: makeNodes(ltk_cong_truong, [
@@ -287,6 +288,7 @@ const TRANG: Story = {
       id: 'quan-net',
       label: 'Quán net — nhà mình mở',
       sublabel: 'Màn hình CRT to đùng, tiếng Audition "cọc cọc cọc" — và nhà mình mở quán',
+      lat: 21.020861, lng: 105.813559,
       bgGradient: 'linear-gradient(160deg, #2a1f3d 0%, #3d2f5c 50%, #1a1228 100%)',
       bgTone: '#1a1228',
       bgTourNodes: applyYaws(makeNodes(ltk_quan_net, [
@@ -328,6 +330,7 @@ const TRANG: Story = {
       id: 'ho-thanh-cong',
       label: 'Hồ Thành Công',
       sublabel: 'Cửa sau lách xe vào, bê tông gập ghềnh — con người Thành Công chả ai đi cửa chính',
+      lat: 21.020445, lng: 105.813269,
       bgGradient: 'linear-gradient(160deg, #c8dde8 0%, #a3c4d5 40%, #7eaabf 100%)',
       bgTone: '#5a7a8a',
       bgTourNodes: applyYaws(makeNodes(ltk_ho_thanh_cong, [
@@ -403,6 +406,7 @@ const ESSY: Story = {
       id: 'nha-ngo',
       label: 'Nhà / Ngõ',
       sublabel: 'Số 17, 267/33 Hoàng Hoa Thám — rẽ ba bốn lần mới vào được, Grab không bao giờ tìm được',
+      lat: 21.041427, lng: 105.817931,
       bgGradient: 'linear-gradient(160deg, #d4c5a9 0%, #c5b08a 40%, #b09060 100%)',
       bgTone: '#6b5a3e',
       bgTourNodes: applyYaws(makeNodes(essy_duong_vao_nha, [
@@ -456,6 +460,7 @@ const ESSY: Story = {
       id: 'gieng-khu-choi',
       label: 'Giếng / Khu vui chơi',
       sublabel: 'Con đường chỉ người trong khu mới biết — dẫn ra giếng cũ nay thành sân tập thể',
+      lat: 21.040723, lng: 105.818568,
       bgGradient: 'linear-gradient(160deg, #a8c5a0 0%, #7da87a 40%, #5a8a56 100%)',
       bgTone: '#3a6a36',
       bgTourNodes: makeNodes(essy_playground, [
@@ -530,6 +535,7 @@ const TRANG_THAI_THINH: Story = {
       id: 'nha-hoc-them',
       label: 'Lớp học thêm',
       sublabel: 'Gần cửa hàng mẹ — chiều 4-5 giờ mẹ dẫn đi bộ ra học, phố không một chiếc ô tô',
+      lat: 21.009981, lng: 105.820251,
       bgGradient: 'linear-gradient(160deg, #f0e4c8 0%, #d9c49a 40%, #c4a870 100%)',
       bgTone: '#c4a870',
       bgTourNodes: applyYaws(makeNodes(trang_di_hoc_them, [
@@ -569,6 +575,7 @@ const TRANG_THAI_THINH: Story = {
       id: 'san-choi-tap-the',
       label: 'Sân chơi khu tập thể',
       sublabel: 'Đi qua vô số lần — chưa bao giờ được vào chơi một lần nào',
+      lat: 21.010665, lng: 105.818798,
       bgGradient: 'linear-gradient(160deg, #b8d4b0 0%, #8aba88 40%, #6a9866 100%)',
       bgTone: '#6a9866',
       bgTourNodes: applyYaws(makeNodes(trang_playground, [
@@ -608,6 +615,7 @@ const TRANG_THAI_THINH: Story = {
       id: 'quan-oc-violin',
       label: 'Quán ốc ông violin',
       sublabel: 'Mẹ dẫn đi ăn để an ủi — và lần đầu tiên Trang biết violin là gì',
+      lat: 21.011001, lng: 105.820834,
       bgGradient: 'linear-gradient(160deg, #e8c890 0%, #d4a060 40%, #b87840 100%)',
       bgTone: '#c48040',
       bgTourNodes: applyYaws(makeNodes(trang_quan_oc, [

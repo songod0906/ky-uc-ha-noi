@@ -55,6 +55,8 @@ export interface MemorySpace {
   id: string;
   label: string;
   sublabel: string;
+  lat?: number;              // GPS latitude for map pin
+  lng?: number;              // GPS longitude for map pin
   bgGradient: string;        // CSS gradient fallback
   bgTone: string;            // single CSS color for tinting
   bgImage?: string;          // static photo — used when no Street View and no tour

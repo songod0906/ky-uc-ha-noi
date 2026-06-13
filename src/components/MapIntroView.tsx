@@ -1,91 +1,77 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ArrowRight, X, MapPin } from 'lucide-react';
-import { Story } from '../types';
+import { Story, MemorySpace } from '../types';
 import { ALL_STORIES } from '../data/stories';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
 interface MapIntroViewProps {
-  onSelect: (story: Story) => void;
+  onSelect: (story: Story, spaceIdx: number) => void;
 }
 
-// Real Hanoi coordinates for each story location
-const STORY_PINS: Record<string, { lat: number; lng: number; zone: string; color: string }> = {
-  trang: {
-    lat: 21.0233,
-    lng: 105.8127,
-    zone: 'Ba Đình',
-    color: '#C8A882',
-  },
-  essy: {
-    lat: 21.0412,
-    lng: 105.8164,
-    zone: 'Ba Đình',
-    color: '#8BAF9A',
-  },
-  'thai-thinh': {
-    lat: 21.0104,
-    lng: 105.8191,
-    zone: 'Đống Đa',
-    color: '#B09EC3',
-  },
+// Color per narrator
+const NARRATOR_COLOR: Record<string, string> = {
+  LTK:   '#C8A882',
+  Essy:  '#8BAF9A',
+  Trang: '#B09EC3',
 };
 
-// Build custom pulsing marker HTML for each story
-function makePinIcon(color: string, label: string) {
+// Flat list of all spaces with their parent story
+type SpacePin = { space: MemorySpace; story: Story; spaceIdx: number };
+
+function getAllSpacePins(): SpacePin[] {
+  return ALL_STORIES.flatMap((story) =>
+    story.spaces
+      .filter((s) => s.lat !== undefined && s.lng !== undefined)
+      .map((space, i) => ({ space, story, spaceIdx: i }))
+  );
+}
+
+function makePinIcon(color: string) {
   return L.divIcon({
     className: '',
     html: `
-      <div style="position:relative;width:48px;height:48px;cursor:pointer;">
+      <div style="position:relative;width:36px;height:36px;cursor:pointer;">
         <div style="
           position:absolute;inset:0;border-radius:50%;
           background:${color}22;
-          animation:mapPulse 2s ease-out infinite;
+          animation:mapPulse 2.2s ease-out infinite;
         "></div>
         <div style="
-          position:absolute;inset:8px;border-radius:50%;
+          position:absolute;inset:6px;border-radius:50%;
           background:${color}44;
-          animation:mapPulse 2s ease-out infinite;
-          animation-delay:0.3s;
+          animation:mapPulse 2.2s ease-out infinite;
+          animation-delay:0.4s;
         "></div>
         <div style="
-          position:absolute;inset:16px;border-radius:50%;
+          position:absolute;inset:12px;border-radius:50%;
           background:${color};
-          box-shadow:0 0 12px ${color}88, 0 0 24px ${color}44;
+          box-shadow:0 0 10px ${color}99, 0 0 20px ${color}44;
         "></div>
-        <div style="
-          position:absolute;top:54px;left:50%;transform:translateX(-50%);
-          white-space:nowrap;
-          font-family:serif;font-size:10px;color:#f5f0e8;letter-spacing:0.05em;
-          text-shadow:0 1px 4px rgba(0,0,0,0.8);
-          pointer-events:none;
-        ">${label}</div>
       </div>
     `,
-    iconSize: [48, 48],
-    iconAnchor: [24, 24],
+    iconSize: [36, 36],
+    iconAnchor: [18, 18],
   });
 }
 
 export function MapIntroView({ onSelect }: MapIntroViewProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
-  const [selected, setSelected] = useState<Story | null>(null);
+  const [selected, setSelected] = useState<SpacePin | null>(null);
 
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return;
 
-    // Inject pulse animation keyframes once
     if (!document.getElementById('map-pulse-style')) {
       const style = document.createElement('style');
       style.id = 'map-pulse-style';
       style.textContent = `
         @keyframes mapPulse {
           0%   { transform: scale(0.8); opacity: 0.8; }
-          100% { transform: scale(2.2); opacity: 0; }
+          100% { transform: scale(2.4); opacity: 0; }
         }
-        /* Override Leaflet default control styles for dark theme */
         .leaflet-control-zoom a {
           background: rgba(20,15,10,0.85) !important;
           color: #c8b89a !important;
@@ -97,22 +83,23 @@ export function MapIntroView({ onSelect }: MapIntroViewProps) {
         }
         .leaflet-control-attribution {
           background: rgba(10,8,6,0.6) !important;
-          color: rgba(200,180,150,0.4) !important;
+          color: rgba(200,180,150,0.35) !important;
           font-size: 9px !important;
         }
-        .leaflet-control-attribution a { color: rgba(200,180,150,0.5) !important; }
+        .leaflet-control-attribution a { color: rgba(200,180,150,0.45) !important; }
       `;
       document.head.appendChild(style);
     }
 
+    const pins = getAllSpacePins();
+
     const map = L.map(mapContainerRef.current, {
-      center: [21.025, 105.816],
       zoom: 14,
+      center: [21.025, 105.817],
       zoomControl: true,
       attributionControl: true,
     });
 
-    // CartoDB Dark Matter — free, no API key
     L.tileLayer(
       'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
       {
@@ -122,87 +109,83 @@ export function MapIntroView({ onSelect }: MapIntroViewProps) {
       }
     ).addTo(map);
 
-    // Add story pins
-    ALL_STORIES.forEach((story) => {
-      const pin = STORY_PINS[story.id];
-      if (!pin) return;
+    // Fit bounds to all pins after a tick so the container is sized
+    const bounds = L.latLngBounds(pins.map((p) => [p.space.lat!, p.space.lng!]));
+    setTimeout(() => map.fitBounds(bounds, { padding: [60, 60] }), 100);
 
-      const marker = L.marker([pin.lat, pin.lng], {
-        icon: makePinIcon(pin.color, story.narrator),
+    pins.forEach((pin) => {
+      const color = NARRATOR_COLOR[pin.story.narrator] ?? '#ffffff';
+      const marker = L.marker([pin.space.lat!, pin.space.lng!], {
+        icon: makePinIcon(color),
       }).addTo(map);
-
-      marker.on('click', () => {
-        setSelected(story);
-      });
+      marker.on('click', () => setSelected(pin));
     });
 
     mapRef.current = map;
-
-    return () => {
-      map.remove();
-      mapRef.current = null;
-    };
+    return () => { map.remove(); mapRef.current = null; };
   }, []);
 
-  const selectedPin = selected ? STORY_PINS[selected.id] : null;
+  const color = selected ? (NARRATOR_COLOR[selected.story.narrator] ?? '#fff') : '#fff';
 
   return (
     <div className="h-screen w-screen relative overflow-hidden bg-black">
-      {/* The map */}
       <div ref={mapContainerRef} className="absolute inset-0 z-0" />
 
-      {/* Dark vignette overlay — doesn't block map interaction */}
+      {/* Vignette */}
       <div
         className="absolute inset-0 z-10 pointer-events-none"
-        style={{
-          background: `radial-gradient(ellipse at center, transparent 30%, rgba(5,4,3,0.55) 100%)`,
-        }}
+        style={{ background: 'radial-gradient(ellipse at center, transparent 25%, rgba(5,4,3,0.5) 100%)' }}
       />
 
-      {/* Top header */}
-      <div className="absolute top-0 left-0 right-0 z-20 pointer-events-none flex flex-col items-center pt-8 pb-4">
+      {/* Header */}
+      <div className="absolute top-0 left-0 right-0 z-20 pointer-events-none flex flex-col items-center pt-7">
         <motion.p
-          className="font-mono text-[9px] uppercase tracking-[0.35em] text-amber-200/40 mb-2"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4 }}
+          className="font-mono text-[9px] uppercase tracking-[0.35em] text-amber-200/40 mb-1.5"
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}
         >
           Hà Nội · 2026 · Giải tỏa mặt bằng
         </motion.p>
         <motion.h1
           className="font-serif text-2xl md:text-3xl font-bold text-amber-50/90 text-center drop-shadow-lg"
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
+          initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}
         >
           Are you ready to explore?
         </motion.h1>
         <motion.p
-          className="font-serif text-xs text-amber-200/50 mt-1.5 text-center"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.9 }}
+          className="font-serif text-xs text-amber-200/50 mt-1 text-center"
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.9 }}
         >
-          Chọn một khu phố đang biến mất để bước vào
+          Chọn một địa điểm đang biến mất để bước vào
         </motion.p>
       </div>
 
-      {/* Story count badge — bottom left */}
+      {/* Legend — narrator colors */}
       <motion.div
-        className="absolute bottom-6 left-6 z-20 pointer-events-none"
-        initial={{ opacity: 0, x: -10 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 1.1 }}
+        className="absolute top-24 right-4 z-20 pointer-events-none flex flex-col gap-1.5"
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.1 }}
       >
-        <div className="font-mono text-[9px] text-amber-200/35 uppercase tracking-widest leading-5">
-          <div>{ALL_STORIES.length} khu phố · {ALL_STORIES.reduce((s, st) => s + st.spaces.length, 0)} không gian</div>
-          <div>Ký Ức Hà Nội · CAS3020 · VinUniversity</div>
-        </div>
+        {ALL_STORIES.map((s) => (
+          <div key={s.id} className="flex items-center gap-1.5">
+            <div className="w-2 h-2 rounded-full" style={{ background: NARRATOR_COLOR[s.narrator] }} />
+            <span className="font-mono text-[9px] uppercase tracking-wider" style={{ color: NARRATOR_COLOR[s.narrator] }}>
+              {s.narrator}
+            </span>
+          </div>
+        ))}
       </motion.div>
 
-      {/* Story detail panel — slides up when pin clicked */}
+      {/* Bottom credit */}
+      <motion.div
+        className="absolute bottom-5 left-5 z-20 pointer-events-none font-mono text-[9px] text-amber-200/30 uppercase tracking-widest leading-5"
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2 }}
+      >
+        <div>{ALL_STORIES.reduce((n, s) => n + s.spaces.length, 0)} địa điểm · {ALL_STORIES.length} người kể</div>
+        <div>Ký Ức Hà Nội · CAS3020 · VinUniversity</div>
+      </motion.div>
+
+      {/* Space detail panel */}
       <AnimatePresence>
-        {selected && selectedPin && (
+        {selected && (
           <motion.div
             className="absolute bottom-0 left-0 right-0 z-30"
             initial={{ y: '100%' }}
@@ -211,86 +194,64 @@ export function MapIntroView({ onSelect }: MapIntroViewProps) {
             transition={{ type: 'spring', damping: 28, stiffness: 220 }}
           >
             <div
-              className="mx-auto max-w-md mb-0 rounded-t-3xl overflow-hidden shadow-2xl"
+              className="mx-auto max-w-md rounded-t-3xl overflow-hidden shadow-2xl"
               style={{
-                background: 'rgba(10, 8, 6, 0.92)',
+                background: 'rgba(10,8,6,0.93)',
                 backdropFilter: 'blur(16px)',
-                border: '1px solid rgba(200,180,150,0.12)',
+                border: '1px solid rgba(200,180,150,0.1)',
                 borderBottom: 'none',
               }}
             >
-              {/* Color accent bar */}
-              <div
-                className="h-1 w-full"
-                style={{ background: selectedPin.color }}
-              />
+              <div className="h-0.5 w-full" style={{ background: color }} />
 
-              <div className="p-5">
-                {/* Close */}
+              <div className="p-5 relative">
                 <button
                   onClick={() => setSelected(null)}
                   className="absolute top-4 right-4 w-7 h-7 rounded-full flex items-center justify-center"
                   style={{ background: 'rgba(255,255,255,0.06)' }}
                 >
-                  <X className="w-4 h-4 text-amber-200/60" />
+                  <X className="w-4 h-4 text-amber-200/50" />
                 </button>
 
-                {/* Zone tag */}
+                {/* Narrator + location */}
                 <div className="flex items-center gap-2 mb-3">
-                  <MapPin className="w-3.5 h-3.5" style={{ color: selectedPin.color }} />
-                  <span className="font-mono text-[9px] uppercase tracking-widest"
-                    style={{ color: selectedPin.color }}>
-                    {selectedPin.zone}
+                  <MapPin className="w-3.5 h-3.5 flex-shrink-0" style={{ color }} />
+                  <span className="font-mono text-[9px] uppercase tracking-widest" style={{ color }}>
+                    {selected.story.narrator} · {selected.story.title}
                   </span>
                 </div>
 
-                {/* Story info */}
-                <div className="flex items-start justify-between gap-3 mb-1">
-                  <h2 className="font-serif text-xl font-bold text-amber-50/95">
-                    {selected.title}
-                  </h2>
-                  <span
-                    className="flex-shrink-0 font-mono text-[9px] uppercase tracking-widest px-2 py-0.5 rounded-full mt-1"
-                    style={{
-                      background: `${selectedPin.color}22`,
-                      color: selectedPin.color,
-                      border: `1px solid ${selectedPin.color}44`,
-                    }}
-                  >
-                    {selected.narrator}
-                  </span>
-                </div>
+                <h2 className="font-serif text-xl font-bold text-amber-50/95 mb-1 pr-8">
+                  {selected.space.label}
+                </h2>
                 <p className="font-serif text-sm text-amber-200/50 leading-relaxed mb-4">
-                  {selected.subtitle}
+                  {selected.space.sublabel}
                 </p>
 
-                {/* Spaces list */}
-                <div className="flex flex-wrap gap-1.5 mb-5">
-                  {selected.spaces.map((space) => (
+                {/* Clue count */}
+                <div className="flex items-center gap-2 mb-5">
+                  <span
+                    className="font-mono text-[9px] uppercase tracking-widest px-2.5 py-1 rounded-full"
+                    style={{ background: `${color}18`, color, border: `1px solid ${color}33` }}
+                  >
+                    {selected.space.clues.length} mảnh ký ức
+                  </span>
+                  {selected.space.bgTourNodes && (
                     <span
-                      key={space.id}
-                      className="font-serif text-[10px] px-2.5 py-0.5 rounded-full"
-                      style={{
-                        background: 'rgba(255,255,255,0.05)',
-                        color: 'rgba(245,240,232,0.5)',
-                        border: '1px solid rgba(255,255,255,0.08)',
-                      }}
+                      className="font-mono text-[9px] uppercase tracking-widest px-2.5 py-1 rounded-full"
+                      style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(245,240,232,0.4)', border: '1px solid rgba(255,255,255,0.08)' }}
                     >
-                      {space.label}
+                      360° tour
                     </span>
-                  ))}
+                  )}
                 </div>
 
-                {/* Enter button */}
                 <button
-                  onClick={() => onSelect(selected)}
+                  onClick={() => onSelect(selected.story, selected.spaceIdx)}
                   className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl font-serif text-sm font-medium transition-all duration-200 active:scale-95"
-                  style={{
-                    background: selectedPin.color,
-                    color: '#0a0806',
-                  }}
+                  style={{ background: color, color: '#0a0806' }}
                 >
-                  Bước vào khu phố này
+                  Bước vào địa điểm này
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </div>

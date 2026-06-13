@@ -15,8 +15,8 @@ type AppPhase = 'start' | 'prologue' | 'select' | 'play';
 export default function App() {
   const [phase, setPhase] = useState<AppPhase>('start');
   const [activeStory, setActiveStory] = useState<Story | null>(null);
+  const [activeSpaceIdx, setActiveSpaceIdx] = useState(0);
 
-  // Dev shortcut: localhost:5173/?scan renders the scan viewer fullscreen
   if (scanUrl !== null) {
     return (
       <div className="h-screen w-screen relative">
@@ -25,13 +25,15 @@ export default function App() {
     );
   }
 
-  const handleSelectStory = (story: Story) => {
+  const handleSelectSpace = (story: Story, spaceIdx: number) => {
     setActiveStory(story);
+    setActiveSpaceIdx(spaceIdx);
     setPhase('play');
   };
 
   const handleBackToSelect = () => {
     setActiveStory(null);
+    setActiveSpaceIdx(0);
     setPhase('select');
   };
 
@@ -45,12 +47,14 @@ export default function App() {
           <PrologueViewer key="prologue" onEnter={() => setPhase('select')} />
         )}
         {phase === 'select' && (
-          <MapIntroView key="select" onSelect={handleSelectStory} />
+          <MapIntroView key="select" onSelect={handleSelectSpace} />
         )}
         {phase === 'play' && activeStory && (
           <MemoryRouteGame
-            key={`play-${activeStory.id}`}
+            key={`play-${activeStory.id}-${activeSpaceIdx}`}
             story={activeStory}
+            initialSpaceIdx={activeSpaceIdx}
+            singleSpaceMode
             onBack={handleBackToSelect}
           />
         )}

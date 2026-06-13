@@ -87,12 +87,14 @@ const ASSEMBLE_TUTORIAL: TutorialStep[] = [
 
 interface MemoryRouteGameProps {
   story: Story;
+  initialSpaceIdx?: number;
+  singleSpaceMode?: boolean;  // skip cross-space navigation and assembly puzzle
   onBack: () => void;
 }
 
-export function MemoryRouteGame({ story, onBack }: MemoryRouteGameProps) {
+export function MemoryRouteGame({ story, initialSpaceIdx = 0, singleSpaceMode = false, onBack }: MemoryRouteGameProps) {
   const [phase, setPhase] = useState<Phase>('explore');
-  const [spaceIndex, setSpaceIndex] = useState(0);
+  const [spaceIndex, setSpaceIndex] = useState(initialSpaceIdx);
   const [collectedIds, setCollectedIds] = useState<string[]>([]);
   const [notebookOpen, setNotebookOpen] = useState(false);
   const [exploreTutorialDone, setExploreTutorialDone] = useState(false);
@@ -102,8 +104,14 @@ export function MemoryRouteGame({ story, onBack }: MemoryRouteGameProps) {
 
   const hasFortune = false; // temporarily disabled for nav testing
 
-  const totalClues = story.spaces.flatMap((s) => s.clues).length;
-  const canUnlock = collectedIds.length >= story.cluesNeededToUnlock;
+  const activeSpace = story.spaces[spaceIndex];
+  const totalClues = singleSpaceMode
+    ? activeSpace.clues.length
+    : story.spaces.flatMap((s) => s.clues).length;
+  const cluesNeeded = singleSpaceMode
+    ? Math.max(1, activeSpace.clues.length)
+    : story.cluesNeededToUnlock;
+  const canUnlock = collectedIds.length >= cluesNeeded;
 
   const handleCollect = (clueId: string) => {
     if (!collectedIds.includes(clueId)) {
@@ -112,6 +120,7 @@ export function MemoryRouteGame({ story, onBack }: MemoryRouteGameProps) {
   };
 
   const handleMoveToSpace = (idx: number) => {
+    if (singleSpaceMode) return; // locked to one space
     AudioSynth.playSnap();
     AudioSynth.startAmbient('wind');
     setSpaceIndex(idx);
@@ -127,7 +136,8 @@ export function MemoryRouteGame({ story, onBack }: MemoryRouteGameProps) {
   const handleStartAssembly = () => {
     AudioSynth.stopAmbient();
     AudioSynth.playGuitarArpeggio();
-    setPhase('assemble');
+    // In singleSpaceMode there is no cross-space puzzle — go straight to case file
+    setPhase(singleSpaceMode ? 'ending' : 'assemble');
   };
 
   const handleAssemblySuccess = () => {
@@ -264,9 +274,9 @@ export function MemoryRouteGame({ story, onBack }: MemoryRouteGameProps) {
             </AnimatePresence>
           </div>
 
-          {/* Compact bottom bar: nav + space chips */}
+          {/* Compact bottom bar: nav + space chips — hidden in singleSpaceMode */}
+          {!singleSpaceMode && (
           <div className="shrink-0 bg-[#FCFAF2]/95 backdrop-blur-sm border-t border-muctim/10 px-4 pt-2 pb-3">
-            {/* Navigation arrows — hidden for TRANG (fortune folder is the nav) */}
             {!hasFortune && (
               <div data-tutorial="nav">
                 <MovementControls
@@ -277,7 +287,6 @@ export function MemoryRouteGame({ story, onBack }: MemoryRouteGameProps) {
               </div>
             )}
 
-            {/* Space list chips */}
             <div className={`flex gap-2 justify-center flex-wrap ${hasFortune ? '' : 'mt-2'}`}>
               {story.spaces.map((space, i) => {
                 const spaceCollected = space.clues.filter((c) => collectedIds.includes(c.id)).length;
@@ -317,6 +326,7 @@ export function MemoryRouteGame({ story, onBack }: MemoryRouteGameProps) {
               })}
             </div>
           </div>
+          )} {/* end !singleSpaceMode */}
         </div>
 
         {/* ── Right panel: Fortune Folder (TRANG story only) ── */}
