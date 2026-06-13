@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { AnimatePresence } from 'motion/react';
 import { Story } from './types';
 import { GameStart } from './components/GameStart';
-import { StorySelector } from './components/StorySelector';
+import { MapIntroView } from './components/MapIntroView';
 import { MemoryRouteGame } from './components/MemoryRouteGame';
 import { ScanViewer } from './components/ScanViewer';
 import { PrologueViewer } from './components/PrologueViewer';
@@ -45,7 +45,7 @@ export default function App() {
           <PrologueViewer key="prologue" onEnter={() => setPhase('select')} />
         )}
         {phase === 'select' && (
-          <StorySelector key="select" onSelect={handleSelectStory} />
+          <MapIntroView key="select" onSelect={handleSelectStory} />
         )}
         {phase === 'play' && activeStory && (
           <MemoryRouteGame
