@@ -16,6 +16,7 @@ export interface Clue {
   quote: string;
   voiceNote: string;
   ambient: AmbientType;
+  audioSrc?: string;  // '/audio/clue-id.mp3' — oral history clip
   x: number; // % from left in the scene panel
   y: number; // % from top
 }
@@ -34,11 +35,19 @@ export interface TourNavAnchor {
   label?: string;
 }
 
+export interface TourScanAnchor {
+  scanUrl: string;
+  yaw: number;
+  pitch: number;
+  label: string;
+}
+
 export interface TourNode {
   id: string;
   panorama: string;              // '/tours/location-name/node-01.jpg'
   clueAnchors?: TourClueAnchor[];
   navAnchors?: TourNavAnchor[];
+  scanAnchors?: TourScanAnchor[];
 }
 // --------------------------------
 

@@ -5,11 +5,12 @@ import { GameStart } from './components/GameStart';
 import { StorySelector } from './components/StorySelector';
 import { MemoryRouteGame } from './components/MemoryRouteGame';
 import { ScanViewer } from './components/ScanViewer';
+import { PrologueViewer } from './components/PrologueViewer';
 
 // ?scan=<url> in the URL shows the 3D scan viewer directly (dev testing only)
 const scanUrl = new URLSearchParams(window.location.search).get('scan');
 
-type AppPhase = 'start' | 'select' | 'play';
+type AppPhase = 'start' | 'prologue' | 'select' | 'play';
 
 export default function App() {
   const [phase, setPhase] = useState<AppPhase>('start');
@@ -38,7 +39,10 @@ export default function App() {
     <div className="h-screen overflow-hidden bg-[#FCFAF2] text-muctim selection:bg-nangthu-glow selection:text-muctim">
       <AnimatePresence mode="wait">
         {phase === 'start' && (
-          <GameStart key="start" onBegin={() => setPhase('select')} />
+          <GameStart key="start" onBegin={() => setPhase('prologue')} />
+        )}
+        {phase === 'prologue' && (
+          <PrologueViewer key="prologue" onEnter={() => setPhase('select')} />
         )}
         {phase === 'select' && (
           <StorySelector key="select" onSelect={handleSelectStory} />

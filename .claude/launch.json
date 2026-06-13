@@ -5,7 +5,9 @@
       "name": "ky-uc-ha-noi",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
-      "port": 3000
+      "url": "http://192.168.1.4:3000",
+      "port": 3000,
+      "autoPort": false
     }
   ]
 }

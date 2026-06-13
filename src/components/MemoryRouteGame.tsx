@@ -100,7 +100,7 @@ export function MemoryRouteGame({ story, onBack }: MemoryRouteGameProps) {
   // Which space the fortune folder is hinting at (subtle glow on the space chip)
   const [hintedSpaceId, setHintedSpaceId] = useState<string | undefined>(undefined);
 
-  const hasFortune = story.id === 'trang';
+  const hasFortune = false; // temporarily disabled for nav testing
 
   const totalClues = story.spaces.flatMap((s) => s.clues).length;
   const canUnlock = collectedIds.length >= story.cluesNeededToUnlock;

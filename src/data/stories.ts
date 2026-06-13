@@ -1,9 +1,231 @@
-import { Story } from '../types';
+import { Story, TourNode, TourNavAnchor, TourScanAnchor } from '../types';
 
-// Story A — LTK (Trang's brother) / Khu Thành Công
-// Narrator: LTK. Daily route: ăn vặt cổng trường → hồ Thành Công → quán net
-// KEY FACT from transcript: nhà LTK mở quán net — "về nhà chơi net" = literally về nhà.
-// "Come out luôn là nhà mình mở quán net. Đấy là một tuổi thơ tuyệt vời."
+// Builds a linear chain of TourNodes from an array of panorama paths.
+// clues: [{idx: nodeIndex, clueId, yaw?, pitch?}] — yaw/pitch are placeholders, tune in viewer.
+function makeNodes(
+  panoramas: string[],
+  clues: Array<{ idx: number; clueId: string; yaw?: number; pitch?: number }>,
+  pfx: string,
+  scans?: Array<{ idx: number; scanUrl: string; label: string; yaw?: number; pitch?: number }>
+): TourNode[] {
+  return panoramas.map((panorama, i) => {
+    const id = `${pfx}-${String(i + 1).padStart(2, '0')}`;
+    const clueAnchors = clues
+      .filter(c => c.idx === i)
+      .map(({ clueId, yaw = 45, pitch = -5 }) => ({ clueId, yaw, pitch }));
+    const scanAnchors: TourScanAnchor[] = (scans ?? [])
+      .filter(s => s.idx === i)
+      .map(({ scanUrl, label, yaw = 0, pitch = -10 }) => ({ scanUrl, label, yaw, pitch }));
+    const nav: TourNavAnchor[] = [];
+    if (i > 0)
+      nav.push({ toNodeId: `${pfx}-${String(i).padStart(2, '0')}`, yaw: 180, pitch: -10, label: 'Quay lại' });
+    if (i < panoramas.length - 1)
+      nav.push({ toNodeId: `${pfx}-${String(i + 2).padStart(2, '0')}`, yaw: 0, pitch: -10, label: 'Tiếp tục' });
+    return {
+      id, panorama,
+      ...(clueAnchors.length ? { clueAnchors } : {}),
+      ...(scanAnchors.length ? { scanAnchors } : {}),
+      navAnchors: nav,
+    };
+  });
+}
+
+// Applies calibrated yaw values to nav anchors produced by makeNodes().
+function applyYaws(
+  nodes: TourNode[],
+  yaws: Record<string, { fwd: number; back: number }>
+): TourNode[] {
+  return nodes.map(n => {
+    const locked = yaws[n.id];
+    if (!locked) return n;
+    return {
+      ...n,
+      navAnchors: n.navAnchors?.map(a => {
+        if (a.label === 'Tiếp tục' || a.label === 'Đi tiếp') return { ...a, yaw: locked.fwd };
+        if (a.label === 'Quay lại') return { ...a, yaw: locked.back };
+        return a;
+      }),
+    };
+  });
+}
+
+// ─── LTK panorama sequences ──────────────────────────────────────────────────
+const ltk_cong_truong = [
+  '/tours/ltk/truoc-cong-truong/shot-01.jpg',
+  '/tours/ltk/truoc-cong-truong/shot-02.jpg',
+  '/tours/ltk/truoc-cong-truong/shot-03.jpg',
+  '/tours/ltk/quan-an-vat/shot-01.jpg',
+  '/tours/ltk/quan-an-vat/shot-02.jpg',
+  '/tours/ltk/quan-an-vat/shot-03.jpg',
+  '/tours/ltk/quan-an-vat/shot-04.jpg',
+];
+
+const ltk_ho_thanh_cong = [
+  '/tours/ltk/ho-thanh-cong/shot-01.jpg',
+  '/tours/ltk/ho-thanh-cong/shot-02.jpg',
+  '/tours/ltk/ho-thanh-cong/shot-03.jpg',
+  '/tours/ltk/ho-thanh-cong/shot-04.jpg',
+  '/tours/ltk/ho-thanh-cong/shot-05.jpg',
+  '/tours/ltk/ho-thanh-cong/shot-06.jpg',
+  '/tours/ltk/ho-thanh-cong/shot-07.jpg',
+  '/tours/ltk/ho-thanh-cong/shot-08.jpg',
+  '/tours/ltk/ho-thanh-cong/shot-09.jpg',
+  '/tours/ltk/ho-thanh-cong/shot-10.jpg',
+  '/tours/ltk/ho-thanh-cong/shot-11.jpg',
+  '/tours/ltk/ho-thanh-cong/shot-12.jpg',
+  '/tours/ltk/ho-thanh-cong/shot-13.jpg',
+  // shot-14 and shot-15 removed during calibration pass
+];
+
+const HTC_YAWS: Record<string, { fwd: number; back: number }> = {
+  'htc-01': { fwd: -31,  back: 149  },
+  'htc-02': { fwd:  36,  back: -144 },
+  'htc-03': { fwd:   0,  back: 130  },
+  'htc-06': { fwd: -78,  back: -130 },
+  'htc-07': { fwd: -55,  back: 125  },
+  'htc-08': { fwd: -32,  back: 148  },
+  'htc-10': { fwd: -82,  back: 98   },
+  'htc-12': { fwd: -14,  back: 166  },
+  'htc-13': { fwd: -29,  back: 151  },
+};
+
+const ltk_quan_net = [
+  '/tours/ltk/duong-den-quan-net/shot-01.jpg',           // qn-01
+  '/tours/ltk/duong-den-quan-net/shot-02.jpg',           // qn-02
+  '/tours/ltk/duong-den-quan-net/shot-03.jpg',           // qn-03
+  '/tours/ltk/duong-den-quan-net/all/shot-009.jpg',      // qn-04  (added)
+  '/tours/ltk/duong-den-quan-net/shot-04.jpg',           // qn-05
+  '/tours/ltk/duong-den-quan-net/shot-05.jpg',           // qn-06
+  '/tours/ltk/duong-den-quan-net/shot-06.jpg',           // qn-07
+  '/tours/ltk/duong-den-quan-net/shot-07.jpg',           // qn-08
+  '/tours/ltk/duong-den-quan-net/shot-08.jpg',           // qn-09
+  '/tours/ltk/duong-den-quan-net/all/shot-023.jpg',      // qn-10  (added)
+  '/tours/ltk/duong-den-quan-net/shot-09.jpg',           // qn-11
+  '/tours/ltk/duong-den-quan-net/shot-10.jpg',           // qn-12
+  '/tours/ltk/duong-den-quan-net/shot-11.jpg',           // qn-13
+  '/tours/ltk/duong-den-quan-net/all/shot-033.jpg',      // qn-14  (added)
+  '/tours/ltk/trong-quan-net/shot-01.jpg',               // qn-15
+  '/tours/ltk/trong-quan-net/shot-03.jpg',               // qn-16  (shot-02 removed)
+  '/tours/ltk/trong-quan-net/shot-04.jpg',               // qn-17
+];
+
+const QN_YAWS: Record<string, { fwd: number; back: number }> = {
+  'qn-03': { fwd: -13,  back: 167  },
+  'qn-04': { fwd: -14,  back: 166  },  // added shot (all/shot-009)
+  'qn-05': { fwd:   9,  back: -171 },
+  'qn-12': { fwd: 119,  back: -61  },
+  'qn-14': { fwd:  -7,  back: 173  },  // added shot (all/shot-033)
+  'qn-15': { fwd: -77,  back: 103  },
+};
+
+// ─── Trang panorama sequences ─────────────────────────────────────────────────
+const trang_di_hoc_them = [
+  '/tours/trang/di-hoc-them/shot-01.jpg',
+  '/tours/trang/di-hoc-them/shot-02.jpg',
+  '/tours/trang/di-hoc-them/shot-03.jpg',
+  '/tours/trang/di-hoc-them/shot-04.jpg',
+  '/tours/trang/di-hoc-them/shot-05.jpg',
+  '/tours/trang/di-hoc-them/shot-06.jpg',
+  '/tours/trang/di-hoc-them/shot-07.jpg',
+];
+
+const TT_HOC_YAWS: Record<string, { fwd: number; back: number }> = {
+  'tt-hoc-01': { fwd:  56, back: -124 },
+  'tt-hoc-02': { fwd: -24, back:  156 },
+  'tt-hoc-03': { fwd:   0, back:  152 },
+  'tt-hoc-05': { fwd:   9, back: -171 },
+  'tt-hoc-06': { fwd:   0, back:  104 },
+};
+
+const trang_playground = [
+  '/tours/trang/playground/shot-01.jpg',
+  '/tours/trang/playground/shot-02.jpg',
+  '/tours/trang/playground/shot-03.jpg',
+  '/tours/trang/playground/shot-04.jpg',
+  // shot-05 and shot-07 removed during calibration
+  '/tours/trang/playground/shot-06.jpg',
+  '/tours/trang/playground/shot-08.jpg',
+];
+
+const TT_PG_YAWS: Record<string, { fwd: number; back: number }> = {
+  'tt-pg-02': { fwd:  20, back: -160 },
+  'tt-pg-03': { fwd:  19, back: -167 },
+  'tt-pg-04': { fwd:  47, back:  177 },
+  'tt-pg-05': { fwd: -23, back:  157 }, // was shot-06 (shifted after deletions)
+};
+
+const trang_quan_oc = [
+  '/tours/trang/quan-oc-oanh/shot-01.jpg',
+  '/tours/trang/quan-oc-oanh/shot-02.jpg',
+  '/tours/trang/quan-oc-oanh/all/shot-005.jpg', // added during calibration
+  '/tours/trang/quan-oc-oanh/shot-03.jpg',
+  '/tours/trang/quan-oc-oanh/shot-04.jpg',
+];
+
+const TT_OC_YAWS: Record<string, { fwd: number; back: number }> = {
+  'tt-oc-03': { fwd: 14, back: -166 }, // all/shot-005 added
+  'tt-oc-04': { fwd: 15, back: -165 },
+  'tt-oc-05': { fwd: 18, back: -162 },
+};
+
+// ─── Essy panorama sequences ──────────────────────────────────────────────────
+// ─── Essy calibrated yaws (derived from user's turn-by-turn description) ─────
+// es-ng-01→02: straight; 02→03: turn left; 04→05: turn right;
+// 07→08: turn left; 08→09: turn right; 09→10: curve right; 10→11: turn right
+const ES_NG_YAWS: Record<string, { fwd: number; back: number }> = {
+  'es-ng-02': { fwd: -80, back:  100 },
+  'es-ng-04': { fwd:  80, back: -100 },
+  'es-ng-07': { fwd: -80, back:  100 },
+  'es-ng-08': { fwd:  75, back: -105 },
+  'es-ng-09': { fwd:  35, back: -145 },
+  'es-ng-10': { fwd:  80, back: -100 },
+};
+
+const essy_duong_vao_nha = [
+  '/tours/essy/duong-vao-nha/shot-01.jpg',
+  '/tours/essy/duong-vao-nha/shot-02.jpg',
+  '/tours/essy/duong-vao-nha/shot-03.jpg',
+  '/tours/essy/duong-vao-nha/shot-04.jpg',
+  '/tours/essy/duong-vao-nha/shot-05.jpg',
+  '/tours/essy/duong-vao-nha/shot-06.jpg',
+  '/tours/essy/duong-vao-nha/shot-07.jpg',
+  '/tours/essy/duong-vao-nha/shot-08.jpg',
+  '/tours/essy/duong-vao-nha/shot-09.jpg',
+  '/tours/essy/duong-vao-nha/shot-10.jpg',
+  '/tours/essy/duong-vao-nha/shot-11.jpg',
+];
+
+const essy_de_la_thanh = [
+  '/tours/essy/de-la-thanh/shot-01.jpg',
+  '/tours/essy/de-la-thanh/shot-02.jpg',
+  '/tours/essy/de-la-thanh/shot-03.jpg',
+  '/tours/essy/de-la-thanh/shot-04.jpg',
+  '/tours/essy/de-la-thanh/shot-05.jpg',
+  '/tours/essy/de-la-thanh/shot-06.jpg',
+  '/tours/essy/de-la-thanh/shot-07.jpg',
+  '/tours/essy/de-la-thanh/shot-08.jpg',
+  '/tours/essy/de-la-thanh/shot-09.jpg',
+  '/tours/essy/de-la-thanh/shot-10.jpg',
+  '/tours/essy/de-la-thanh/shot-11.jpg',
+  '/tours/essy/de-la-thanh/shot-12.jpg',
+  '/tours/essy/de-la-thanh/shot-13.jpg',
+  '/tours/essy/de-la-thanh/shot-14.jpg',
+  '/tours/essy/de-la-thanh/shot-15.jpg',
+  '/tours/essy/de-la-thanh/shot-16.jpg',
+  '/tours/essy/de-la-thanh/shot-17.jpg',
+];
+
+// Prologue opening scene — exported for PrologueViewer
+export const DE_LA_THANH_NODES: TourNode[] = makeNodes(essy_de_la_thanh, [], 'dla');
+
+const essy_playground = [
+  '/tours/essy/playground/shot-01.jpg',
+  '/tours/essy/playground/shot-02.jpg',
+  '/tours/essy/playground/shot-03.jpg',
+  // shots 04-10 removed during calibration
+];
+
+// ─── Story A: LTK / Khu Thành Công ───────────────────────────────────────────
 const TRANG: Story = {
   id: 'trang',
   narrator: 'LTK',
@@ -17,9 +239,12 @@ const TRANG: Story = {
       sublabel: 'Trường Tiểu học Thành Công A — tiệm thuê truyện, thẻ sưu tầm, kem son, kem chanh',
       bgGradient: 'linear-gradient(160deg, #f5e6c8 0%, #e8d5a3 40%, #d4b896 100%)',
       bgTone: '#c8a96e',
-      bgImage: '/images/cong-truong.jpg',
-      bgStreetView:
-        'https://www.google.com/maps/embed?pb=!4v1780819620031!6m8!1m7!1sIiZLPt3-ifENZXNWcTQdxg!2m2!1d21.02304508332172!2d105.8139626145351!3f260.49747!4f0!5f0.7820865974627469',
+      bgTourNodes: makeNodes(ltk_cong_truong, [
+        { idx: 1, clueId: 'trang-an-vat', yaw: 45, pitch: -20},
+        { idx: 5, clueId: 'trang-tieng-trong', yaw: -30, pitch: -20},
+      ], 'ct', [
+        { idx: 6, scanUrl: '/scans/quan-an-vat.glb', label: 'Xem quán ăn vặt 3D', yaw: 0, pitch: -10 },
+      ]),
       clues: [
         {
           id: 'trang-an-vat',
@@ -30,6 +255,7 @@ const TRANG: Story = {
           voiceNote:
             'LTK nhớ rõ ba thứ ở cổng trường Thành Công A: một là tiệm thuê truyện Doraemon và thần thoại Hy Lạp, hai đến ba nghìn một ngày — "sharing economy, the first sharing economy model I know before Grab"; hai là mua thẻ bóng đá và thẻ Vinamilk để sưu tầm — "quyền lực của trẻ con nằm ở việc có nhiều đồ hơn bạn"; ba là kem chanh vì lớp không có điều hòa, và kem son — thỏi kem nhìn như son môi, vặn lên rồi liếm. Tiệm thuê truyện biến mất khi LTK lên lớp 4-5. Kem chanh biến mất khi lớp có điều hòa.',
           ambient: 'wind',
+          audioSrc: '/audio/trang-an-vat.mp3',
           x: 28,
           y: 58,
         },
@@ -42,6 +268,7 @@ const TRANG: Story = {
           voiceNote:
             'Lớp tiểu học Thành Công A không có điều hòa đến tận lớp ba lớp bốn. Cửa sổ luôn mở — tiếng từ bên ngoài tràn vào. LTK nhớ các thầy cô hay có drama: lớp này ồn ảnh hưởng lớp bên, thầy bên đó sang mắng. Tiếng trống trường đặc biệt nhiều cảm xúc — "đặc biệt là thấy vội, thấy sợ vì đến muộn, đặc biệt là khi đang ở cổng trường ăn vặt." Bây giờ đóng cửa bật máy lạnh, tiếng đó không còn.',
           ambient: 'wind',
+          audioSrc: '/audio/trang-tieng-trong.mp3',
           x: 68,
           y: 42,
         },
@@ -53,9 +280,11 @@ const TRANG: Story = {
       sublabel: 'Cửa sau lách xe vào, bê tông gập ghềnh — con người Thành Công chả ai đi cửa chính',
       bgGradient: 'linear-gradient(160deg, #c8dde8 0%, #a3c4d5 40%, #7eaabf 100%)',
       bgTone: '#5a7a8a',
-      bgImage: '/images/ho-thanh-cong.jpg',
-      bgStreetView:
-        'https://www.google.com/maps/embed?pb=!4v1780816975400!6m8!1m7!1sCAoSFkNJSE0wb2dLRUlDQWdJRFdzS0RJYVE.!2m2!1d21.01870719079754!2d105.8130115710941!3f69.82684308992756!4f-2.586612419766098!5f0.7820865974627469',
+      bgTourNodes: applyYaws(makeNodes(ltk_ho_thanh_cong, [
+        { idx: 2,  clueId: 'trang-xe-dap',      yaw: 60,  pitch: -20},
+        { idx: 7,  clueId: 'trang-nhac-aerobic', yaw: -45, pitch: -20},
+        { idx: 12, clueId: 'trang-khu-tap-the',  yaw: 30,  pitch: -20},
+      ], 'htc'), HTC_YAWS),
       clues: [
         {
           id: 'trang-xe-dap',
@@ -66,6 +295,7 @@ const TRANG: Story = {
           voiceNote:
             'Cuối tuần ông bà dẫn LTK ra hồ tập xe đạp. Hồi đó hồ bê tông gập ghềnh, không phải lát đá như bây giờ. Nhiều chó, mùi tanh vì cá chết nổi lềnh bềnh. LTK không thích vì sợ ngã trước mặt người — "không thích tập ở cái nơi mà người ta nhìn thấy mình ngã." Thích tập ở sân sau nhà bà ngoại hơn. Và vào trong hồ không phải qua cửa chính — "con người Thành Công chả bao giờ đi cửa chính." Họ đi cửa sau, một cái cửa không bao giờ mở ra hết, phải lách xe vào. Cái cửa đó đã bị tháo theo chính sách dỡ hàng rào công viên.',
           ambient: 'cicadas',
+          audioSrc: '/audio/trang-xe-dap.mp3',
           x: 45,
           y: 62,
         },
@@ -78,6 +308,7 @@ const TRANG: Story = {
           voiceNote:
             'Mỗi chiều ở hồ Thành Công, loa cộng đồng bật nhạc aerobic. Các cô các bà tập đều đặn, bọn trẻ đứng nhìn. Tiếng nhạc vang khắp khu — ai ở đây cũng nhớ. Bây giờ không còn.',
           ambient: 'aerobic',
+          audioSrc: '/audio/trang-nhac-aerobic.mp3',
           x: 72,
           y: 38,
         },
@@ -90,6 +321,7 @@ const TRANG: Story = {
           voiceNote:
             'LTK tiếc không chỉ vì những âm thanh hồi bé. Khu Thành Công là một mô hình sống riêng: cả phố là khu tập thể, mọi người biết tên nhau, sinh hoạt chỉ quanh vài con phố nhỏ. Khi giải tỏa, không chỉ nhà mất đi — cái cách người ta sống cùng nhau cũng mất theo. Bây giờ sống chung cư, không ai biết tên hàng xóm.',
           ambient: 'wind',
+          audioSrc: '/audio/trang-khu-tap-the.mp3',
           x: 30,
           y: 35,
         },
@@ -101,30 +333,12 @@ const TRANG: Story = {
       sublabel: 'Màn hình CRT to đùng, tiếng Audition "cọc cọc cọc" — và nhà mình mở quán',
       bgGradient: 'linear-gradient(160deg, #2a1f3d 0%, #3d2f5c 50%, #1a1228 100%)',
       bgTone: '#1a1228',
-      bgImage: '/images/quan-net.jpg',
-      // Real DJI Osmo 360 shots — 3 test nodes from 09/06 shoot
-      bgTourNodes: [
-        {
-          id: 'node-01',
-          panorama: '/tours/ltk-test/shot-01.jpg',
-          clueAnchors: [{ clueId: 'trang-tieng-chui', yaw: 30, pitch: -5 }],
-          navAnchors: [{ toNodeId: 'node-02', yaw: 0, pitch: -8, label: 'Tiếp tục' }],
-        },
-        {
-          id: 'node-02',
-          panorama: '/tours/ltk-test/shot-02.jpg',
-          clueAnchors: [{ clueId: 'trang-choi-net', yaw: -40, pitch: 0 }],
-          navAnchors: [
-            { toNodeId: 'node-01', yaw: 180, pitch: -8, label: 'Quay lại' },
-            { toNodeId: 'node-03', yaw: 0, pitch: -8, label: 'Tiếp tục' },
-          ],
-        },
-        {
-          id: 'node-03',
-          panorama: '/tours/ltk-test/shot-03.jpg',
-          navAnchors: [{ toNodeId: 'node-02', yaw: 180, pitch: -8, label: 'Quay lại' }],
-        },
-      ],
+      bgTourNodes: applyYaws(makeNodes(ltk_quan_net, [
+        { idx: 14, clueId: 'trang-tieng-chui', yaw: 45,  pitch: -20 },
+        { idx: 15, clueId: 'trang-choi-net',   yaw: -30, pitch: -20 },
+      ], 'qn', [
+        { idx: 16, scanUrl: '/scans/quan-net.glb', label: 'Xem quán net 3D', yaw: 0, pitch: -10 },
+      ]), QN_YAWS),
       clues: [
         {
           id: 'trang-tieng-chui',
@@ -135,6 +349,7 @@ const TRANG: Story = {
           voiceNote:
             'Quán net nhà LTK: full suit gồm màn hình CRT rất lồi và cục máy to đùng phía sau — "cái cây càng to thì cái màn hình càng bé." Con chuột, bàn phím, tai nghe, webcam. Hai âm thanh duy nhất: tiếng chửi khi thua game và tiếng gõ Audition "cọc cọc cọc cọc" — "rất là chất nghệ." Bố chỉ cho chơi một tiếng rồi căn giờ đón về ăn cơm.',
           ambient: 'keyboard',
+          audioSrc: '/audio/trang-tieng-chui.mp3',
           x: 35,
           y: 55,
         },
@@ -147,6 +362,7 @@ const TRANG: Story = {
           voiceNote:
             'Điều LTK không nói thẳng từ đầu: tan học không phải đến quán net — là về nhà. Nhà mở quán net. Đó là lý do mỗi ngày tan học đều muốn về ngay — "anh rất hào hứng về nhà chơi điện tử." Và câu kết luận cho cả ngày: trường không có điều hòa, hồ bê tông gập ghềnh nhiều chó mùi tanh — nhưng nhà thì có điều hòa. "Quán net còn có điều hòa."',
           ambient: 'keyboard',
+          audioSrc: '/audio/trang-choi-net.mp3',
           x: 62,
           y: 48,
         },
@@ -166,11 +382,7 @@ const TRANG: Story = {
   cluesNeededToUnlock: 4,
 };
 
-// Story B — Essy / Ngõ 267 Hoàng Hoa Thám
-// Narrator: Essy. Address: số 17, 267/33 Hoàng Hoa Thám.
-// Two identified losses: (1) tri thức địa phương — cách navigate ngõ mà chỉ người ở đây biết,
-// (2) không gian xanh — cây + ngõ ngách + cà phê sân vườn, sẽ biến mất khi mở đường.
-// Recording is exploratory (walk-around), not chronological — puzzle is spatial not time-based.
+// ─── Story B: Essy / Ngõ 267 Hoàng Hoa Thám ──────────────────────────────────
 const ESSY: Story = {
   id: 'essy',
   narrator: 'Essy',
@@ -184,9 +396,13 @@ const ESSY: Story = {
       sublabel: 'Số 17, 267/33 Hoàng Hoa Thám — rẽ ba bốn lần mới vào được, Grab không bao giờ tìm được',
       bgGradient: 'linear-gradient(160deg, #d4c5a9 0%, #c5b08a 40%, #b09060 100%)',
       bgTone: '#6b5a3e',
-      bgImage: '/images/nha-ngo-alley.jpg',
-      bgStreetView:
-        'https://www.google.com/maps/embed?pb=!4v1780817061285!6m8!1m7!1s6dL2vzb0aYEtr1gNc0a2bw!2m2!1d21.01342417728203!2d105.8361921928282!3f51.4559087277337!4f-12.848211852718478!5f0.7820865974627469',
+      bgTourNodes: applyYaws(makeNodes(essy_duong_vao_nha, [
+        { idx: 2, clueId: 'essy-ngo-kho',      yaw:  20, pitch: -20 },
+        { idx: 5, clueId: 'essy-cay-xanh-ngo', yaw: -20, pitch: -20 },
+        { idx: 8, clueId: 'essy-ngap-mua',     yaw:  15, pitch: -20 },
+      ], 'es-ng', [
+        { idx: 10, scanUrl: '/scans/nha-essy.glb', label: 'Xem nhà Essy 3D', yaw: 0, pitch: -10 },
+      ]), ES_NG_YAWS),
       clues: [
         {
           id: 'essy-ngo-kho',
@@ -197,6 +413,7 @@ const ESSY: Story = {
           voiceNote:
             'Nhà Essy ở số 17, 267/33 Hoàng Hoa Thám — phải rẽ ba bốn lần từ đường chính mới vào được. Giữa Hoàng Hoa Thám, Văn Cao và Đội Cấn, Essy biết hơn năm đường vào nhà. Map không chỉ được chính xác — "phải phụ thuộc vào tri thức địa phương của những người sống ở đây lâu năm." Grab, Be, Xanh SM gần như không ai tự tìm được — Essy luôn phải ra đón hoặc chỉ đường qua điện thoại. Khi con đường mới mở, sẽ không ai cần navigate nữa. "Những cái ký ức của mình và những cái hiểu biết của mình về cái khu này sẽ không có cái tác dụng gì nữa."',
           ambient: 'wind',
+          audioSrc: '/audio/essy-ngo-kho.mp3',
           x: 40,
           y: 60,
         },
@@ -209,6 +426,7 @@ const ESSY: Story = {
           voiceNote:
             'Sáu bảy nhà trong một dãy biệt lập, gạch riêng, chia nhau một khoảng sân trồng cây chanh và hoa nhài. Essy gọi đây là một trong hai thứ sẽ mất nhất: không gian xanh giảm nhiệt, những "third place" mà cả khu đang có nhờ ngõ nhiều cây và cà phê sân vườn. Khi mở đường, cây sẽ bị xuống. "Những cái không gian đó ở trong thành phố Hà Nội hiếm rồi. Bây giờ khi giải tỏa hết thì mình còn mất nhiều hơn nữa."',
           ambient: 'wind',
+          audioSrc: '/audio/essy-cay-xanh-ngo.mp3',
           x: 25,
           y: 38,
         },
@@ -226,46 +444,16 @@ const ESSY: Story = {
       ],
     },
     {
-      id: 'cho-tam',
-      label: 'Chợ tạm',
-      sublabel: 'Chợ tự phát ngõ 267 — người bán sống ở đó, mẹ lấy rau trả tiền sau',
-      bgGradient: 'linear-gradient(160deg, #e8c87e 0%, #d4a84b 40%, #c08a2a 100%)',
-      bgTone: '#8a6020',
-      bgImage: '/images/cho-tam.jpg',
-      clues: [
-        {
-          id: 'essy-cho-sang',
-          type: 'routine',
-          label: 'Chợ họp không cần ai tổ chức',
-          quote:
-            '"Mẹ mình thường ra lấy rau — không cần phải trả tiền luôn. Chỉ bảo: để mẹ Thanh chuyển sau."',
-          voiceNote:
-            'Chợ tự phát ở ngõ 267 Hoàng Hoa Thám: không tên, không biển hiệu, họp tự nhiên mỗi sáng. Người bán sống ngay tại đó — rau có, thịt có, cá có. Mẹ Essy lấy rau không cần trả tiền ngay — chuyển khoản sau. "Họ rất tin tưởng nhau. It\'s like, cả một cái gia đình." Đây là cái chợ mà những người ở gần Hoàng Hoa Thám và trong ngõ nhà Essy đều mua. Không thể copy sang chỗ mới.',
-          ambient: 'wind',
-          x: 50,
-          y: 55,
-        },
-        {
-          id: 'essy-tieng-cho',
-          type: 'sound',
-          label: 'Tiếng chợ thay đồng hồ báo thức',
-          quote:
-            '"Tiếng trả giá, tiếng rổ chén lanh canh — đó là buổi sáng. Khi chợ tan, biết là đã trưa."',
-          voiceNote:
-            'Không cần đặt đồng hồ. Tiếng chợ sáng là nhịp thời gian của cả khu — tiếng người, tiếng xe máy dừng, tiếng chén bát. Essy nhớ khi còn ngủ cũng nghe được chợ từ trong nhà.',
-          ambient: 'kids-laughter',
-          x: 73,
-          y: 40,
-        },
-      ],
-    },
-    {
       id: 'gieng-khu-choi',
       label: 'Giếng / Khu vui chơi',
       sublabel: 'Con đường chỉ người trong khu mới biết — dẫn ra giếng cũ nay thành sân tập thể',
       bgGradient: 'linear-gradient(160deg, #a8c5a0 0%, #7da87a 40%, #5a8a56 100%)',
       bgTone: '#3a6a36',
-      bgImage: '/images/gieng-khu-choi.jpg',
+      bgTourNodes: makeNodes(essy_playground, [
+        { idx: 0, clueId: 'essy-tre-con-gieng', yaw: 45,  pitch: -20},
+        { idx: 1, clueId: 'essy-gieng-mat',     yaw: -45, pitch: -20},
+        { idx: 2, clueId: 'essy-di-tich',       yaw: 30,  pitch: -20},
+      ], 'es-gk'),
       clues: [
         {
           id: 'essy-tre-con-gieng',
@@ -276,6 +464,7 @@ const ESSY: Story = {
           voiceNote:
             'Từ hướng Văn Cao, có một con đường nhỏ mà chỉ người trong khu mới biết — dẫn ra cái giếng cũ, nay được sửa thành khu tập thể dục. Bên trong ngõ có rất nhiều cây, tòa nhà xung quanh che nắng — mát hơn ngoài đường rất nhiều. Xung quanh giếng cũng có một cái chợ tự phát nhỏ nữa cho dân ở gần Văn Cao. Không có ai ngoài khu biết đến chỗ này.',
           ambient: 'kids-laughter',
+          audioSrc: '/audio/essy-tre-con-gieng.mp3',
           x: 42,
           y: 58,
         },
@@ -288,6 +477,7 @@ const ESSY: Story = {
           voiceNote:
             'Essy kể điều làm nhiều người ngạc nhiên: trong ngõ 267 Hoàng Hoa Thám có một ngôi chùa — di tích quốc gia. Rất ít người Hà Nội biết. Và trong kế hoạch giải tỏa, di tích đó "rất sát với mặt đường hoặc là thành mặt đường." Một di tích quốc gia nằm trong cái khu mà Grab không bao giờ tìm được.',
           ambient: 'wind',
+          audioSrc: '/audio/essy-gieng-mat.mp3',
           x: 68,
           y: 35,
         },
@@ -300,17 +490,17 @@ const ESSY: Story = {
           voiceNote:
             'Khu ngõ 267 gần đây trẻ hóa nhiều — ramen, cà phê học bài, cà phê sân vườn. Lý do nổi tiếng: rất nhiều cây, tòa nhà xung quanh che nắng — không gian xanh hiếm có giữa Hà Nội. Khi mở đường, những quán đó thành đường. Cây sẽ bị xuống. "Mình rất tiếc vì những cái không gian third place hoặc là những cái không gian giảm nhiệt như thế thực ra ở trong thành phố Hà Nội hiếm rồi."',
           ambient: 'plucks',
+          audioSrc: '/audio/essy-di-tich.mp3',
           x: 25,
           y: 48,
         },
       ],
     },
   ],
-  routeClueIds: ['essy-ngo-kho', 'essy-cho-sang', 'essy-tre-con-gieng'],
-  routeSlotLabels: ['Bắt đầu từ ngõ...', 'Đi qua chợ...', 'Đến giếng...'],
+  routeClueIds: ['essy-ngo-kho', 'essy-cay-xanh-ngo', 'essy-tre-con-gieng'],
+  routeSlotLabels: ['Từ cổng ngõ...', 'Qua khoảng xanh...', 'Đến giếng...'],
   cannotBeMoved: [
     'Cái bản đồ trong đầu — năm cách vào nhà từ ba con đường khác nhau, chỉ người ở đây mới biết.',
-    'Tín chấp ở chợ tạm: "Để mẹ Thanh chuyển sau." Người bán người mua tin nhau như hàng xóm, vì họ là hàng xóm.',
     'Sân trong dãy nhà biệt lập — gạch riêng, cây chanh, hoa nhài, mát lạ giữa thành phố.',
     'Con đường ra giếng mà không ai không phải người khu này biết đến.',
     'Di tích quốc gia trong ngõ mà Grab không tìm được — sắp thành mặt đường.',
@@ -319,11 +509,7 @@ const ESSY: Story = {
   cluesNeededToUnlock: 4,
 };
 
-// Story C — Trang / Khu Thái Thịnh (cụ thể là khu Trung Liệt)
-// Narrator: Trang. Recording: solo, không có interviewer.
-// Route: học thêm trước lớp 1 → đi qua sân chơi tập thể (chưa bao giờ được vào) → ăn ốc với mẹ
-// Narrative arc: lưu trữ ký ức = hành trình tìm lại ký ức đã quên.
-// "Song song với việc lưu giữ thì mình cũng đã tìm ra những ký ức mình quên mất."
+// ─── Story C: Trang / Khu Trung Liệt ─────────────────────────────────────────
 const TRANG_THAI_THINH: Story = {
   id: 'thai-thinh',
   narrator: 'Trang',
@@ -337,8 +523,10 @@ const TRANG_THAI_THINH: Story = {
       sublabel: 'Gần cửa hàng mẹ — chiều 4-5 giờ mẹ dẫn đi bộ ra học, phố không một chiếc ô tô',
       bgGradient: 'linear-gradient(160deg, #f0e4c8 0%, #d9c49a 40%, #c4a870 100%)',
       bgTone: '#c4a870',
-      bgStreetView:
-        'https://www.google.com/maps/embed?pb=!4v1780820583291!6m8!1m7!1snheqPSx9wL8wlbrOwbyaPA!2m2!1d21.00703573799342!2d105.8209283929959!3f95.24497199044959!4f8.04312926871205!5f0.7820865974627469',
+      bgTourNodes: applyYaws(makeNodes(trang_di_hoc_them, [
+        { idx: 1, clueId: 'thai-thinh-hoc-them',       yaw: 45,  pitch: -20},
+        { idx: 4, clueId: 'thai-thinh-pho-khong-xe',   yaw: -30, pitch: -20},
+      ], 'tt-hoc'), TT_HOC_YAWS),
       clues: [
         {
           id: 'thai-thinh-hoc-them',
@@ -349,6 +537,7 @@ const TRANG_THAI_THINH: Story = {
           voiceNote:
             'Nhà Trang làm cửa hàng ở khu Trung Liệt — không phải nhà ở. Mẹ hay đưa Trang sang đó ăn trưa rồi từ đó đi học thêm trước lớp một. Con phố hồi đó rất vắng — lần cuối Trang nhớ thấy phố đó, chưa bao giờ có ô tô. Đường Nguyễn Văn Tuyết hồi đó còn là cái mương — không có xe nào đi qua. Gần đây Trang đi làm về qua đó, thấy một chiếc ô tô đỗ — "đấy là một cái cảm xúc khá là lạ." Bây giờ đường mương đó thành phố ẩm thực, tối có tiếng bar sàn.',
           ambient: 'plucks',
+          audioSrc: '/audio/thai-thinh-hoc-them.mp3',
           x: 38,
           y: 55,
         },
@@ -361,6 +550,7 @@ const TRANG_THAI_THINH: Story = {
           voiceNote:
             'Đường Nguyễn Văn Tuyết từng là mương thoát nước — không xe, không tiếng động. Sau khi lấp mương mở đường, nó thành phố ẩm thực đông đúc, "đến buổi tối thì nó sẽ có tiếng bar sàn xập xình." Trang gọi đây là cái cảm xúc lạ: cùng một chỗ, cách nhau mười mấy năm, xe máy đã được thay bằng ô tô.',
           ambient: 'wind',
+          audioSrc: '/audio/thai-thinh-pho-khong-xe.mp3',
           x: 65,
           y: 42,
         },
@@ -372,8 +562,10 @@ const TRANG_THAI_THINH: Story = {
       sublabel: 'Đi qua vô số lần — chưa bao giờ được vào chơi một lần nào',
       bgGradient: 'linear-gradient(160deg, #b8d4b0 0%, #8aba88 40%, #6a9866 100%)',
       bgTone: '#6a9866',
-      bgStreetView:
-        'https://www.google.com/maps/embed?pb=!4v1780820391133!6m8!1m7!1sCAoSFENJSE0wb2dLRUlDQWdJRHFoWWNy!2m2!1d21.00737043585037!2d105.8205676505939!3f24.670416281318587!4f-21.52419316897445!5f0.7820865974627469',
+      bgTourNodes: applyYaws(makeNodes(trang_playground, [
+        { idx: 2, clueId: 'thai-thinh-san-choi',   yaw: 45,  pitch: -20},
+        { idx: 4, clueId: 'thai-thinh-tieng-cuoi', yaw: -45, pitch: -20}, // was idx 5, shot-06 shifted after deletions
+      ], 'tt-pg'), TT_PG_YAWS),
       clues: [
         {
           id: 'thai-thinh-san-choi',
@@ -384,6 +576,7 @@ const TRANG_THAI_THINH: Story = {
           voiceNote:
             'Trên đường đi học thêm mỗi buổi chiều, Trang đi qua sân chơi khu tập thể. Thấy các bạn chơi, nhưng không được dừng lại — luôn phải đến cửa hàng, luôn phải đi học. "Chỉ đơn giản là một đứa trẻ đang rất là muốn đi chơi và nó bị bắt đi học thôi. Nó là cái cảm giác mình không bao giờ trải nghiệm lại được nữa vì mình đã lớn rồi." Nếu khu bị giải tỏa, Trang sẽ không còn cái trigger để đi qua và nhớ lại cảm giác đó nữa.',
           ambient: 'kids-laughter',
+          audioSrc: '/audio/thai-thinh-san-choi.mp3',
           x: 50,
           y: 58,
         },
@@ -396,6 +589,7 @@ const TRANG_THAI_THINH: Story = {
           voiceNote:
             'Trang không gọi đây là ghen tị. Chỉ là cái cảm giác của một đứa năm tuổi muốn được ở lại chơi, muốn lăn ra ăn vạ để ở lại. Cái cảm giác đó không biến mất — đến bây giờ khi đi qua phố đó, nó vẫn ùa về. Khi phố bị giải tỏa, cả cái trigger đó cũng mất theo.',
           ambient: 'kids-laughter',
+          audioSrc: '/audio/thai-thinh-tieng-cuoi.mp3',
           x: 72,
           y: 40,
         },
@@ -407,8 +601,10 @@ const TRANG_THAI_THINH: Story = {
       sublabel: 'Mẹ dẫn đi ăn để an ủi — và lần đầu tiên Trang biết violin là gì',
       bgGradient: 'linear-gradient(160deg, #e8c890 0%, #d4a060 40%, #b87840 100%)',
       bgTone: '#c48040',
-      bgStreetView:
-        'https://www.google.com/maps/embed?pb=!4v1780820625916!6m8!1m7!1sBlkVKUqklBllqb97pCc7CA!2m2!1d21.01136206591828!2d105.820488192404!3f132.81658590355357!4f-8.126131387858834!5f0.7820865974627469',
+      bgTourNodes: applyYaws(makeNodes(trang_quan_oc, [
+        { idx: 1, clueId: 'thai-thinh-vio-oc',     yaw: 45,  pitch: -20},
+        { idx: 3, clueId: 'thai-thinh-di-voi-me',  yaw: -30, pitch: -20}, // was idx 2, shifted by inserted shot
+      ], 'tt-oc'), TT_OC_YAWS),
       clues: [
         {
           id: 'thai-thinh-vio-oc',
@@ -419,6 +615,7 @@ const TRANG_THAI_THINH: Story = {
           voiceNote:
             'Hôm đó Trang dùng tẩy với bút máy — vi phạm nội quy, cô giáo có thước to đánh vào tay học sinh. Trang khóc cả đường về. Mẹ dẫn đi ăn ốc để an ủi — và ở quán đó ông chủ đánh violin. Trang nghĩ violin có thể chơi ở mọi nơi, kể cả quán ốc. Lớn lên mới biết violin là nhạc cụ của dàn giao hưởng. "Đối với mình bây giờ violin vẫn là cái gì đó khá là gần gũi — bởi vì lần đầu tiên mình thấy violin là khi mình nghe nó ở quán ốc."',
           ambient: 'violin',
+          audioSrc: '/audio/thai-thinh-vio-oc.mp3',
           x: 45,
           y: 55,
         },
@@ -431,6 +628,7 @@ const TRANG_THAI_THINH: Story = {
           voiceNote:
             'Hồi bé quán ốc đó chỉ có cư dân trong khu biết. "Cái lối sống ngày xưa rất mang tính làng xóm — riêng một khu vực sống với nhau thì biết về nhau thôi." Bây giờ quán nổi trên TikTok. Trang không biết quán có nằm trong diện giải tỏa không, nhưng nếu có — "sẽ không còn ai cảm nhận được violin giống như mình đã cảm nhận violin nữa."',
           ambient: 'violin',
+          audioSrc: '/audio/thai-thinh-di-voi-me.mp3',
           x: 65,
           y: 45,
         },
