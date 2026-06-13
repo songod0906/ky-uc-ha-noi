@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { Story } from '../types';
-import { MemorySpace } from './MemorySpace';
+import { Story, MemorySpace } from '../types';
+import { MemorySpace as MemorySpaceComponent } from './MemorySpace';
 import { MovementControls } from './MovementControls';
 import { NotebookInventory } from './NotebookInventory';
 import { RouteAssembly } from './RouteAssembly';
@@ -107,12 +107,28 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, singleSpaceMode = 
   const [notebookOpen, setNotebookOpen] = useState(false);
   const [exploreTutorialDone, setExploreTutorialDone] = useState(false);
   const [assembleTutorialDone, setAssembleTutorialDone] = useState(false);
-  // Which space the fortune folder is hinting at (subtle glow on the space chip)
   const [hintedSpaceId, setHintedSpaceId] = useState<string | undefined>(undefined);
+  const oralAudioRef = useRef<HTMLAudioElement | null>(null);
+  const [oralAudioActive, setOralAudioActive] = useState(false);
 
-  const hasFortune = false; // temporarily disabled for nav testing
+  const hasFortune = false;
   const narratorColor = NARRATOR_COLOR[story.narrator] ?? '#C8B89A';
   const [clueModalOpen, setClueModalOpen] = useState(false);
+
+  useEffect(() => () => { oralAudioRef.current?.pause(); }, []);
+
+  const startOralAudio = (space: MemorySpace) => {
+    oralAudioRef.current?.pause();
+    oralAudioRef.current = null;
+    setOralAudioActive(false);
+    if (!space.audioSegment) return;
+    const el = new Audio(space.audioSegment.src);
+    el.currentTime = space.audioSegment.startSec;
+    el.volume = 0.75;
+    el.play().catch(() => {});
+    oralAudioRef.current = el;
+    setOralAudioActive(true);
+  };
 
   const activeSpace = story.spaces[spaceIndex];
   const totalClues = singleSpaceMode
@@ -130,9 +146,8 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, singleSpaceMode = 
   };
 
   const handleMoveToSpace = (idx: number) => {
-    if (singleSpaceMode) return; // locked to one space
+    if (singleSpaceMode) return;
     AudioSynth.playSnap();
-    AudioSynth.startAmbient('wind');
     setSpaceIndex(idx);
   };
 
@@ -144,9 +159,8 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, singleSpaceMode = 
   };
 
   const handleStartAssembly = () => {
-    AudioSynth.stopAmbient();
+    oralAudioRef.current?.pause();
     AudioSynth.playGuitarArpeggio();
-    // In singleSpaceMode there is no cross-space puzzle — go straight to case file
     setPhase(singleSpaceMode ? 'ending' : 'assemble');
   };
 
@@ -158,16 +172,14 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, singleSpaceMode = 
     setPhase('explore');
     setSpaceIndex(0);
     setCollectedIds([]);
-    AudioSynth.startAmbient('wind');
   };
 
   if (phase === 'dossier') {
     return (
       <div className="h-screen flex flex-col relative bg-[#0a0806] overflow-hidden">
-        {/* Minimal header so user can still bail */}
         <header className="relative z-30 flex items-center px-5 py-3 bg-black/30 border-b border-amber-200/5">
           <button
-            onClick={() => { AudioSynth.stopAmbient(); onBack(); }}
+            onClick={onBack}
             className="flex items-center gap-1.5 text-amber-200/30 hover:text-amber-200/60 font-serif text-sm transition-colors"
           >
             <ChevronLeft className="w-4 h-4" />
@@ -179,7 +191,7 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, singleSpaceMode = 
           space={activeSpace}
           narratorColor={narratorColor}
           onEnter={() => {
-            AudioSynth.startAmbient('wind');
+            startOralAudio(activeSpace); // must be inside click handler for autoplay
             setPhase('explore');
           }}
         />
@@ -224,7 +236,7 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, singleSpaceMode = 
       {/* Top HUD */}
       <header className="relative z-30 flex items-center justify-between px-5 py-3 bg-white/50 backdrop-blur-sm border-b border-muctim/8 shadow-xs">
         <button
-          onClick={() => { AudioSynth.stopAmbient(); onBack(); }}
+          onClick={() => { oralAudioRef.current?.pause(); onBack(); }}
           className="flex items-center gap-1.5 text-muctim-faded hover:text-muctim font-serif text-sm transition-colors"
         >
           <ChevronLeft className="w-4 h-4" />
@@ -300,7 +312,7 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, singleSpaceMode = 
           {/* Scene panel */}
           <div className="flex-1 min-h-0 w-full relative">
             <AnimatePresence mode="wait">
-              <MemorySpace
+              <MemorySpaceComponent
                 key={story.spaces[spaceIndex].id}
                 space={story.spaces[spaceIndex]}
                 story={story}
@@ -309,10 +321,10 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, singleSpaceMode = 
               />
             </AnimatePresence>
             {/* Oral history floating player */}
-            {activeSpace.audioSegment && (
+            {oralAudioActive && oralAudioRef.current && (
               <OralHistoryPlayer
                 key={activeSpace.id}
-                segment={activeSpace.audioSegment}
+                audioEl={oralAudioRef.current}
                 narratorName={story.narrator}
                 narratorColor={narratorColor}
                 paused={clueModalOpen}
