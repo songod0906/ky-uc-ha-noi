@@ -109,8 +109,8 @@ export function MemorySpace({ space, story, collectedIds, onCollect, onClueModal
       </div>
 
 
-      {/* Video clip overlay — floating screen (e.g. quán net gaming footage) */}
-      {space.videoClip && (
+      {/* Video clip overlay — only appears after the first clue is collected */}
+      {space.videoClip && space.clues.some(c => collectedIds.includes(c.id)) && (
         <AnimatePresence>
           {!videoExpanded ? (
             <motion.button

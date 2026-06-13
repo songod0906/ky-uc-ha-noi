@@ -6,6 +6,7 @@ import { MapIntroView } from './components/MapIntroView';
 import { MemoryRouteGame } from './components/MemoryRouteGame';
 import { ScanViewer } from './components/ScanViewer';
 import { PrologueViewer } from './components/PrologueViewer';
+import { AudioManager } from './utils/AudioManager';
 
 // ?scan=<url> in the URL shows the 3D scan viewer directly (dev testing only)
 const scanUrl = new URLSearchParams(window.location.search).get('scan');
@@ -32,6 +33,7 @@ export default function App() {
   };
 
   const handleBackToSelect = () => {
+    AudioManager.stop(); // always kill audio before leaving a space
     setActiveStory(null);
     setActiveSpaceIdx(0);
     setPhase('select');

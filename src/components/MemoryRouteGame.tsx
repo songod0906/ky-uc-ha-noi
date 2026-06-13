@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { AnimatePresence } from 'motion/react';
-import { Story, MemorySpace } from '../types';
+import { Story } from '../types';
 import { MemorySpace as MemorySpaceComponent } from './MemorySpace';
 import { EndingCannotBeMoved } from './EndingCannotBeMoved';
 import { TutorialOverlay, TutorialStep } from './TutorialOverlay';
 import { AudioSynth } from '../utils/AudioSynth';
+import { AudioManager } from '../utils/AudioManager';
 import { ChevronLeft, CheckSquare } from 'lucide-react';
 import { SpaceDossier } from './SpaceDossier';
 import { OralHistoryPlayer } from './OralHistoryPlayer';
@@ -47,17 +48,12 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, onBack }: MemoryRo
   const narratorColor = NARRATOR_COLOR[story.narrator] ?? '#C8B89A';
   const activeSpace = story.spaces[spaceIndex];
 
-  useEffect(() => () => { oralAudioRef.current?.pause(); }, []);
+  // Belt-and-suspenders: also stop via ref cleanup if component unmounts unexpectedly
+  useEffect(() => () => { AudioManager.stop(); }, []);
 
-  const startOralAudio = (space: MemorySpace) => {
-    oralAudioRef.current?.pause();
-    oralAudioRef.current = null;
-    setOralAudioActive(false);
+  const startOralAudio = (space: Story['spaces'][number]) => {
     if (!space.audioSegment) return;
-    const el = new Audio(space.audioSegment.src);
-    el.currentTime = space.audioSegment.startSec;
-    el.volume = 0.75;
-    el.play().catch(() => {});
+    const el = AudioManager.play(space.audioSegment.src, space.audioSegment.startSec);
     oralAudioRef.current = el;
     setOralAudioActive(true);
   };
@@ -70,13 +66,15 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, onBack }: MemoryRo
   };
 
   const handleFinish = () => {
-    oralAudioRef.current?.pause();
+    AudioManager.stop();
+    oralAudioRef.current = null;
+    setOralAudioActive(false);
     setPhase('ending');
   };
 
-  // Restart = back to cassette tape (replay oral history from beginning)
+  // Restart = back to cassette tape so oral history replays from the start
   const handleRestart = () => {
-    oralAudioRef.current?.pause();
+    AudioManager.stop();
     oralAudioRef.current = null;
     setOralAudioActive(false);
     setCollectedIds([]);
@@ -89,7 +87,7 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, onBack }: MemoryRo
       <div className="h-screen flex flex-col relative bg-[#0a0806] overflow-hidden">
         <header className="relative z-30 flex items-center px-5 py-3 bg-black/30 border-b border-amber-200/5">
           <button
-            onClick={onBack}
+            onClick={() => { AudioManager.stop(); onBack(); }}
             className="flex items-center gap-1.5 text-amber-200/30 hover:text-amber-200/60 font-serif text-sm transition-colors"
           >
             <ChevronLeft className="w-4 h-4" />
@@ -133,7 +131,7 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, onBack }: MemoryRo
       {/* Top header */}
       <header className="relative z-30 flex items-center justify-between px-5 py-3 bg-white/50 backdrop-blur-sm border-b border-muctim/8 shadow-xs">
         <button
-          onClick={() => { oralAudioRef.current?.pause(); onBack(); }}
+          onClick={() => { AudioManager.stop(); onBack(); }}
           className="flex items-center gap-1.5 text-muctim-faded hover:text-muctim font-serif text-sm transition-colors"
         >
           <ChevronLeft className="w-4 h-4" />
