@@ -25,7 +25,6 @@ export function ClueObject({ clue, collected, onCollect }: ClueObjectProps) {
   const handleMarkerClick = () => {
     if (!open) {
       AudioSynth.playSnap();
-      AudioSynth.startAmbient(clue.ambient);
     }
     setOpen(true);
   };
@@ -42,14 +41,7 @@ export function ClueObject({ clue, collected, onCollect }: ClueObjectProps) {
   };
 
   const handleAudio = () => {
-    // Placeholder: toggle ambient synth as proxy for oral history audio
-    if (audioPlaying) {
-      AudioSynth.stopAmbient();
-      setAudioPlaying(false);
-    } else {
-      AudioSynth.startAmbient(clue.ambient);
-      setAudioPlaying(true);
-    }
+    setAudioPlaying((p) => !p);
   };
 
   return (

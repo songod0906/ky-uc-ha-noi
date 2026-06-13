@@ -9,7 +9,6 @@ interface GameStartProps {
 export function GameStart({ onBegin }: GameStartProps) {
   const handleBegin = () => {
     AudioSynth.playGuitarArpeggio();
-    AudioSynth.startAmbient('wind');
     onBegin();
   };
 

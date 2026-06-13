@@ -14,8 +14,6 @@ interface EndingCannotBeMovedProps {
 export function EndingCannotBeMoved({ story, onRestart, onChooseOther }: EndingCannotBeMovedProps) {
   useEffect(() => {
     AudioSynth.stopAmbient();
-    AudioSynth.startAmbient('wind');
-    return () => AudioSynth.stopAmbient();
   }, []);
 
   return (
