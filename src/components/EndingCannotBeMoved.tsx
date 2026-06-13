@@ -96,13 +96,13 @@ export function EndingCannotBeMoved({ story, onRestart, onChooseOther }: EndingC
               className="flex items-center gap-2 px-6 py-2.5 rounded-2xl border border-muctim/20 bg-white/70 font-serif text-sm text-muctim hover:bg-white transition-all shadow-sm"
             >
               <RotateCcw className="w-4 h-4" />
-              Gấp lại lần nữa
+              Nghe lại
             </button>
             <button
               onClick={onChooseOther}
               className="flex items-center gap-2 px-6 py-2.5 rounded-2xl bg-muctim text-white font-serif text-sm hover:bg-muctim/80 transition-all shadow"
             >
-              Câu chuyện khác
+              Về bản đồ
             </button>
           </div>
 

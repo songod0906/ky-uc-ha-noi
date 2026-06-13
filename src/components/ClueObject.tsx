@@ -16,28 +16,31 @@ interface ClueObjectProps {
   clue: Clue;
   collected: boolean;
   onCollect: (clueId: string) => void;
+  onModalChange?: (open: boolean) => void;
 }
 
-export function ClueObject({ clue, collected, onCollect }: ClueObjectProps) {
+export function ClueObject({ clue, collected, onCollect, onModalChange }: ClueObjectProps) {
   const [open, setOpen] = useState(false);
   const [audioPlaying, setAudioPlaying] = useState(false);
 
   const handleMarkerClick = () => {
     if (!open) {
       AudioSynth.playSnap();
+      onModalChange?.(true);
     }
     setOpen(true);
   };
 
   const handleCollect = () => {
-    AudioSynth.playPluck(330, 1.2, 0.3);
     onCollect(clue.id);
     setOpen(false);
+    onModalChange?.(false);
   };
 
   const handleClose = () => {
     AudioSynth.stopAmbient();
     setOpen(false);
+    onModalChange?.(false);
   };
 
   const handleAudio = () => {

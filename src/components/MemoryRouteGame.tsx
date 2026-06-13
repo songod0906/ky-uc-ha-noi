@@ -1,17 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence } from 'motion/react';
 import { Story, MemorySpace } from '../types';
 import { MemorySpace as MemorySpaceComponent } from './MemorySpace';
-import { MovementControls } from './MovementControls';
-import { NotebookInventory } from './NotebookInventory';
-import { RouteAssembly } from './RouteAssembly';
 import { EndingCannotBeMoved } from './EndingCannotBeMoved';
-import { CompassMotif } from './CompassMotif';
 import { TutorialOverlay, TutorialStep } from './TutorialOverlay';
 import { AudioSynth } from '../utils/AudioSynth';
-import { BookOpen, Puzzle, ChevronLeft } from 'lucide-react';
-import { FortuneFolder } from './FortuneFolder';
-import { TRANG_FORTUNE, TRANG_DIR_SPACES } from '../data/fortuneContent';
+import { ChevronLeft, CheckSquare } from 'lucide-react';
 import { SpaceDossier } from './SpaceDossier';
 import { OralHistoryPlayer } from './OralHistoryPlayer';
 
@@ -21,99 +15,37 @@ const NARRATOR_COLOR: Record<string, string> = {
   Trang: '#B09EC3',
 };
 
-type Phase = 'dossier' | 'explore' | 'assemble' | 'ending';
+type Phase = 'dossier' | 'explore' | 'ending';
 
-// Tutorial for stories with arrow-based navigation (non-TRANG)
 const EXPLORE_TUTORIAL: TutorialStep[] = [
   {
     id: 'clue',
     selector: '[data-tutorial="clue"]',
     placement: 'below',
     title: 'Mảnh ký ức ẩn ở đây',
-    body: 'Những điểm sáng này chứa mảnh ký ức. Nhấp vào để nghe câu chuyện và thu thập.',
-  },
-  {
-    id: 'notebook',
-    selector: '[data-tutorial="notebook"]',
-    placement: 'left',
-    title: 'Sổ tay của bạn',
-    body: 'Mảnh ký ức thu được lưu vào đây. Cần ít nhất 4 mảnh để mở câu đố lắp ráp.',
-  },
-  {
-    id: 'nav',
-    selector: '[data-tutorial="nav"]',
-    placement: 'above',
-    title: 'Di chuyển giữa các không gian',
-    body: 'Dùng các nút này để đi qua ba không gian trong câu chuyện. Mỗi nơi có mảnh ký ức riêng.',
+    body: 'Nhấp vào những điểm sáng để nghe câu chuyện và khám phá ký ức.',
     cta: 'Bắt đầu khám phá!',
-  },
-];
-
-// Tutorial for TRANG story — fortune folder is the only way to navigate
-const FORTUNE_EXPLORE_TUTORIAL: TutorialStep[] = [
-  {
-    id: 'clue',
-    selector: '[data-tutorial="clue"]',
-    placement: 'below',
-    title: 'Mảnh ký ức ẩn ở đây',
-    body: 'Những điểm sáng này chứa mảnh ký ức. Nhấp vào để nghe câu chuyện và thu thập.',
-  },
-  {
-    id: 'notebook',
-    selector: '[data-tutorial="notebook"]',
-    placement: 'left',
-    title: 'Sổ tay của bạn',
-    body: 'Mảnh ký ức thu được lưu vào đây. Cần ít nhất 4 mảnh để mở câu đố lắp ráp.',
-  },
-  {
-    id: 'fortune',
-    selector: '[data-tutorial="fortune"]',
-    placement: 'left',
-    title: 'Dùng bói giấy để di chuyển',
-    body: 'Chọn một hướng (BẮC / NAM / TÂY / ĐÔNG) → chọn số bước → xem giấy mở ra → chọn một ô bên trong để khám phá ký ức. Mỗi hướng dẫn tới một không gian khác nhau.',
-    cta: 'Bắt đầu khám phá!',
-  },
-];
-
-const ASSEMBLE_TUTORIAL: TutorialStep[] = [
-  {
-    id: 'slots',
-    selector: '[data-tutorial="slots"]',
-    placement: 'below',
-    title: 'Ghép lại một ngày',
-    body: 'Ba ô này là ba thời điểm trong ngày bình thường. Xếp đúng thứ tự để mở câu chuyện.',
-  },
-  {
-    id: 'chips',
-    selector: '[data-tutorial="chips"]',
-    placement: 'above',
-    title: 'Mảnh ký ức đã thu thập',
-    body: 'Nhấp vào từng mảnh để đặt vào ô tiếp theo. Đặt sai? Nhấn "xóa" rồi thử lại.',
-    cta: 'Hiểu rồi, thử nào!',
   },
 ];
 
 interface MemoryRouteGameProps {
   story: Story;
   initialSpaceIdx?: number;
-  singleSpaceMode?: boolean;  // skip cross-space navigation and assembly puzzle
+  singleSpaceMode?: boolean;
   onBack: () => void;
 }
 
-export function MemoryRouteGame({ story, initialSpaceIdx = 0, singleSpaceMode = false, onBack }: MemoryRouteGameProps) {
+export function MemoryRouteGame({ story, initialSpaceIdx = 0, onBack }: MemoryRouteGameProps) {
   const [phase, setPhase] = useState<Phase>('dossier');
-  const [spaceIndex, setSpaceIndex] = useState(initialSpaceIdx);
+  const [spaceIndex] = useState(initialSpaceIdx);
   const [collectedIds, setCollectedIds] = useState<string[]>([]);
-  const [notebookOpen, setNotebookOpen] = useState(false);
+  const [clueModalOpen, setClueModalOpen] = useState(false);
   const [exploreTutorialDone, setExploreTutorialDone] = useState(false);
-  const [assembleTutorialDone, setAssembleTutorialDone] = useState(false);
-  const [hintedSpaceId, setHintedSpaceId] = useState<string | undefined>(undefined);
   const oralAudioRef = useRef<HTMLAudioElement | null>(null);
   const [oralAudioActive, setOralAudioActive] = useState(false);
 
-  const hasFortune = false;
   const narratorColor = NARRATOR_COLOR[story.narrator] ?? '#C8B89A';
-  const [clueModalOpen, setClueModalOpen] = useState(false);
+  const activeSpace = story.spaces[spaceIndex];
 
   useEffect(() => () => { oralAudioRef.current?.pause(); }, []);
 
@@ -130,50 +62,28 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, singleSpaceMode = 
     setOralAudioActive(true);
   };
 
-  const activeSpace = story.spaces[spaceIndex];
-  const totalClues = singleSpaceMode
-    ? activeSpace.clues.length
-    : story.spaces.flatMap((s) => s.clues).length;
-  const cluesNeeded = singleSpaceMode
-    ? Math.max(1, activeSpace.clues.length)
-    : story.cluesNeededToUnlock;
-  const canUnlock = collectedIds.length >= cluesNeeded;
-
   const handleCollect = (clueId: string) => {
     if (!collectedIds.includes(clueId)) {
       setCollectedIds((prev) => [...prev, clueId]);
+      AudioSynth.playPluck(330, 1.2, 0.3);
     }
   };
 
-  const handleMoveToSpace = (idx: number) => {
-    if (singleSpaceMode) return;
-    AudioSynth.playSnap();
-    setSpaceIndex(idx);
-  };
-
-  // Called by FortuneFolder after counting finishes — navigate to the space
-  const handleFortuneNavigate = (spaceId: string | null) => {
-    if (!spaceId) return; // ĐÔNG direction: no navigation, just reveals memory
-    const idx = story.spaces.findIndex((s) => s.id === spaceId);
-    if (idx !== -1) handleMoveToSpace(idx);
-  };
-
-  const handleStartAssembly = () => {
+  const handleFinish = () => {
     oralAudioRef.current?.pause();
-    AudioSynth.playGuitarArpeggio();
-    setPhase(singleSpaceMode ? 'ending' : 'assemble');
-  };
-
-  const handleAssemblySuccess = () => {
     setPhase('ending');
   };
 
+  // Restart = back to cassette tape (replay oral history from beginning)
   const handleRestart = () => {
-    setPhase('explore');
-    setSpaceIndex(0);
+    oralAudioRef.current?.pause();
+    oralAudioRef.current = null;
+    setOralAudioActive(false);
     setCollectedIds([]);
+    setPhase('dossier');
   };
 
+  // ── Dossier phase ──
   if (phase === 'dossier') {
     return (
       <div className="h-screen flex flex-col relative bg-[#0a0806] overflow-hidden">
@@ -191,7 +101,7 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, singleSpaceMode = 
           space={activeSpace}
           narratorColor={narratorColor}
           onEnter={() => {
-            startOralAudio(activeSpace); // must be inside click handler for autoplay
+            startOralAudio(activeSpace);
             setPhase('explore');
           }}
         />
@@ -199,25 +109,7 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, singleSpaceMode = 
     );
   }
 
-  if (phase === 'assemble') {
-    return (
-      <>
-        <RouteAssembly
-          story={story}
-          collectedIds={collectedIds}
-          onSuccess={handleAssemblySuccess}
-          onBackToExplore={() => setPhase('explore')}
-        />
-        {!assembleTutorialDone && (
-          <TutorialOverlay
-            steps={ASSEMBLE_TUTORIAL}
-            onDone={() => setAssembleTutorialDone(true)}
-          />
-        )}
-      </>
-    );
-  }
-
+  // ── Ending phase ──
   if (phase === 'ending') {
     return (
       <EndingCannotBeMoved
@@ -228,217 +120,76 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, singleSpaceMode = 
     );
   }
 
+  // ── Explore phase ──
+  const collected = activeSpace.clues.filter((c) => collectedIds.includes(c.id)).length;
+  const total = activeSpace.clues.length;
+  const allFound = collected === total && total > 0;
+
   return (
     <div className="h-screen flex flex-col relative bg-[#FCFAF2] overflow-hidden">
       <div className="absolute inset-0 giay-oly opacity-20 pointer-events-none" />
       <div className="absolute inset-0 vintage-vignette pointer-events-none z-50" />
 
-      {/* Top HUD */}
+      {/* Top header */}
       <header className="relative z-30 flex items-center justify-between px-5 py-3 bg-white/50 backdrop-blur-sm border-b border-muctim/8 shadow-xs">
         <button
           onClick={() => { oralAudioRef.current?.pause(); onBack(); }}
           className="flex items-center gap-1.5 text-muctim-faded hover:text-muctim font-serif text-sm transition-colors"
         >
           <ChevronLeft className="w-4 h-4" />
-          Chọn câu chuyện
+          Bản đồ
         </button>
 
-        <div className="flex items-center gap-2">
-          <CompassMotif size={28} />
-          <div className="text-center">
-            <p className="font-serif text-sm font-bold text-muctim leading-none">{story.title}</p>
-            <p className="font-mono text-[9px] text-muctim-faded uppercase tracking-widest">
-              {story.narrator}
-            </p>
-          </div>
+        <div className="text-center">
+          <p className="font-serif text-sm font-bold text-muctim leading-none">{activeSpace.label}</p>
+          <p className="font-mono text-[9px] text-muctim-faded uppercase tracking-widest">
+            {story.narrator} · {story.title}
+          </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          {/* Clues progress */}
-          <button
-            onClick={() => setNotebookOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-nangthu-glow/70 border border-nangthu/20 text-sm font-serif text-terracotta hover:bg-nangthu-glow transition-all"
-            data-tutorial="notebook"
-          >
-            <BookOpen className="w-4 h-4" />
-            <span className="font-bold">{collectedIds.length}</span>
-            <span className="text-muctim-faded">/ {totalClues}</span>
-          </button>
-
-          {/* Unlock puzzle button */}
-          {canUnlock && (
-            <motion.button
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-muctim text-white text-sm font-serif shadow hover:bg-muctim/80 transition-all"
-              onClick={handleStartAssembly}
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              whileHover={{ scale: 1.04 }}
-            >
-              <Puzzle className="w-4 h-4" />
-              Lắp ráp
-            </motion.button>
-          )}
-        </div>
+        <button
+          onClick={handleFinish}
+          className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl font-serif text-sm transition-all"
+          style={{
+            background: allFound ? narratorColor : 'rgba(0,0,0,0.05)',
+            color: allFound ? '#0a0806' : 'rgba(0,0,0,0.4)',
+            border: `1px solid ${allFound ? narratorColor : 'rgba(0,0,0,0.1)'}`,
+          }}
+        >
+          <CheckSquare className="w-3.5 h-3.5" />
+          {allFound ? 'Rời khỏi' : `${collected}/${total}`}
+        </button>
       </header>
 
-      {/* Unlock hint banner */}
-      <AnimatePresence>
-        {canUnlock && phase === 'explore' && (
-          <motion.div
-            className="relative z-20 bg-sage/20 border-b border-sage/30 px-5 py-2 text-center"
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-          >
-            <p className="font-serif text-sm text-sage font-semibold">
-              Đã có đủ mảnh ghép — nhấn{' '}
-              <button
-                onClick={handleStartAssembly}
-                className="underline hover:text-muctim transition-colors"
-              >
-                Lắp ráp
-              </button>{' '}
-              để ghép lại một ngày của {story.narrator}
-            </p>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Main scene */}
+      <main className="flex-1 min-h-0 relative z-10">
+        <AnimatePresence mode="wait">
+          <MemorySpaceComponent
+            key={activeSpace.id}
+            space={activeSpace}
+            story={story}
+            collectedIds={collectedIds}
+            onCollect={handleCollect}
+            onClueModalChange={setClueModalOpen}
+          />
+        </AnimatePresence>
 
-      {/* Main scene area — fills all remaining height */}
-      <main className="flex-1 flex min-h-0 relative z-10">
-
-        {/* ── Left column: scene + bottom nav ── */}
-        <div className="flex-1 flex flex-col min-h-0">
-          {/* Scene panel */}
-          <div className="flex-1 min-h-0 w-full relative">
-            <AnimatePresence mode="wait">
-              <MemorySpaceComponent
-                key={story.spaces[spaceIndex].id}
-                space={story.spaces[spaceIndex]}
-                story={story}
-                collectedIds={collectedIds}
-                onCollect={handleCollect}
-              />
-            </AnimatePresence>
-            {/* Oral history floating player */}
-            {oralAudioActive && oralAudioRef.current && (
-              <OralHistoryPlayer
-                key={activeSpace.id}
-                audioEl={oralAudioRef.current}
-                narratorName={story.narrator}
-                narratorColor={narratorColor}
-                paused={clueModalOpen}
-              />
-            )}
-          </div>
-
-          {/* Compact bottom bar: nav + space chips — hidden in singleSpaceMode */}
-          {!singleSpaceMode && (
-          <div className="shrink-0 bg-[#FCFAF2]/95 backdrop-blur-sm border-t border-muctim/10 px-4 pt-2 pb-3">
-            {!hasFortune && (
-              <div data-tutorial="nav">
-                <MovementControls
-                  spaces={story.spaces}
-                  currentIndex={spaceIndex}
-                  onMove={handleMoveToSpace}
-                />
-              </div>
-            )}
-
-            <div className={`flex gap-2 justify-center flex-wrap ${hasFortune ? '' : 'mt-2'}`}>
-              {story.spaces.map((space, i) => {
-                const spaceCollected = space.clues.filter((c) => collectedIds.includes(c.id)).length;
-                const isCurrent = i === spaceIndex;
-                const isHinted = hintedSpaceId === space.id && !isCurrent;
-                // For TRANG: chips are visual-only indicators (fortune teller navigates)
-                return (
-                  <motion.button
-                    key={space.id}
-                    onClick={hasFortune ? undefined : () => handleMoveToSpace(i)}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-serif transition-all ${
-                      hasFortune ? 'cursor-default' : 'cursor-pointer'
-                    } ${
-                      isCurrent
-                        ? 'bg-muctim text-white border-muctim shadow'
-                        : isHinted
-                          ? 'bg-nangthu-glow/60 border-nangthu/40 text-muctim'
-                          : 'bg-white/60 border-muctim/15 text-muctim'
-                    }`}
-                    animate={
-                      isHinted
-                        ? { boxShadow: ['0 0 0 0px rgba(180,150,50,0)', '0 0 0 4px rgba(180,150,50,0.2)', '0 0 0 0px rgba(180,150,50,0)'] }
-                        : { boxShadow: '0 0 0 0px rgba(0,0,0,0)' }
-                    }
-                    transition={isHinted ? { duration: 1.8, repeat: Infinity } : {}}
-                  >
-                    <span>{space.label}</span>
-                    <span
-                      className={`font-mono text-[9px] px-1.5 py-0.5 rounded-full ${
-                        isCurrent ? 'bg-white/20 text-white' : 'bg-muctim/10 text-muctim-faded'
-                      }`}
-                    >
-                      {spaceCollected}/{space.clues.length}
-                    </span>
-                  </motion.button>
-                );
-              })}
-            </div>
-          </div>
-          )} {/* end !singleSpaceMode */}
-        </div>
-
-        {/* ── Right panel: Fortune Folder (TRANG story only) ── */}
-        {hasFortune && (
-          <div
-            data-tutorial="fortune"
-            className="shrink-0 flex flex-col items-center justify-center border-l border-muctim/8 bg-[#FAF7EE]/80 backdrop-blur-sm"
-            style={{ width: 192 }}
-          >
-            {/* Aged paper label above */}
-            <p
-              className="mb-3 tracking-[0.22em] font-bold"
-              style={{
-                fontFamily: "'Noto Serif', serif",
-                fontSize: '7.5px',
-                color: '#8a7050',
-                opacity: 0.55,
-                letterSpacing: '0.22em',
-              }}
-            >
-              ĐÔNG · TÂY · NAM · BẮC
-            </p>
-
-            <FortuneFolder
-              contentMap={TRANG_FORTUNE}
-              dirSpaces={TRANG_DIR_SPACES}
-              currentSpaceId={story.spaces[spaceIndex].id}
-              onNavigate={handleFortuneNavigate}
-              onReveal={(_dir, _panel, content) => {
-                // Glow the hinted space chip after reveal
-                if (content.spaceHint) setHintedSpaceId(content.spaceHint);
-                setTimeout(() => setHintedSpaceId(undefined), 5000);
-              }}
-            />
-          </div>
+        {/* Floating oral history player */}
+        {oralAudioActive && oralAudioRef.current && (
+          <OralHistoryPlayer
+            key={activeSpace.id}
+            audioEl={oralAudioRef.current}
+            narratorName={story.narrator}
+            narratorColor={narratorColor}
+            paused={clueModalOpen}
+          />
         )}
       </main>
 
-      {/* Notebook overlay */}
-      <AnimatePresence>
-        {notebookOpen && (
-          <NotebookInventory
-            story={story}
-            collectedIds={collectedIds}
-            onClose={() => setNotebookOpen(false)}
-            cluesNeeded={story.cluesNeededToUnlock}
-          />
-        )}
-      </AnimatePresence>
-
-      {/* Tutorial overlay for explore phase — fortune variant for TRANG */}
+      {/* Tutorial */}
       {!exploreTutorialDone && (
         <TutorialOverlay
-          steps={hasFortune ? FORTUNE_EXPLORE_TUTORIAL : EXPLORE_TUTORIAL}
+          steps={EXPLORE_TUTORIAL}
           onDone={() => setExploreTutorialDone(true)}
         />
       )}

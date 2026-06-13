@@ -15,9 +15,10 @@ interface MemorySpaceProps {
   story: Story;
   collectedIds: string[];
   onCollect: (clueId: string) => void;
+  onClueModalChange?: (open: boolean) => void;
 }
 
-export function MemorySpace({ space, story, collectedIds, onCollect }: MemorySpaceProps) {
+export function MemorySpace({ space, story, collectedIds, onCollect, onClueModalChange }: MemorySpaceProps) {
   const hasTour = !!space.bgTourNodes?.length;
   const [videoExpanded, setVideoExpanded] = useState(false);
 
@@ -107,14 +108,6 @@ export function MemorySpace({ space, story, collectedIds, onCollect }: MemorySpa
         <p className="font-serif text-[11px] text-muctim-faded">{space.sublabel}</p>
       </div>
 
-      {/* Clue count top-right */}
-      <div className="absolute top-4 right-4 z-20 bg-white/80 backdrop-blur-sm rounded-2xl px-3 py-2 shadow-sm border border-muctim/10 text-center">
-        <p className="font-mono text-[8px] text-muctim-faded uppercase tracking-widest">Mảnh ghép</p>
-        <p className="font-serif text-sm font-bold text-muctim">
-          {space.clues.filter((c) => collectedIds.includes(c.id)).length}
-          <span className="text-muctim-faded font-normal">/{space.clues.length}</span>
-        </p>
-      </div>
 
       {/* Video clip overlay — floating screen (e.g. quán net gaming footage) */}
       {space.videoClip && (
@@ -184,6 +177,7 @@ export function MemorySpace({ space, story, collectedIds, onCollect }: MemorySpa
               clue={clue}
               collected={collectedIds.includes(clue.id)}
               onCollect={onCollect}
+              onModalChange={onClueModalChange}
             />
           ))}
           <div className="absolute bottom-0 left-0 right-0 z-20 p-4 bg-gradient-to-t from-black/30 to-transparent">
