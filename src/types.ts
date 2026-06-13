@@ -51,6 +51,11 @@ export interface TourNode {
 }
 // --------------------------------
 
+export interface AudioSegment {
+  src: string;     // '/audio/oral-history/thanh-cong.m4a'
+  startSec: number; // seconds into the file to begin playback
+}
+
 export interface MemorySpace {
   id: string;
   label: string;
@@ -63,6 +68,9 @@ export interface MemorySpace {
   bgStreetView?: string;     // Google Maps Street View embed — placeholder until tour is ready
   bgTourNodes?: TourNode[];  // 360 panorama tour — takes priority over everything
   bgTourAmbient?: string;    // '/tours/location-name/ambient.mp3'
+  videoClip?: string;        // '/video/xxx.mp4' — short ambient clip shown inside space
+  audioSegment?: AudioSegment; // oral history segment for this space
+  narratorBio?: string[];    // 2-3 bullet lines for the dossier card
   clues: Clue[];
 }
 

@@ -12,8 +12,16 @@ import { AudioSynth } from '../utils/AudioSynth';
 import { BookOpen, Puzzle, ChevronLeft } from 'lucide-react';
 import { FortuneFolder } from './FortuneFolder';
 import { TRANG_FORTUNE, TRANG_DIR_SPACES } from '../data/fortuneContent';
+import { SpaceDossier } from './SpaceDossier';
+import { OralHistoryPlayer } from './OralHistoryPlayer';
 
-type Phase = 'explore' | 'assemble' | 'ending';
+const NARRATOR_COLOR: Record<string, string> = {
+  LTK:   '#C8A882',
+  Essy:  '#8BAF9A',
+  Trang: '#B09EC3',
+};
+
+type Phase = 'dossier' | 'explore' | 'assemble' | 'ending';
 
 // Tutorial for stories with arrow-based navigation (non-TRANG)
 const EXPLORE_TUTORIAL: TutorialStep[] = [
@@ -93,7 +101,7 @@ interface MemoryRouteGameProps {
 }
 
 export function MemoryRouteGame({ story, initialSpaceIdx = 0, singleSpaceMode = false, onBack }: MemoryRouteGameProps) {
-  const [phase, setPhase] = useState<Phase>('explore');
+  const [phase, setPhase] = useState<Phase>('dossier');
   const [spaceIndex, setSpaceIndex] = useState(initialSpaceIdx);
   const [collectedIds, setCollectedIds] = useState<string[]>([]);
   const [notebookOpen, setNotebookOpen] = useState(false);
@@ -103,6 +111,8 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, singleSpaceMode = 
   const [hintedSpaceId, setHintedSpaceId] = useState<string | undefined>(undefined);
 
   const hasFortune = false; // temporarily disabled for nav testing
+  const narratorColor = NARRATOR_COLOR[story.narrator] ?? '#C8B89A';
+  const [clueModalOpen, setClueModalOpen] = useState(false);
 
   const activeSpace = story.spaces[spaceIndex];
   const totalClues = singleSpaceMode
@@ -150,6 +160,32 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, singleSpaceMode = 
     setCollectedIds([]);
     AudioSynth.startAmbient('wind');
   };
+
+  if (phase === 'dossier') {
+    return (
+      <div className="h-screen flex flex-col relative bg-[#0a0806] overflow-hidden">
+        {/* Minimal header so user can still bail */}
+        <header className="relative z-30 flex items-center px-5 py-3 bg-black/30 border-b border-amber-200/5">
+          <button
+            onClick={() => { AudioSynth.stopAmbient(); onBack(); }}
+            className="flex items-center gap-1.5 text-amber-200/30 hover:text-amber-200/60 font-serif text-sm transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            Bản đồ
+          </button>
+        </header>
+        <SpaceDossier
+          story={story}
+          space={activeSpace}
+          narratorColor={narratorColor}
+          onEnter={() => {
+            AudioSynth.startAmbient('wind');
+            setPhase('explore');
+          }}
+        />
+      </div>
+    );
+  }
 
   if (phase === 'assemble') {
     return (
@@ -262,7 +298,7 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, singleSpaceMode = 
         {/* ── Left column: scene + bottom nav ── */}
         <div className="flex-1 flex flex-col min-h-0">
           {/* Scene panel */}
-          <div className="flex-1 min-h-0 w-full">
+          <div className="flex-1 min-h-0 w-full relative">
             <AnimatePresence mode="wait">
               <MemorySpace
                 key={story.spaces[spaceIndex].id}
@@ -272,6 +308,16 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, singleSpaceMode = 
                 onCollect={handleCollect}
               />
             </AnimatePresence>
+            {/* Oral history floating player */}
+            {activeSpace.audioSegment && (
+              <OralHistoryPlayer
+                key={activeSpace.id}
+                segment={activeSpace.audioSegment}
+                narratorName={story.narrator}
+                narratorColor={narratorColor}
+                paused={clueModalOpen}
+              />
+            )}
           </div>
 
           {/* Compact bottom bar: nav + space chips — hidden in singleSpaceMode */}

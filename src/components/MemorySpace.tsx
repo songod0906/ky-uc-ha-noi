@@ -1,5 +1,5 @@
-import { lazy, Suspense } from 'react';
-import { motion } from 'motion/react';
+import { lazy, Suspense, useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { MemorySpace as MemorySpaceType, Story } from '../types';
 import { ClueObject } from './ClueObject';
 import { ScanPlaceholder } from './ScanPlaceholder';
@@ -19,6 +19,7 @@ interface MemorySpaceProps {
 
 export function MemorySpace({ space, story, collectedIds, onCollect }: MemorySpaceProps) {
   const hasTour = !!space.bgTourNodes?.length;
+  const [videoExpanded, setVideoExpanded] = useState(false);
 
   return (
     <motion.div
@@ -114,6 +115,62 @@ export function MemorySpace({ space, story, collectedIds, onCollect }: MemorySpa
           <span className="text-muctim-faded font-normal">/{space.clues.length}</span>
         </p>
       </div>
+
+      {/* Video clip overlay — floating screen (e.g. quán net gaming footage) */}
+      {space.videoClip && (
+        <AnimatePresence>
+          {!videoExpanded ? (
+            <motion.button
+              key="thumb"
+              className="absolute bottom-4 right-4 z-40 rounded-xl overflow-hidden shadow-2xl"
+              style={{ width: 120, border: '1.5px solid rgba(200,180,150,0.25)', background: '#000' }}
+              onClick={() => setVideoExpanded(true)}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ delay: 1, duration: 0.4 }}
+              title="Xem đoạn phim"
+            >
+              <video
+                src={space.videoClip}
+                autoPlay loop muted playsInline
+                className="w-full h-auto block"
+                style={{ aspectRatio: '16/9', objectFit: 'cover' }}
+              />
+              <div className="absolute inset-0 flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.3)' }}>
+                <div className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)' }}>
+                  <svg width="10" height="10" viewBox="0 0 10 10" fill="white"><path d="M2 1.5L8.5 5 2 8.5V1.5Z" /></svg>
+                </div>
+              </div>
+              <div className="absolute bottom-0 left-0 right-0 px-2 py-1" style={{ background: 'linear-gradient(transparent, rgba(0,0,0,0.7))' }}>
+                <p className="font-mono text-[7px] text-white/60 uppercase tracking-wider">rec</p>
+              </div>
+            </motion.button>
+          ) : (
+            <motion.div
+              key="expanded"
+              className="absolute inset-x-4 bottom-4 z-50 rounded-2xl overflow-hidden shadow-2xl"
+              style={{ border: '1px solid rgba(200,180,150,0.2)', background: '#000' }}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.3 }}
+            >
+              <video
+                src={space.videoClip}
+                autoPlay controls loop playsInline
+                className="w-full block"
+                style={{ maxHeight: '45vh' }}
+              />
+              <button
+                onClick={() => setVideoExpanded(false)}
+                className="absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center font-mono text-xs text-white/70 hover:text-white"
+                style={{ background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.15)' }}
+              >✕</button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      )}
 
       {/* Scan placeholder + HTML clue hotspots + bottom strip — placeholder mode only */}
       {!hasTour && (

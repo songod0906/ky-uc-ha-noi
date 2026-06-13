@@ -247,6 +247,12 @@ const TRANG: Story = {
       label: 'Cổng trường',
       sublabel: 'Trường Tiểu học Thành Công A — tiệm thuê truyện, thẻ sưu tầm, kem son, kem chanh',
       lat: 21.023324, lng: 105.812746,
+      audioSegment: { src: '/audio/oral-history/thanh-cong.m4a', startSec: 36 },
+      narratorBio: [
+        'Lớp tiểu học không có điều hòa — cửa sổ mở, nghe được tiếng thầy cô các lớp chửi nhau.',
+        'Tiệm thuê truyện Doraemon hai nghìn một ngày — "sharing economy trước khi có Grab".',
+        'Tiếng trống trường lúc đang ăn kem chanh ở cổng: vừa vui, vừa sợ đến muộn.',
+      ],
       bgGradient: 'linear-gradient(160deg, #f5e6c8 0%, #e8d5a3 40%, #d4b896 100%)',
       bgTone: '#c8a96e',
       bgTourNodes: makeNodes(ltk_cong_truong, [
@@ -289,6 +295,13 @@ const TRANG: Story = {
       label: 'Quán net — nhà mình mở',
       sublabel: 'Màn hình CRT to đùng, tiếng Audition "cọc cọc cọc" — và nhà mình mở quán',
       lat: 21.020861, lng: 105.813559,
+      audioSegment: { src: '/audio/oral-history/thanh-cong.m4a', startSec: 439 },
+      videoClip: '/video/quan-net-gaming.mp4',
+      narratorBio: [
+        'Nhà mình mở quán net — tan học là về thẳng nhà chơi điện tử, không phải đến quán người khác.',
+        'Màn hình CRT to đùng, cục máy phía sau, tai nghe và webcam — full setup huyền thoại.',
+        'Bố chỉ cho chơi một tiếng, căn giờ đón về ăn cơm. "Quán net còn có điều hòa."',
+      ],
       bgGradient: 'linear-gradient(160deg, #2a1f3d 0%, #3d2f5c 50%, #1a1228 100%)',
       bgTone: '#1a1228',
       bgTourNodes: applyYaws(makeNodes(ltk_quan_net, [
@@ -331,6 +344,12 @@ const TRANG: Story = {
       label: 'Hồ Thành Công',
       sublabel: 'Cửa sau lách xe vào, bê tông gập ghềnh — con người Thành Công chả ai đi cửa chính',
       lat: 21.020445, lng: 105.813269,
+      audioSegment: { src: '/audio/oral-history/thanh-cong.m4a', startSec: 527 },
+      narratorBio: [
+        'Ông bà dẫn ra hồ tập xe đạp cuối tuần — hồ bê tông gập ghềnh, nhiều chó, mùi tanh cá chết.',
+        'Không ai đi cửa chính — người Thành Công luôn lách qua cái cửa sắt không bao giờ mở hết.',
+        'Khi giải tỏa, mất không chỉ nhà — mất cả cách một khu phố biết nhau và sống cùng nhau.',
+      ],
       bgGradient: 'linear-gradient(160deg, #c8dde8 0%, #a3c4d5 40%, #7eaabf 100%)',
       bgTone: '#5a7a8a',
       bgTourNodes: applyYaws(makeNodes(ltk_ho_thanh_cong, [
@@ -407,6 +426,12 @@ const ESSY: Story = {
       label: 'Nhà / Ngõ',
       sublabel: 'Số 17, 267/33 Hoàng Hoa Thám — rẽ ba bốn lần mới vào được, Grab không bao giờ tìm được',
       lat: 21.041427, lng: 105.817931,
+      audioSegment: { src: '/audio/oral-history/hoang-hoa-tham.m4a', startSec: 1 },
+      narratorBio: [
+        'Ngõ 33 Văn Cao → 267 Hoàng Hoa Thám → rẽ 3-4 lần mới đến nhà — Grab không tự tìm được.',
+        'Essy biết 5 đường vào nhà từ 3 hướng khác nhau. Đây là loại tri thức không ai dạy được.',
+        'Sáu bảy nhà chung khoảng sân biệt lập — trồng cây chanh, hoa nhài, mát lạ giữa Hà Nội.',
+      ],
       bgGradient: 'linear-gradient(160deg, #d4c5a9 0%, #c5b08a 40%, #b09060 100%)',
       bgTone: '#6b5a3e',
       bgTourNodes: applyYaws(makeNodes(essy_duong_vao_nha, [
@@ -461,6 +486,12 @@ const ESSY: Story = {
       label: 'Giếng / Khu vui chơi',
       sublabel: 'Con đường chỉ người trong khu mới biết — dẫn ra giếng cũ nay thành sân tập thể',
       lat: 21.040723, lng: 105.818568,
+      audioSegment: { src: '/audio/oral-history/hoang-hoa-tham.m4a', startSec: 299 },
+      narratorBio: [
+        'Từ Văn Cao có một con đường nhỏ dẫn ra giếng cũ — chỉ người trong khu mới biết tồn tại.',
+        'Bên trong: nhiều cây, tòa nhà che nắng, mát hơn ngoài đường. Giờ là sân tập thể dục.',
+        'Trong ngõ 267 có một ngôi chùa di tích quốc gia mà gần như không ai Hà Nội biết đến.',
+      ],
       bgGradient: 'linear-gradient(160deg, #a8c5a0 0%, #7da87a 40%, #5a8a56 100%)',
       bgTone: '#3a6a36',
       bgTourNodes: makeNodes(essy_playground, [
@@ -536,6 +567,12 @@ const TRANG_THAI_THINH: Story = {
       label: 'Lớp học thêm',
       sublabel: 'Gần cửa hàng mẹ — chiều 4-5 giờ mẹ dẫn đi bộ ra học, phố không một chiếc ô tô',
       lat: 21.009981, lng: 105.820251,
+      audioSegment: { src: '/audio/oral-history/trung-liet.m4a', startSec: 27 },
+      narratorBio: [
+        'Mỗi chiều 4-5 giờ, mẹ dẫn đi bộ qua con phố vắng đến lớp học thêm trước cấp một.',
+        'Đường Nguyễn Văn Tuyết từng là cái mương — không xe, không tiếng động, hàng xóm biết nhau.',
+        'Gần đây đi làm về qua đó thấy một chiếc ô tô đỗ — "đấy là một cảm xúc khá là lạ."',
+      ],
       bgGradient: 'linear-gradient(160deg, #f0e4c8 0%, #d9c49a 40%, #c4a870 100%)',
       bgTone: '#c4a870',
       bgTourNodes: applyYaws(makeNodes(trang_di_hoc_them, [
@@ -576,6 +613,12 @@ const TRANG_THAI_THINH: Story = {
       label: 'Sân chơi khu tập thể',
       sublabel: 'Đi qua vô số lần — chưa bao giờ được vào chơi một lần nào',
       lat: 21.010665, lng: 105.818798,
+      audioSegment: { src: '/audio/oral-history/trung-liet.m4a', startSec: 227 },
+      narratorBio: [
+        'Trên đường học thêm mỗi buổi chiều, nhìn thấy các bạn chơi trong sân — không được dừng lại.',
+        'Đến tận ngày hôm nay vẫn chưa bao giờ được vào cái sân đó để chơi dù đã đi qua vô số lần.',
+        'Nếu khu bị giải tỏa, cũng không còn cơ hội nào để trải nghiệm điều đó nữa.',
+      ],
       bgGradient: 'linear-gradient(160deg, #b8d4b0 0%, #8aba88 40%, #6a9866 100%)',
       bgTone: '#6a9866',
       bgTourNodes: applyYaws(makeNodes(trang_playground, [
@@ -616,6 +659,12 @@ const TRANG_THAI_THINH: Story = {
       label: 'Quán ốc ông violin',
       sublabel: 'Mẹ dẫn đi ăn để an ủi — và lần đầu tiên Trang biết violin là gì',
       lat: 21.011001, lng: 105.820834,
+      audioSegment: { src: '/audio/oral-history/trung-liet.m4a', startSec: 356 },
+      narratorBio: [
+        'Cô giáo đánh vào tay vì dùng tẩy với bút máy — Trang khóc cả đường về. Mẹ dẫn đi ăn ốc.',
+        'Ông chủ quán ngồi đánh violin giữa bàn ốc — lần đầu tiên Trang biết violin là gì.',
+        '"Violin có thể chơi ở mọi nơi." Lớn lên mới biết violin thường chỉ ở dàn giao hưởng.',
+      ],
       bgGradient: 'linear-gradient(160deg, #e8c890 0%, #d4a060 40%, #b87840 100%)',
       bgTone: '#c48040',
       bgTourNodes: applyYaws(makeNodes(trang_quan_oc, [
