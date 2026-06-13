@@ -31,7 +31,6 @@ const SPACE_TAGLINE: Record<string, string> = {
 
 export function SpaceDossier({ story, space, narratorColor, onEnter }: SpaceDossierProps) {
   const [reelsSpinning, setReelsSpinning] = useState(false);
-  const [entering, setEntering] = useState(false);
 
   useEffect(() => {
     if (!document.getElementById('cassette-spin-style')) {
@@ -47,11 +46,9 @@ export function SpaceDossier({ story, space, narratorColor, onEnter }: SpaceDoss
   }, []);
 
   const handlePlay = () => {
+    if (reelsSpinning) return;
     setReelsSpinning(true);
-    setTimeout(() => {
-      setEntering(true);
-      setTimeout(onEnter, 500);
-    }, 900);
+    onEnter(); // direct call — stays inside gesture context for audio autoplay
   };
 
   const side = SIDE_LABEL[story.narrator] ?? 'A';
@@ -71,7 +68,7 @@ export function SpaceDossier({ story, space, narratorColor, onEnter }: SpaceDoss
       <motion.div
         className="flex flex-col items-center gap-8 px-8"
         initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: entering ? 0 : 1, y: entering ? -20 : 0 }}
+        animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
         {/* Cassette tape body */}
