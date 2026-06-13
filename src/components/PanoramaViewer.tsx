@@ -342,37 +342,46 @@ function CluePreviewModal({
 
 // ---------- Path mini-map ----------
 
+// Returns compass bearing in degrees (0 = north, clockwise) from GPS coords.
+function gpsBearing(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const toR = (d: number) => d * Math.PI / 180;
+  const φ1 = toR(lat1), φ2 = toR(lat2), Δλ = toR(lng2 - lng1);
+  const y = Math.sin(Δλ) * Math.cos(φ2);
+  const x = Math.cos(φ1) * Math.sin(φ2) - Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
+  return Math.atan2(y, x) * 180 / Math.PI; // -180..180
+}
+
 /**
- * Derives 2-D map positions from calibrated nav anchors.
- *
- * Each panorama has a local coordinate system (0° = equirectangular center).
- * We accumulate the global heading via:
- *   globalPanoDir_{i+1} = travelHeading + 180° − backYaw_{i+1}
- * where travelHeading = globalPanoDir_i + fwdYaw_i.
- * This correctly accounts for the orientation of each panorama capture.
- * Uncalibrated nodes fall back to 180° for backYaw (photographer faces forward).
+ * Derives 2-D map positions.
+ * When consecutive nodes both carry GPS coords, uses GPS bearing directly
+ * (no accumulated error). Falls back to yaw-based heading for uncalibrated segments.
  */
 function computePath(nodes: TourNode[]): [number, number][] {
   const pts: [number, number][] = [[0, 0]];
-  let globalPanoDir = 0; // global heading (°) the panorama's 0° axis points toward
+  let globalPanoDir = 0;
 
   for (let i = 0; i < nodes.length - 1; i++) {
-    const fwdAnchor = nodes[i].navAnchors?.find(
-      a => a.label === 'Tiếp tục' || a.label === 'Đi tiếp'
-    );
-    const backAnchorNext = nodes[i + 1]?.navAnchors?.find(
-      a => a.label === 'Quay lại'
-    );
+    const curr = nodes[i], next = nodes[i + 1];
+    const backAnchorNext = next?.navAnchors?.find(a => a.label === 'Quay lại');
+    const backYaw = backAnchorNext?.yaw ?? 180;
 
-    const fwdYaw  = fwdAnchor?.yaw  ?? 0;
-    const backYaw = backAnchorNext?.yaw ?? 180; // 180° = photographer faces direction of travel
+    let travelDeg: number;
+    if (curr.lat != null && curr.lng != null && next.lat != null && next.lng != null) {
+      // GPS bearing — physically accurate, no drift
+      travelDeg = gpsBearing(curr.lat, curr.lng, next.lat, next.lng);
+      globalPanoDir = travelDeg + 180 - backYaw;
+    } else {
+      // Yaw-based fallback
+      const fwdYaw = curr.navAnchors?.find(
+        a => a.label === 'Tiếp tục' || a.label === 'Đi tiếp'
+      )?.yaw ?? 0;
+      travelDeg = globalPanoDir + fwdYaw;
+      globalPanoDir = travelDeg + 180 - backYaw;
+    }
 
-    const travelDeg = globalPanoDir + fwdYaw;
-    const rad = (travelDeg * Math.PI) / 180;
+    const rad = travelDeg * Math.PI / 180;
     const [px, py] = pts[i];
     pts.push([px + Math.sin(rad), py - Math.cos(rad)]);
-
-    globalPanoDir = travelDeg + 180 - backYaw;
   }
   return pts;
 }

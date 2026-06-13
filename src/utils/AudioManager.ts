@@ -6,9 +6,21 @@ export const AudioManager = {
   play(src: string, startSec: number, volume = 0.75): HTMLAudioElement {
     this.stop();
     const el = new Audio(src);
-    el.currentTime = startSec;
     el.volume = volume;
-    el.play().catch(() => {});
+
+    // Seek after metadata loads so the browser doesn't silently ignore currentTime
+    if (startSec > 0) {
+      el.addEventListener('loadedmetadata', () => { el.currentTime = startSec; }, { once: true });
+    }
+
+    el.play().catch((err: unknown) => {
+      console.error('[AudioManager] play() blocked:', src, err);
+    });
+
+    el.addEventListener('error', () => {
+      console.error('[AudioManager] load error:', src, el.error?.code, el.error?.message);
+    }, { once: true });
+
     _audio = el;
     return el;
   },
@@ -21,7 +33,5 @@ export const AudioManager = {
     }
   },
 
-  get current(): HTMLAudioElement | null {
-    return _audio;
-  },
+  get current(): HTMLAudioElement | null { return _audio; },
 };

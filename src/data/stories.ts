@@ -2,11 +2,13 @@ import { Story, TourNode, TourNavAnchor, TourScanAnchor } from '../types';
 
 // Builds a linear chain of TourNodes from an array of panorama paths.
 // clues: [{idx: nodeIndex, clueId, yaw?, pitch?}] — yaw/pitch are placeholders, tune in viewer.
+// gps: one [lat, lng] per panorama (or null) — drives minimap bearing when present.
 function makeNodes(
   panoramas: string[],
   clues: Array<{ idx: number; clueId: string; yaw?: number; pitch?: number }>,
   pfx: string,
-  scans?: Array<{ idx: number; scanUrl: string; label: string; yaw?: number; pitch?: number }>
+  scans?: Array<{ idx: number; scanUrl: string; label: string; yaw?: number; pitch?: number }>,
+  gps?: Array<[number, number] | null>
 ): TourNode[] {
   return panoramas.map((panorama, i) => {
     const id = `${pfx}-${String(i + 1).padStart(2, '0')}`;
@@ -21,8 +23,10 @@ function makeNodes(
       nav.push({ toNodeId: `${pfx}-${String(i).padStart(2, '0')}`, yaw: 180, pitch: -10, label: 'Quay lại' });
     if (i < panoramas.length - 1)
       nav.push({ toNodeId: `${pfx}-${String(i + 2).padStart(2, '0')}`, yaw: 0, pitch: -10, label: 'Tiếp tục' });
+    const coord = gps?.[i];
     return {
       id, panorama,
+      ...(coord ? { lat: coord[0], lng: coord[1] } : {}),
       ...(clueAnchors.length ? { clueAnchors } : {}),
       ...(scanAnchors.length ? { scanAnchors } : {}),
       navAnchors: nav,
@@ -309,6 +313,13 @@ const TRANG: Story = {
         { idx: 15, clueId: 'trang-choi-net',   yaw: -30, pitch: -20 },
       ], 'qn', [
         { idx: 16, scanUrl: '/scans/quan-net.glb', label: 'Xem quán net 3D', yaw: 0, pitch: -10 },
+      ], [
+        // GPS: cổng trường → pic4 → pic8 → pic10 → pic12 (quán net)
+        [21.023324, 105.812746], null, null,
+        [21.023452, 105.813853], null, null, null,
+        [21.021431, 105.814166], null,
+        [21.020933, 105.814064], null,
+        [21.020861, 105.813559], null, null, null, null, null,
       ]), QN_YAWS),
       clues: [
         {
@@ -356,7 +367,13 @@ const TRANG: Story = {
         { idx: 2,  clueId: 'trang-xe-dap',      yaw: 60,  pitch: -20},
         { idx: 7,  clueId: 'trang-nhac-aerobic', yaw: -45, pitch: -20},
         { idx: 12, clueId: 'trang-khu-tap-the',  yaw: 30,  pitch: -20},
-      ], 'htc'), HTC_YAWS),
+      ], 'htc', undefined, [
+        // GPS: cổng hồ → thẳng → rẽ trái → cầu thang → vòng quanh hồ
+        [21.020445, 105.813269], null, null, null,
+        [21.020333, 105.813667], null, null, null,
+        null, null, null, null,
+        [21.020203, 105.813215],
+      ]), HTC_YAWS),
       clues: [
         {
           id: 'trang-xe-dap',
@@ -440,6 +457,23 @@ const ESSY: Story = {
         { idx: 10, clueId: 'essy-ngap-mua',     yaw:  15, pitch: -20 },
       ], 'es-ng', [
         { idx: 14, scanUrl: '/scans/nha-essy.glb', label: 'Xem nhà Essy 3D', yaw: 0, pitch: -10 },
+      ], [
+        // GPS from user's turn-by-turn descriptions
+        [21.041177, 105.816422], // es-ng-01 start
+        [21.041030, 105.816774], // es-ng-02 turn left
+        [21.041062, 105.816813], // es-ng-03
+        [21.041209, 105.816872], // es-ng-04 curve right
+        [21.041178, 105.817136], // es-ng-05
+        null,                    // es-ng-06
+        [21.041047, 105.817556], // es-ng-07 turn left
+        [21.041013, 105.817661], // es-ng-08
+        [21.041006, 105.817918], // es-ng-09 (0262) turn left
+        [21.041089, 105.817963], // es-ng-10 (0263)
+        null,                    // es-ng-11 straight
+        [21.041601, 105.817944], // es-ng-12 (0267) turn right
+        [21.041330, 105.817918], // es-ng-13 (0268)
+        null,                    // es-ng-14 turn right into hẻm
+        [21.041427, 105.817931], // es-ng-15 Essy house
       ]), ES_NG_YAWS),
       clues: [
         {
@@ -579,7 +613,16 @@ const TRANG_THAI_THINH: Story = {
       bgTourNodes: applyYaws(makeNodes(trang_di_hoc_them, [
         { idx: 1, clueId: 'thai-thinh-hoc-them',       yaw: 45,  pitch: -20},
         { idx: 4, clueId: 'thai-thinh-pho-khong-xe',   yaw: -30, pitch: -20},
-      ], 'tt-hoc'), TT_HOC_YAWS),
+      ], 'tt-hoc', undefined, [
+        // GPS: 143 Trung Liệt → rẽ phải → thẳng → rẽ phải → lớp học thêm
+        [21.010361, 105.819077], // tt-hoc-01 start (143 Trung Liệt)
+        [21.010453, 105.819339], // tt-hoc-02 go right
+        [21.010491, 105.819517], // tt-hoc-03
+        [21.010642, 105.819933], // tt-hoc-04 turn right
+        [21.010423, 105.820156], // tt-hoc-05
+        [21.009981, 105.820251], // tt-hoc-06 study place
+        null,                    // tt-hoc-07
+      ]), TT_HOC_YAWS),
       clues: [
         {
           id: 'thai-thinh-hoc-them',
@@ -614,7 +657,6 @@ const TRANG_THAI_THINH: Story = {
       label: 'Sân chơi khu tập thể',
       sublabel: 'Đi qua vô số lần — chưa bao giờ được vào chơi một lần nào',
       lat: 21.010665, lng: 105.818798,
-      minimapFlipX: true,
       audioSegment: { src: '/audio/oral-history/trung-liet.m4a', startSec: 227 },
       narratorBio: [
         'Trên đường học thêm mỗi buổi chiều, nhìn thấy các bạn chơi trong sân — không được dừng lại.',
@@ -626,7 +668,15 @@ const TRANG_THAI_THINH: Story = {
       bgTourNodes: applyYaws(makeNodes(trang_playground, [
         { idx: 2, clueId: 'thai-thinh-san-choi',   yaw: 45,  pitch: -20},
         { idx: 4, clueId: 'thai-thinh-tieng-cuoi', yaw: -45, pitch: -20}, // was idx 5, shot-06 shifted after deletions
-      ], 'tt-pg'), TT_PG_YAWS),
+      ], 'tt-pg', undefined, [
+        // GPS: straight from 143 Trung Liệt NW to playground (user: "look to the left")
+        [21.010361, 105.819077], // tt-pg-01 same start as hoc-them
+        [21.010437, 105.819007], // interpolated
+        [21.010513, 105.818937], // interpolated
+        [21.010589, 105.818867], // interpolated
+        [21.010665, 105.818798], // tt-pg-05 playground
+        null,                    // tt-pg-06
+      ]), TT_PG_YAWS),
       clues: [
         {
           id: 'thai-thinh-san-choi',
@@ -672,7 +722,14 @@ const TRANG_THAI_THINH: Story = {
       bgTourNodes: applyYaws(makeNodes(trang_quan_oc, [
         { idx: 1, clueId: 'thai-thinh-vio-oc',     yaw: 45,  pitch: -20},
         { idx: 3, clueId: 'thai-thinh-di-voi-me',  yaw: -30, pitch: -20}, // was idx 2, shifted by inserted shot
-      ], 'tt-oc'), TT_OC_YAWS),
+      ], 'tt-oc', undefined, [
+        // GPS: đường Trung Liệt → rẽ vào ngõ 69 → quán ốc oanh
+        [21.010911, 105.820092], // tt-oc-01
+        [21.011139, 105.820296], // tt-oc-02
+        [21.011281, 105.820453], // tt-oc-03 turn right into ngõ 69
+        null,                    // tt-oc-04 inside alley
+        [21.011001, 105.820834], // tt-oc-05 quán ốc oanh
+      ]), TT_OC_YAWS),
       clues: [
         {
           id: 'thai-thinh-vio-oc',

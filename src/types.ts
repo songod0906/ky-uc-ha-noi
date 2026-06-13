@@ -45,6 +45,8 @@ export interface TourScanAnchor {
 export interface TourNode {
   id: string;
   panorama: string;              // '/tours/location-name/node-01.jpg'
+  lat?: number;                  // GPS latitude — used for minimap bearing
+  lng?: number;                  // GPS longitude
   clueAnchors?: TourClueAnchor[];
   navAnchors?: TourNavAnchor[];
   scanAnchors?: TourScanAnchor[];
