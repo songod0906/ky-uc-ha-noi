@@ -153,7 +153,7 @@ export function OralHistoryPlayer({ audioEl, narratorName, narratorColor, paused
     <>
       <AnimatePresence>
         <motion.div
-          className="absolute bottom-4 left-4 z-40 select-none"
+          className="absolute bottom-4 left-4 z-[80] select-none"
           initial={{ opacity: 0, y: 12, scale: 0.9 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 8, scale: 0.9 }}
@@ -247,7 +247,7 @@ export function OralHistoryPlayer({ audioEl, narratorName, narratorColor, paused
 
       {/* Subtitles Render Box */}
       {currentSubText && subLanguage !== 'off' && (
-        <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-30 max-w-[85%] md:max-w-2xl text-center pointer-events-none select-none">
+        <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-[80] max-w-[85%] md:max-w-2xl text-center pointer-events-none select-none">
           <div 
             className="bg-black/80 backdrop-blur-md px-4 py-2.5 rounded-xl border shadow-2xl text-white font-serif text-sm md:text-base leading-relaxed"
             style={{ borderColor: `${narratorColor}33`, boxShadow: `0 8px 32px rgba(0,0,0,0.4)` }}
