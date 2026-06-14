@@ -14,8 +14,8 @@ coverage/
 .vscode/
 *.swp
 
-# Real DJI scan assets — too large for git, add after shoot
-# public/tours/
+# Tour panoramas — served from Supabase CDN, not git
+public/tours/
 public/tours/ltk-shoot-0609/
 gieng-khu-choi.mp4
 quan-net-gaming.mp4

@@ -3,7 +3,7 @@
 let _audio: HTMLAudioElement | null = null;
 
 export const AudioManager = {
-  play(src: string, startSec: number, volume = 0.75): HTMLAudioElement {
+  play(src: string, startSec: number, volume = 0.75, endSec?: number): HTMLAudioElement {
     this.stop();
     const el = new Audio(src);
     el.volume = volume;
@@ -11,6 +11,13 @@ export const AudioManager = {
     // Seek after metadata loads so the browser doesn't silently ignore currentTime
     if (startSec > 0) {
       el.addEventListener('loadedmetadata', () => { el.currentTime = startSec; }, { once: true });
+    }
+
+    // Stop at endSec if provided (prevents bleeding into next segment of the same file)
+    if (endSec != null) {
+      el.addEventListener('timeupdate', () => {
+        if (el.currentTime >= endSec) { el.pause(); el.currentTime = endSec; }
+      });
     }
 
     el.play().catch((err: unknown) => {

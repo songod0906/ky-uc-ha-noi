@@ -47,6 +47,7 @@ export interface TourNode {
   panorama: string;              // '/tours/location-name/node-01.jpg'
   lat?: number;                  // GPS latitude — used for minimap bearing
   lng?: number;                  // GPS longitude
+  historicMapUrl?: string;       // Google Maps embed URL for historical Street View comparison
   clueAnchors?: TourClueAnchor[];
   navAnchors?: TourNavAnchor[];
   scanAnchors?: TourScanAnchor[];
@@ -54,8 +55,9 @@ export interface TourNode {
 // --------------------------------
 
 export interface AudioSegment {
-  src: string;     // '/audio/oral-history/thanh-cong.m4a'
-  startSec: number; // seconds into the file to begin playback
+  src: string;       // '/audio/oral-history/thanh-cong.m4a'
+  startSec: number;  // seconds into the file to begin playback
+  endSec?: number;   // stop playback at this point (prevents bleeding into next segment)
 }
 
 export interface MemorySpace {

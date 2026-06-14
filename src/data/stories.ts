@@ -53,29 +53,36 @@ function applyYaws(
   });
 }
 
+// Attaches historical Google Maps Street View embed URLs to specific nodes.
+// items: [{idx, url}] — idx is 0-based node index.
+function withHistoric(nodes: TourNode[], items: Array<{ idx: number; url: string }>): TourNode[] {
+  const map = new Map(items.map(({ idx, url }) => [idx, url]));
+  return nodes.map((n, i) => map.has(i) ? { ...n, historicMapUrl: map.get(i)! } : n);
+}
+
 // ─── LTK panorama sequences ──────────────────────────────────────────────────
 const ltk_cong_truong = [
-  '/tours/ltk/truoc-cong-truong/shot-01.jpg',
-  '/tours/ltk/quan-an-vat/shot-01.jpg',
-  '/tours/ltk/quan-an-vat/shot-02.jpg',
-  '/tours/ltk/quan-an-vat/shot-03.jpg',
-  '/tours/ltk/quan-an-vat/shot-04.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/ltk/truoc-cong-truong/shot-01.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/ltk/quan-an-vat/shot-01.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/ltk/quan-an-vat/shot-02.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/ltk/quan-an-vat/shot-03.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/ltk/quan-an-vat/shot-04.jpg',
 ];
 
 const ltk_ho_thanh_cong = [
-  '/tours/ltk/ho-thanh-cong/shot-01.jpg',
-  '/tours/ltk/ho-thanh-cong/shot-02.jpg',
-  '/tours/ltk/ho-thanh-cong/shot-03.jpg',
-  '/tours/ltk/ho-thanh-cong/shot-04.jpg',
-  '/tours/ltk/ho-thanh-cong/shot-05.jpg',
-  '/tours/ltk/ho-thanh-cong/shot-06.jpg',
-  '/tours/ltk/ho-thanh-cong/shot-07.jpg',
-  '/tours/ltk/ho-thanh-cong/shot-08.jpg',
-  '/tours/ltk/ho-thanh-cong/shot-09.jpg',
-  '/tours/ltk/ho-thanh-cong/shot-10.jpg',
-  '/tours/ltk/ho-thanh-cong/shot-11.jpg',
-  '/tours/ltk/ho-thanh-cong/shot-12.jpg',
-  '/tours/ltk/ho-thanh-cong/shot-13.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/ltk/ho-thanh-cong/shot-01.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/ltk/ho-thanh-cong/shot-02.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/ltk/ho-thanh-cong/shot-03.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/ltk/ho-thanh-cong/shot-04.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/ltk/ho-thanh-cong/shot-05.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/ltk/ho-thanh-cong/shot-06.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/ltk/ho-thanh-cong/shot-07.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/ltk/ho-thanh-cong/shot-08.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/ltk/ho-thanh-cong/shot-09.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/ltk/ho-thanh-cong/shot-10.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/ltk/ho-thanh-cong/shot-11.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/ltk/ho-thanh-cong/shot-12.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/ltk/ho-thanh-cong/shot-13.jpg',
   // shot-14 and shot-15 removed during calibration pass
 ];
 
@@ -92,23 +99,23 @@ const HTC_YAWS: Record<string, { fwd: number; back: number }> = {
 };
 
 const ltk_quan_net = [
-  '/tours/ltk/duong-den-quan-net/shot-01.jpg',           // qn-01
-  '/tours/ltk/duong-den-quan-net/shot-02.jpg',           // qn-02
-  '/tours/ltk/duong-den-quan-net/shot-03.jpg',           // qn-03
-  '/tours/ltk/duong-den-quan-net/all/shot-009.jpg',      // qn-04  (added)
-  '/tours/ltk/duong-den-quan-net/shot-04.jpg',           // qn-05
-  '/tours/ltk/duong-den-quan-net/shot-05.jpg',           // qn-06
-  '/tours/ltk/duong-den-quan-net/shot-06.jpg',           // qn-07
-  '/tours/ltk/duong-den-quan-net/shot-07.jpg',           // qn-08
-  '/tours/ltk/duong-den-quan-net/shot-08.jpg',           // qn-09
-  '/tours/ltk/duong-den-quan-net/all/shot-023.jpg',      // qn-10  (added)
-  '/tours/ltk/duong-den-quan-net/shot-09.jpg',           // qn-11
-  '/tours/ltk/duong-den-quan-net/shot-10.jpg',           // qn-12
-  '/tours/ltk/duong-den-quan-net/shot-11.jpg',           // qn-13
-  '/tours/ltk/duong-den-quan-net/all/shot-033.jpg',      // qn-14  (added)
-  '/tours/ltk/trong-quan-net/shot-01.jpg',               // qn-15
-  '/tours/ltk/trong-quan-net/shot-03.jpg',               // qn-16  (shot-02 removed)
-  '/tours/ltk/trong-quan-net/shot-04.jpg',               // qn-17
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/ltk/duong-den-quan-net/shot-01.jpg',           // qn-01
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/ltk/duong-den-quan-net/shot-02.jpg',           // qn-02
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/ltk/duong-den-quan-net/shot-03.jpg',           // qn-03
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/ltk/duong-den-quan-net/all/shot-009.jpg',      // qn-04  (added)
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/ltk/duong-den-quan-net/shot-04.jpg',           // qn-05
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/ltk/duong-den-quan-net/shot-05.jpg',           // qn-06
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/ltk/duong-den-quan-net/shot-06.jpg',           // qn-07
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/ltk/duong-den-quan-net/shot-07.jpg',           // qn-08
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/ltk/duong-den-quan-net/shot-08.jpg',           // qn-09
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/ltk/duong-den-quan-net/all/shot-023.jpg',      // qn-10  (added)
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/ltk/duong-den-quan-net/shot-09.jpg',           // qn-11
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/ltk/duong-den-quan-net/shot-10.jpg',           // qn-12
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/ltk/duong-den-quan-net/shot-11.jpg',           // qn-13
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/ltk/duong-den-quan-net/all/shot-033.jpg',      // qn-14  (added)
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/ltk/trong-quan-net/shot-01.jpg',               // qn-15
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/ltk/trong-quan-net/shot-03.jpg',               // qn-16  (shot-02 removed)
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/ltk/trong-quan-net/shot-04.jpg',               // qn-17
 ];
 
 const QN_YAWS: Record<string, { fwd: number; back: number }> = {
@@ -122,13 +129,13 @@ const QN_YAWS: Record<string, { fwd: number; back: number }> = {
 
 // ─── Trang panorama sequences ─────────────────────────────────────────────────
 const trang_di_hoc_them = [
-  '/tours/trang/di-hoc-them/shot-01.jpg',
-  '/tours/trang/di-hoc-them/shot-02.jpg',
-  '/tours/trang/di-hoc-them/shot-03.jpg',
-  '/tours/trang/di-hoc-them/shot-04.jpg',
-  '/tours/trang/di-hoc-them/shot-05.jpg',
-  '/tours/trang/di-hoc-them/shot-06.jpg',
-  '/tours/trang/di-hoc-them/shot-07.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/trang/di-hoc-them/shot-01.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/trang/di-hoc-them/shot-02.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/trang/di-hoc-them/shot-03.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/trang/di-hoc-them/shot-04.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/trang/di-hoc-them/shot-05.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/trang/di-hoc-them/shot-06.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/trang/di-hoc-them/shot-07.jpg',
 ];
 
 const TT_HOC_YAWS: Record<string, { fwd: number; back: number }> = {
@@ -140,13 +147,13 @@ const TT_HOC_YAWS: Record<string, { fwd: number; back: number }> = {
 };
 
 const trang_playground = [
-  '/tours/trang/playground/shot-01.jpg',
-  '/tours/trang/playground/shot-02.jpg',
-  '/tours/trang/playground/shot-03.jpg',
-  '/tours/trang/playground/shot-04.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/trang/playground/shot-01.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/trang/playground/shot-02.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/trang/playground/shot-03.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/trang/playground/shot-04.jpg',
   // shot-05 and shot-07 removed during calibration
-  '/tours/trang/playground/shot-06.jpg',
-  '/tours/trang/playground/shot-08.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/trang/playground/shot-06.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/trang/playground/shot-08.jpg',
 ];
 
 const TT_PG_YAWS: Record<string, { fwd: number; back: number }> = {
@@ -157,11 +164,11 @@ const TT_PG_YAWS: Record<string, { fwd: number; back: number }> = {
 };
 
 const trang_quan_oc = [
-  '/tours/trang/quan-oc-oanh/shot-01.jpg',
-  '/tours/trang/quan-oc-oanh/shot-02.jpg',
-  '/tours/trang/quan-oc-oanh/all/shot-005.jpg', // added during calibration
-  '/tours/trang/quan-oc-oanh/shot-03.jpg',
-  '/tours/trang/quan-oc-oanh/shot-04.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/trang/quan-oc-oanh/shot-01.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/trang/quan-oc-oanh/shot-02.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/trang/quan-oc-oanh/all/shot-005.jpg', // added during calibration
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/trang/quan-oc-oanh/shot-03.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/trang/quan-oc-oanh/shot-04.jpg',
 ];
 
 const TT_OC_YAWS: Record<string, { fwd: number; back: number }> = {
@@ -191,50 +198,50 @@ const ES_NG_YAWS: Record<string, { fwd: number; back: number }> = {
 };
 
 const essy_duong_vao_nha = [
-  '/tours/essy/duong-vao-nha/shot-01.jpg',        // es-ng-01  start (21.041177, 105.816422)
-  '/tours/essy/duong-vao-nha/shot-02.jpg',        // es-ng-02  turn left
-  '/tours/essy/duong-vao-nha/shot-03.jpg',        // es-ng-03
-  '/tours/essy/duong-vao-nha/shot-04.jpg',        // es-ng-04  curve right
-  '/tours/essy/duong-vao-nha/shot-05.jpg',        // es-ng-05
-  '/tours/essy/duong-vao-nha/shot-06.jpg',        // es-ng-06
-  '/tours/essy/duong-vao-nha/shot-07.jpg',        // es-ng-07  turn left
-  '/tours/essy/duong-vao-nha/shot-08.jpg',        // es-ng-08  (21.041013, 105.817661)
-  '/tours/essy/duong-vao-nha/all/new-09.jpg',     // es-ng-09  0262 (21.041006, 105.817918) turn left
-  '/tours/essy/duong-vao-nha/all/new-10.jpg',     // es-ng-10  0263 (21.041089, 105.817963) straight
-  '/tours/essy/duong-vao-nha/shot-09.jpg',        // es-ng-11  turn right to 0267
-  '/tours/essy/duong-vao-nha/all/new-11.jpg',     // es-ng-12  0267 (21.041601, 105.817944) right
-  '/tours/essy/duong-vao-nha/all/new-12.jpg',     // es-ng-13  0268 (21.041330, 105.817918) straight
-  '/tours/essy/duong-vao-nha/shot-10.jpg',        // es-ng-14  turn right into house hẻm
-  '/tours/essy/duong-vao-nha/shot-11.jpg',        // es-ng-15  Essy house (21.041427, 105.817931)
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/essy/duong-vao-nha/shot-01.jpg',        // es-ng-01  start (21.041177, 105.816422)
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/essy/duong-vao-nha/shot-02.jpg',        // es-ng-02  turn left
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/essy/duong-vao-nha/shot-03.jpg',        // es-ng-03
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/essy/duong-vao-nha/shot-04.jpg',        // es-ng-04  curve right
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/essy/duong-vao-nha/shot-05.jpg',        // es-ng-05
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/essy/duong-vao-nha/shot-06.jpg',        // es-ng-06
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/essy/duong-vao-nha/shot-07.jpg',        // es-ng-07  turn left
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/essy/duong-vao-nha/shot-08.jpg',        // es-ng-08  (21.041013, 105.817661)
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/essy/duong-vao-nha/all/new-09.jpg',     // es-ng-09  0262 (21.041006, 105.817918) turn left
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/essy/duong-vao-nha/all/new-10.jpg',     // es-ng-10  0263 (21.041089, 105.817963) straight
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/essy/duong-vao-nha/shot-09.jpg',        // es-ng-11  turn right to 0267
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/essy/duong-vao-nha/all/new-11.jpg',     // es-ng-12  0267 (21.041601, 105.817944) right
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/essy/duong-vao-nha/all/new-12.jpg',     // es-ng-13  0268 (21.041330, 105.817918) straight
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/essy/duong-vao-nha/shot-10.jpg',        // es-ng-14  turn right into house hẻm
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/essy/duong-vao-nha/shot-11.jpg',        // es-ng-15  Essy house (21.041427, 105.817931)
 ];
 
 const essy_de_la_thanh = [
-  '/tours/essy/de-la-thanh/shot-01.jpg',
-  '/tours/essy/de-la-thanh/shot-02.jpg',
-  '/tours/essy/de-la-thanh/shot-03.jpg',
-  '/tours/essy/de-la-thanh/shot-04.jpg',
-  '/tours/essy/de-la-thanh/shot-05.jpg',
-  '/tours/essy/de-la-thanh/shot-06.jpg',
-  '/tours/essy/de-la-thanh/shot-07.jpg',
-  '/tours/essy/de-la-thanh/shot-08.jpg',
-  '/tours/essy/de-la-thanh/shot-09.jpg',
-  '/tours/essy/de-la-thanh/shot-10.jpg',
-  '/tours/essy/de-la-thanh/shot-11.jpg',
-  '/tours/essy/de-la-thanh/shot-12.jpg',
-  '/tours/essy/de-la-thanh/shot-13.jpg',
-  '/tours/essy/de-la-thanh/shot-14.jpg',
-  '/tours/essy/de-la-thanh/shot-15.jpg',
-  '/tours/essy/de-la-thanh/shot-16.jpg',
-  '/tours/essy/de-la-thanh/shot-17.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/essy/de-la-thanh/shot-01.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/essy/de-la-thanh/shot-02.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/essy/de-la-thanh/shot-03.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/essy/de-la-thanh/shot-04.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/essy/de-la-thanh/shot-05.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/essy/de-la-thanh/shot-06.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/essy/de-la-thanh/shot-07.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/essy/de-la-thanh/shot-08.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/essy/de-la-thanh/shot-09.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/essy/de-la-thanh/shot-10.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/essy/de-la-thanh/shot-11.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/essy/de-la-thanh/shot-12.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/essy/de-la-thanh/shot-13.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/essy/de-la-thanh/shot-14.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/essy/de-la-thanh/shot-15.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/essy/de-la-thanh/shot-16.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/essy/de-la-thanh/shot-17.jpg',
 ];
 
 // Prologue opening scene — exported for PrologueViewer
 export const DE_LA_THANH_NODES: TourNode[] = makeNodes(essy_de_la_thanh, [], 'dla');
 
 const essy_playground = [
-  '/tours/essy/playground/shot-01.jpg',
-  '/tours/essy/playground/shot-02.jpg',
-  '/tours/essy/playground/shot-03.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/essy/playground/shot-01.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/essy/playground/shot-02.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/essy/playground/shot-03.jpg',
   // shots 04-10 removed during calibration
 ];
 
@@ -251,7 +258,7 @@ const TRANG: Story = {
       label: 'Cổng trường',
       sublabel: 'Trường Tiểu học Thành Công A — tiệm thuê truyện, thẻ sưu tầm, kem son, kem chanh',
       lat: 21.023324, lng: 105.812746,
-      audioSegment: { src: '/audio/oral-history/thanh-cong.m4a', startSec: 36 },
+      audioSegment: { src: '/audio/oral-history/thanh-cong.m4a', startSec: 36, endSec: 439 },
       narratorBio: [
         'Lớp tiểu học không có điều hòa — cửa sổ mở, nghe được tiếng thầy cô các lớp chửi nhau.',
         'Tiệm thuê truyện Doraemon hai nghìn một ngày — "sharing economy trước khi có Grab".',
@@ -259,11 +266,11 @@ const TRANG: Story = {
       ],
       bgGradient: 'linear-gradient(160deg, #f5e6c8 0%, #e8d5a3 40%, #d4b896 100%)',
       bgTone: '#c8a96e',
-      bgTourNodes: makeNodes(ltk_cong_truong, [
-        { idx: 1, clueId: 'trang-an-vat',      yaw: 45,  pitch: -20 },
-        { idx: 3, clueId: 'trang-tieng-trong',  yaw: -30, pitch: -20 },
-      ], 'ct', [
+      bgTourNodes: withHistoric(makeNodes(ltk_cong_truong, [], 'ct', [
         { idx: 4, scanUrl: '/scans/quan-an-vat.glb', label: 'Xem quán ăn vặt 3D', yaw: 0, pitch: -10 },
+      ]), [
+        // Thanh Cong A school area, Google Street View 2018
+        { idx: 0, url: 'https://www.google.com/maps/embed?pb=!4v1781406756612!6m8!1m7!1sgw5FtU3SO2EZh6Fw6DHM1Q!2m2!1d21.02335819365613!2d105.812700469784!3f177.3934717023654!4f-8.877060164979412!5f0.7820865974627469' },
       ]),
       clues: [
         {
@@ -297,9 +304,9 @@ const TRANG: Story = {
     {
       id: 'quan-net',
       label: 'Quán net — nhà mình mở',
-      sublabel: 'Màn hình CRT to đùng, tiếng Audition "cọc cọc cọc" — và nhà mình mở quán',
+      sublabel: 'Theo bước Kiên từ cổng trường về quán net nhà mở — màn CRT, tiếng Audition "cọc cọc cọc"',
       lat: 21.020861, lng: 105.813559,
-      audioSegment: { src: '/audio/oral-history/thanh-cong.m4a', startSec: 439 },
+      audioSegment: { src: '/audio/oral-history/thanh-cong.m4a', startSec: 439, endSec: 527 },
       videoClip: 'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/video/quan-net-gaming.mp4',
       narratorBio: [
         'Nhà mình mở quán net — tan học là về thẳng nhà chơi điện tử, không phải đến quán người khác.',
@@ -308,10 +315,7 @@ const TRANG: Story = {
       ],
       bgGradient: 'linear-gradient(160deg, #2a1f3d 0%, #3d2f5c 50%, #1a1228 100%)',
       bgTone: '#1a1228',
-      bgTourNodes: applyYaws(makeNodes(ltk_quan_net, [
-        { idx: 14, clueId: 'trang-tieng-chui', yaw: 45,  pitch: -20 },
-        { idx: 15, clueId: 'trang-choi-net',   yaw: -30, pitch: -20 },
-      ], 'qn', [
+      bgTourNodes: withHistoric(applyYaws(makeNodes(ltk_quan_net, [], 'qn', [
         { idx: 16, scanUrl: '/scans/quan-net.glb', label: 'Xem quán net 3D', yaw: 0, pitch: -10 },
       ], [
         // GPS: cổng trường → pic4 → pic8 → pic10 → pic12 (quán net)
@@ -320,7 +324,16 @@ const TRANG: Story = {
         [21.021431, 105.814166], null,
         [21.020933, 105.814064], null,
         [21.020861, 105.813559], null, null, null, null, null,
-      ]), QN_YAWS),
+      ]), QN_YAWS), [
+        // Historical Google Street View matched to DJI shots — shows same streets before demolition
+        { idx: 3,  url: 'https://www.google.com/maps/embed?pb=!4v1781407111689!6m8!1m7!1slPxhHBlAz66aKFd1Embsdw!2m2!1d21.02347691720712!2d105.8137573922583!3f103.09771536124487!4f-11.130644329606284!5f0.7820865974627469' },
+        { idx: 4,  url: 'https://www.google.com/maps/embed?pb=!4v1781407214602!6m8!1m7!1sQgjDRoyS4wS42RVMqWJOng!2m2!1d21.02330514445645!2d105.8139358308204!3f119.53192455044567!4f-1.6804918275248895!5f0.7820865974627469' },
+        { idx: 5,  url: 'https://www.google.com/maps/embed?pb=!4v1781407244320!6m8!1m7!1sSGRebU7lddzbDf2VOWU0DA!2m2!1d21.02268538074701!2d105.814032037225!3f187.01444020052543!4f-5.372352210014924!5f0.7820865974627469' },
+        { idx: 6,  url: 'https://www.google.com/maps/embed?pb=!4v1781407286662!6m8!1m7!1st339e7O8lnS4VdjB-3JZ7A!2m2!1d21.02187181043283!2d105.8141045055832!3f169.68711556475915!4f-9.580848139812787!5f0.7820865974627469' },
+        { idx: 7,  url: 'https://www.google.com/maps/embed?pb=!4v1781407062490!6m8!1m7!1s9zFbWecZ9F2sL5QsXhzegA!2m2!1d21.02146714834353!2d105.8141146278655!3f95.22881881848323!4f0!5f0.7820865974627469' },
+        { idx: 8,  url: 'https://www.google.com/maps/embed?pb=!4v1781407009670!6m8!1m7!1sqQjwzEUZWPM_9nT86j3UrA!2m2!1d21.02131186181676!2d105.814022273258!3f178.13185559786697!4f-4.577780076155491!5f0.7820865974627469' },
+        { idx: 9,  url: 'https://www.google.com/maps/embed?pb=!4v1781406844727!6m8!1m7!1s8GbK_z_u6JmL2Oq_b8ndVw!2m2!1d21.02121343497108!2d105.8140269312972!3f253.58290338190974!4f-13.194011320911557!5f0.7820865974627469' },
+      ]),
       clues: [
         {
           id: 'trang-tieng-chui',
@@ -355,25 +368,26 @@ const TRANG: Story = {
       label: 'Hồ Thành Công',
       sublabel: 'Cửa sau lách xe vào, bê tông gập ghềnh — con người Thành Công chả ai đi cửa chính',
       lat: 21.020445, lng: 105.813269,
-      audioSegment: { src: '/audio/oral-history/thanh-cong.m4a', startSec: 527 },
+      audioSegment: { src: '/audio/oral-history/thanh-cong.m4a', startSec: 527, endSec: 660 },
       narratorBio: [
         'Ông bà dẫn ra hồ tập xe đạp cuối tuần — hồ bê tông gập ghềnh, nhiều chó, mùi tanh cá chết.',
         'Không ai đi cửa chính — người Thành Công luôn lách qua cái cửa sắt không bao giờ mở hết.',
         'Khi giải tỏa, mất không chỉ nhà — mất cả cách một khu phố biết nhau và sống cùng nhau.',
       ],
+      videoClip: 'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/video/ho-thanh-cong.mp4',
+      minimapFlipX: true,
       bgGradient: 'linear-gradient(160deg, #c8dde8 0%, #a3c4d5 40%, #7eaabf 100%)',
       bgTone: '#5a7a8a',
-      bgTourNodes: applyYaws(makeNodes(ltk_ho_thanh_cong, [
-        { idx: 2,  clueId: 'trang-xe-dap',      yaw: 60,  pitch: -20},
-        { idx: 7,  clueId: 'trang-nhac-aerobic', yaw: -45, pitch: -20},
-        { idx: 12, clueId: 'trang-khu-tap-the',  yaw: 30,  pitch: -20},
-      ], 'htc', undefined, [
+      bgTourNodes: withHistoric(applyYaws(makeNodes(ltk_ho_thanh_cong, [], 'htc', undefined, [
         // GPS: cổng hồ → thẳng → rẽ trái → cầu thang → vòng quanh hồ
         [21.020445, 105.813269], null, null, null,
         [21.020333, 105.813667], null, null, null,
         null, null, null, null,
         [21.020203, 105.813215],
-      ]), HTC_YAWS),
+      ]), HTC_YAWS), [
+        // Hồ Thành Công 2017
+        { idx: 0, url: 'https://www.google.com/maps/embed?pb=!4v1781407926721!6m8!1m7!1sAnVN58QpnXISxwLh_W32yA!2m2!1d21.02048879554921!2d105.8132082827019!3f195.77940340158702!4f-7.682892952432283!5f0.7820865974627469' },
+      ]),
       clues: [
         {
           id: 'trang-xe-dap',
@@ -445,17 +459,13 @@ const ESSY: Story = {
       lat: 21.041427, lng: 105.817931,
       audioSegment: { src: '/audio/oral-history/hoang-hoa-tham.m4a', startSec: 1 },
       narratorBio: [
-        'Ngõ 33 Văn Cao → 267 Hoàng Hoa Thám → rẽ 3-4 lần mới đến nhà — Grab không tự tìm được.',
-        'Essy biết 5 đường vào nhà từ 3 hướng khác nhau. Đây là loại tri thức không ai dạy được.',
-        'Sáu bảy nhà chung khoảng sân biệt lập — trồng cây chanh, hoa nhài, mát lạ giữa Hà Nội.',
+        'Nhà nằm sâu giữa ba trục đường lớn — Essy biết năm con đường vào nhà từ ba hướng khác nhau.',
+        '"Bản đồ không hiển thị chính xác. Phải phụ thuộc vào tri thức địa phương của người sống lâu năm ở đây."',
+        'Grab, Be, Xanh SM gần như không ai tự tìm được — Essy luôn phải ra đón hoặc chỉ đường.',
       ],
       bgGradient: 'linear-gradient(160deg, #d4c5a9 0%, #c5b08a 40%, #b09060 100%)',
       bgTone: '#6b5a3e',
-      bgTourNodes: applyYaws(makeNodes(essy_duong_vao_nha, [
-        { idx: 2,  clueId: 'essy-ngo-kho',      yaw:  20, pitch: -20 },
-        { idx: 5,  clueId: 'essy-cay-xanh-ngo', yaw: -20, pitch: -20 },
-        { idx: 10, clueId: 'essy-ngap-mua',     yaw:  15, pitch: -20 },
-      ], 'es-ng', [
+      bgTourNodes: applyYaws(makeNodes(essy_duong_vao_nha, [], 'es-ng', [
         { idx: 14, scanUrl: '/scans/nha-essy.glb', label: 'Xem nhà Essy 3D', yaw: 0, pitch: -10 },
       ], [
         // GPS from user's turn-by-turn descriptions
@@ -521,19 +531,15 @@ const ESSY: Story = {
       sublabel: 'Con đường chỉ người trong khu mới biết — dẫn ra giếng cũ nay thành sân tập thể',
       lat: 21.040723, lng: 105.818568,
       audioSegment: { src: '/audio/oral-history/hoang-hoa-tham.m4a', startSec: 299 },
-      videoClip: 'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/video/gieng-khu-choi.mp4',
+      videoClip: 'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/video/gieng-playground.mp4',
       narratorBio: [
-        'Từ Văn Cao có một con đường nhỏ dẫn ra giếng cũ — chỉ người trong khu mới biết tồn tại.',
-        'Bên trong: nhiều cây, tòa nhà che nắng, mát hơn ngoài đường. Giờ là sân tập thể dục.',
-        'Trong ngõ 267 có một ngôi chùa di tích quốc gia mà gần như không ai Hà Nội biết đến.',
+        'Từ Hoàng Hoa Thám sang Văn Cao có một con đường nhỏ — chỉ người trong khu mới biết đến.',
+        '"Mình thực sự chưa từng gặp ai không phải người ở đây mà biết con đường đó cả."',
+        'Bên trong: nhiều cây, tòa nhà che kín ánh mặt trời — mát hơn bất kỳ đâu giữa Hà Nội.',
       ],
       bgGradient: 'linear-gradient(160deg, #a8c5a0 0%, #7da87a 40%, #5a8a56 100%)',
       bgTone: '#3a6a36',
-      bgTourNodes: makeNodes(essy_playground, [
-        { idx: 0, clueId: 'essy-tre-con-gieng', yaw: 45,  pitch: -20},
-        { idx: 1, clueId: 'essy-gieng-mat',     yaw: -45, pitch: -20},
-        { idx: 2, clueId: 'essy-di-tich',       yaw: 30,  pitch: -20},
-      ], 'es-gk'),
+      bgTourNodes: makeNodes(essy_playground, [], 'es-gk'),
       clues: [
         {
           id: 'essy-tre-con-gieng',
@@ -610,10 +616,7 @@ const TRANG_THAI_THINH: Story = {
       ],
       bgGradient: 'linear-gradient(160deg, #f0e4c8 0%, #d9c49a 40%, #c4a870 100%)',
       bgTone: '#c4a870',
-      bgTourNodes: applyYaws(makeNodes(trang_di_hoc_them, [
-        { idx: 1, clueId: 'thai-thinh-hoc-them',       yaw: 45,  pitch: -20},
-        { idx: 4, clueId: 'thai-thinh-pho-khong-xe',   yaw: -30, pitch: -20},
-      ], 'tt-hoc', undefined, [
+      bgTourNodes: withHistoric(applyYaws(makeNodes(trang_di_hoc_them, [], 'tt-hoc', undefined, [
         // GPS: 143 Trung Liệt → rẽ phải → thẳng → rẽ phải → lớp học thêm
         [21.010361, 105.819077], // tt-hoc-01 start (143 Trung Liệt)
         [21.010453, 105.819339], // tt-hoc-02 go right
@@ -622,7 +625,14 @@ const TRANG_THAI_THINH: Story = {
         [21.010423, 105.820156], // tt-hoc-05
         [21.009981, 105.820251], // tt-hoc-06 study place
         null,                    // tt-hoc-07
-      ]), TT_HOC_YAWS),
+      ]), TT_HOC_YAWS), [
+        // Historical Street View matched to 143 Trung Liệt → ONG Store route
+        { idx: 0, url: 'https://www.google.com/maps/embed?pb=!4v1781408126695!6m8!1m7!1sTv5fNyWV5uUbRuPQSq2dIA!2m2!1d21.01024182268491!2d105.8189569940536!3f237.84655727624724!4f-6.8214980075420755!5f0.7820865974627469' },
+        { idx: 1, url: 'https://www.google.com/maps/embed?pb=!4v1781408170669!6m8!1m7!1sVjpr5xP4uSQrqxEc5KCj0g!2m2!1d21.01017391394856!2d105.8187200549374!3f219.59939081504942!4f-28.616128720245776!5f0.7820865974627469' },
+        { idx: 2, url: 'https://www.google.com/maps/embed?pb=!4v1781408292936!6m8!1m7!1s2ZGDnTFUf7dkQ92AzPYXAg!2m2!1d21.01049023995335!2d105.8195154370104!3f62.25513190348058!4f-6.287237986228803!5f0.7820865974627469' },
+        { idx: 3, url: 'https://www.google.com/maps/embed?pb=!4v1781408364592!6m8!1m7!1s_n6SQubPSlBt-Zd_87SShA!2m2!1d21.01075480596271!2d105.8196807127992!3f324.39853889627045!4f-6.447499879491232!5f0.7820865974627469' },
+        { idx: 4, url: 'https://www.google.com/maps/embed?pb=!4v1781408422825!6m8!1m7!1s1XpIx8FMLqaQpo6_jUhk7A!2m2!1d21.01095812934958!2d105.8195033436658!3f317.37933527468243!4f-3.6715733113441473!5f0.7820865974627469' },
+      ]),
       clues: [
         {
           id: 'thai-thinh-hoc-them',
@@ -665,10 +675,7 @@ const TRANG_THAI_THINH: Story = {
       ],
       bgGradient: 'linear-gradient(160deg, #b8d4b0 0%, #8aba88 40%, #6a9866 100%)',
       bgTone: '#6a9866',
-      bgTourNodes: applyYaws(makeNodes(trang_playground, [
-        { idx: 2, clueId: 'thai-thinh-san-choi',   yaw: 45,  pitch: -20},
-        { idx: 4, clueId: 'thai-thinh-tieng-cuoi', yaw: -45, pitch: -20}, // was idx 5, shot-06 shifted after deletions
-      ], 'tt-pg', undefined, [
+      bgTourNodes: applyYaws(makeNodes(trang_playground, [], 'tt-pg', undefined, [
         // GPS: straight from 143 Trung Liệt NW to playground (user: "look to the left")
         [21.010361, 105.819077], // tt-pg-01 same start as hoc-them
         [21.010437, 105.819007], // interpolated
@@ -719,17 +726,19 @@ const TRANG_THAI_THINH: Story = {
       ],
       bgGradient: 'linear-gradient(160deg, #e8c890 0%, #d4a060 40%, #b87840 100%)',
       bgTone: '#c48040',
-      bgTourNodes: applyYaws(makeNodes(trang_quan_oc, [
-        { idx: 1, clueId: 'thai-thinh-vio-oc',     yaw: 45,  pitch: -20},
-        { idx: 3, clueId: 'thai-thinh-di-voi-me',  yaw: -30, pitch: -20}, // was idx 2, shifted by inserted shot
-      ], 'tt-oc', undefined, [
+      videoClip: 'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/video/quan-oc-violin.mp4',
+      bgTourNodes: withHistoric(applyYaws(makeNodes(trang_quan_oc, [], 'tt-oc', undefined, [
         // GPS: đường Trung Liệt → rẽ vào ngõ 69 → quán ốc oanh
         [21.010911, 105.820092], // tt-oc-01
         [21.011139, 105.820296], // tt-oc-02
         [21.011281, 105.820453], // tt-oc-03 turn right into ngõ 69
         null,                    // tt-oc-04 inside alley
         [21.011001, 105.820834], // tt-oc-05 quán ốc oanh
-      ]), TT_OC_YAWS),
+      ]), TT_OC_YAWS), [
+        { idx: 0, url: 'https://www.google.com/maps/embed?pb=!4v1781408630892!6m8!1m7!1sqqnx-p_V94aaSUetEHMvAg!2m2!1d21.01091163804722!2d105.8200952018351!3f42.95893351208221!4f-3.4922654802283972!5f0.7820865974627469' },
+        { idx: 1, url: 'https://www.google.com/maps/embed?pb=!4v1781408663887!6m8!1m7!1spNB7WYfP2N6cX5e7_Yf62A!2m2!1d21.0111221435295!2d105.8202784838613!3f38.21358173713219!4f-6.256166983100783!5f0.7820865974627469' },
+        { idx: 2, url: 'https://www.google.com/maps/embed?pb=!4v1781408723312!6m8!1m7!1spNB7WYfP2N6cX5e7_Yf62A!2m2!1d21.0111221435295!2d105.8202784838613!3f354.0648327138127!4f-5.592324029480807!5f0.7820865974627469' },
+      ]),
       clues: [
         {
           id: 'thai-thinh-vio-oc',

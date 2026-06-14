@@ -53,7 +53,7 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, onBack }: MemoryRo
 
   const startOralAudio = (space: Story['spaces'][number]) => {
     if (!space.audioSegment) return;
-    const el = AudioManager.play(space.audioSegment.src, space.audioSegment.startSec);
+    const el = AudioManager.play(space.audioSegment.src, space.audioSegment.startSec, 0.75, space.audioSegment.endSec);
     oralAudioRef.current = el;
     setOralAudioActive(true);
   };
@@ -64,6 +64,15 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, onBack }: MemoryRo
       AudioSynth.playPluck(330, 1.2, 0.3);
     }
   };
+
+  // Auto-collect all clues when entering a space — anchors removed, audio plays automatically
+  useEffect(() => {
+    const ids = activeSpace.clues.map(c => c.id);
+    setCollectedIds(prev => {
+      const newIds = ids.filter(id => !prev.includes(id));
+      return newIds.length ? [...prev, ...newIds] : prev;
+    });
+  }, [activeSpace.id]);
 
   const handleFinish = () => {
     AudioManager.stop();

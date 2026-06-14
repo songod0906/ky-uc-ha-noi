@@ -515,6 +515,7 @@ export function PanoramaViewer({
   const [allShots, setAllShots] = useState<string[]>([]);
   const [manifestError, setManifestError] = useState<string | null>(null);
   const [copyFlash, setCopyFlash] = useState(false);
+  const [showHistoric, setShowHistoric] = useState(false);
   const [exportText, setExportText] = useState<string | null>(null);
 
   // Persist node list for this sequence whenever it changes
@@ -562,6 +563,9 @@ export function PanoramaViewer({
     if (nodeIndex > 0) setNodeId(localNodes[nodeIndex - 1].id);
   }, [nodeIndex, localNodes]);
 
+  // Reset historic overlay when moving to a different node
+  useEffect(() => { setShowHistoric(false); }, [nodeId]);
+
   // Delete current node from localNodes, move to next/prev
   const deleteNode = useCallback(() => {
     if (localNodes.length <= 1) return;
@@ -608,7 +612,9 @@ export function PanoramaViewer({
     const allData: Array<{ id: string; panorama: string; fwdYaw: number | null; backYaw: number | null }> = [];
 
     // Only export sequences belonging to the same story as the current viewer
-    const currentStory = nodes[0]?.panorama.split('/')[2] ?? '';
+    // Works for both local (/tours/ltk/...) and CDN (https://.../tours/ltk/...) URLs
+    const storyFromPano = (p: string) => { const i = p.indexOf('/tours/'); return i >= 0 ? p.slice(i + 7).split('/')[0] : ''; };
+    const currentStory = storyFromPano(nodes[0]?.panorama ?? '');
 
     try {
       for (let i = 0; i < localStorage.length; i++) {
@@ -618,7 +624,7 @@ export function PanoramaViewer({
         if (!raw) continue;
         const seqNodes = JSON.parse(raw) as TourNode[];
         // Skip sequences from other stories or prologue (dla-*)
-        const seqStory = seqNodes[0]?.panorama.split('/')[2] ?? '';
+        const seqStory = storyFromPano(seqNodes[0]?.panorama ?? '');
         if (seqStory !== currentStory) continue;
         if (seqNodes[0]?.id.startsWith('dla-')) continue;
         seqNodes.forEach(n => allData.push({
@@ -832,6 +838,45 @@ export function PanoramaViewer({
               }`}
             />
           ))}
+        </div>
+      )}
+
+      {/* Historic Street View toggle button */}
+      {localNodes[nodeIndex]?.historicMapUrl && !CALIB_MODE && (
+        <button
+          onClick={() => setShowHistoric(v => !v)}
+          className="absolute top-4 right-4 z-30 flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-mono text-xs transition-all"
+          style={{
+            background: showHistoric ? 'rgba(200,170,120,0.9)' : 'rgba(0,0,0,0.45)',
+            color: showHistoric ? '#1a1006' : 'rgba(255,255,255,0.75)',
+            border: showHistoric ? '1px solid rgba(200,170,120,0.4)' : '1px solid rgba(255,255,255,0.15)',
+            backdropFilter: 'blur(6px)',
+          }}
+        >
+          <span style={{ fontSize: 10 }}>📷</span> Trước đây
+        </button>
+      )}
+
+      {/* Historic Street View iframe overlay */}
+      {showHistoric && localNodes[nodeIndex]?.historicMapUrl && (
+        <div className="absolute inset-0 z-[60] flex flex-col">
+          <iframe
+            src={localNodes[nodeIndex].historicMapUrl}
+            className="flex-1 w-full border-0"
+            allowFullScreen
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            title="Ảnh lịch sử"
+          />
+          <div className="flex-none flex items-center justify-between px-4 py-2 bg-black/70">
+            <p className="font-mono text-[10px] text-white/50 uppercase tracking-widest">Google Street View — trước đây</p>
+            <button
+              onClick={() => setShowHistoric(false)}
+              className="flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white rounded-xl px-3 py-1.5 text-xs font-mono transition-all"
+            >
+              <X className="w-3.5 h-3.5" /> Quay lại
+            </button>
+          </div>
         </div>
       )}
 
