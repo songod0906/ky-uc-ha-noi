@@ -459,7 +459,7 @@ const ESSY: Story = {
       label: 'Nhà / Ngõ',
       sublabel: 'Số 17, 267/33 Hoàng Hoa Thám — rẽ ba bốn lần mới vào được, Grab không bao giờ tìm được',
       lat: 21.041427, lng: 105.817931,
-      audioSegment: { src: '/audio/oral-history/hoang-hoa-tham.m4a', startSec: 1 },
+      audioSegment: { src: '/audio/oral-history/hoang-hoa-tham.m4a', startSec: 1, endSec: 291 },
       narratorBio: [
         'Nhà nằm sâu giữa ba trục đường lớn — Essy biết năm con đường vào nhà từ ba hướng khác nhau.',
         '"Bản đồ không hiển thị chính xác. Phải phụ thuộc vào tri thức địa phương của người sống lâu năm ở đây."',
@@ -537,7 +537,7 @@ const ESSY: Story = {
       label: 'Giếng / Khu vui chơi',
       sublabel: 'Con đường chỉ người trong khu mới biết — dẫn ra giếng cũ nay thành sân tập thể',
       lat: 21.040723, lng: 105.818568,
-      audioSegment: { src: '/audio/oral-history/hoang-hoa-tham.m4a', startSec: 299 },
+      audioSegment: { src: '/audio/oral-history/hoang-hoa-tham.m4a', startSec: 291 },
       videoClip: 'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/video/gieng-v2.mp4',
       isPanoramicVideo: true,
       vimeoUrl: 'https://player.vimeo.com/video/1201125560?badge=0&autopause=0&player_id=0&app_id=58479',
@@ -619,7 +619,7 @@ const TRANG_THAI_THINH: Story = {
       label: 'Lớp học thêm',
       sublabel: 'Gần cửa hàng mẹ — chiều 4-5 giờ mẹ dẫn đi bộ ra học, phố không một chiếc ô tô',
       lat: 21.009981, lng: 105.820251,
-      audioSegment: { src: '/audio/oral-history/trung-liet.m4a', startSec: 27 },
+      audioSegment: { src: '/audio/oral-history/trung-liet.m4a', startSec: 27, endSec: 214 },
       narratorBio: [
         'Mỗi chiều 4-5 giờ, mẹ dẫn đi bộ qua con phố vắng đến lớp học thêm trước cấp một.',
         'Đường Nguyễn Văn Tuyết từng là cái mương — không xe, không tiếng động, hàng xóm biết nhau.',
@@ -678,7 +678,7 @@ const TRANG_THAI_THINH: Story = {
       label: 'Sân chơi khu tập thể',
       sublabel: 'Đi qua vô số lần — chưa bao giờ được vào chơi một lần nào',
       lat: 21.010665, lng: 105.818798,
-      audioSegment: { src: '/audio/oral-history/trung-liet.m4a', startSec: 227 },
+      audioSegment: { src: '/audio/oral-history/trung-liet.m4a', startSec: 214, endSec: 344 },
       narratorBio: [
         'Trên đường học thêm mỗi buổi chiều, nhìn thấy các bạn chơi trong sân — không được dừng lại.',
         'Đến tận ngày hôm nay vẫn chưa bao giờ được vào cái sân đó để chơi dù đã đi qua vô số lần.',
@@ -729,7 +729,7 @@ const TRANG_THAI_THINH: Story = {
       label: 'Quán ốc ông violin',
       sublabel: 'Mẹ dẫn đi ăn để an ủi — và lần đầu tiên Trang biết violin là gì',
       lat: 21.011001, lng: 105.820834,
-      audioSegment: { src: '/audio/oral-history/trung-liet.m4a', startSec: 356 },
+      audioSegment: { src: '/audio/oral-history/trung-liet.m4a', startSec: 344, endSec: 645 },
       narratorBio: [
         'Cô giáo đánh vào tay vì dùng tẩy với bút máy — Trang khóc cả đường về. Mẹ dẫn đi ăn ốc.',
         'Ông chủ quán ngồi đánh violin giữa bàn ốc — lần đầu tiên Trang biết violin là gì.',
