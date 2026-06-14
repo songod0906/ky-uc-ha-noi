@@ -6,12 +6,13 @@ import { MapIntroView } from './components/MapIntroView';
 import { MemoryRouteGame } from './components/MemoryRouteGame';
 import { ScanViewer } from './components/ScanViewer';
 import { PrologueViewer } from './components/PrologueViewer';
+import { StoryLoadingScreen } from './components/StoryLoadingScreen';
 import { AudioManager } from './utils/AudioManager';
 
 // ?scan=<url> in the URL shows the 3D scan viewer directly (dev testing only)
 const scanUrl = new URLSearchParams(window.location.search).get('scan');
 
-type AppPhase = 'start' | 'prologue' | 'select' | 'play';
+type AppPhase = 'start' | 'prologue' | 'select' | 'loading' | 'play';
 
 export default function App() {
   const [phase, setPhase] = useState<AppPhase>('start');
@@ -29,7 +30,7 @@ export default function App() {
   const handleSelectSpace = (story: Story, spaceIdx: number) => {
     setActiveStory(story);
     setActiveSpaceIdx(spaceIdx);
-    setPhase('play');
+    setPhase('loading');
   };
 
   const handleBackToSelect = () => {
@@ -50,6 +51,14 @@ export default function App() {
         )}
         {phase === 'select' && (
           <MapIntroView key="select" onSelect={handleSelectSpace} />
+        )}
+        {phase === 'loading' && activeStory && (
+          <StoryLoadingScreen
+            key={`loading-${activeStory.id}-${activeSpaceIdx}`}
+            story={activeStory}
+            spaceIdx={activeSpaceIdx}
+            onReady={() => setPhase('play')}
+          />
         )}
         {phase === 'play' && activeStory && (
           <MemoryRouteGame
