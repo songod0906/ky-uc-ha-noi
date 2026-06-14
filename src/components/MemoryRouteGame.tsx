@@ -188,6 +188,7 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, onBack }: MemoryRo
             narratorName={story.narrator}
             narratorColor={narratorColor}
             paused={clueModalOpen}
+            storyId={story.id}
           />
         )}
       </main>
