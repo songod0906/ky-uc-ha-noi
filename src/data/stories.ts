@@ -300,7 +300,7 @@ const TRANG: Story = {
       sublabel: 'Màn hình CRT to đùng, tiếng Audition "cọc cọc cọc" — và nhà mình mở quán',
       lat: 21.020861, lng: 105.813559,
       audioSegment: { src: '/audio/oral-history/thanh-cong.m4a', startSec: 439 },
-      videoClip: '/video/quan-net-gaming.mp4',
+      videoClip: 'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/video/quan-net-gaming.mp4',
       narratorBio: [
         'Nhà mình mở quán net — tan học là về thẳng nhà chơi điện tử, không phải đến quán người khác.',
         'Màn hình CRT to đùng, cục máy phía sau, tai nghe và webcam — full setup huyền thoại.',
@@ -521,7 +521,7 @@ const ESSY: Story = {
       sublabel: 'Con đường chỉ người trong khu mới biết — dẫn ra giếng cũ nay thành sân tập thể',
       lat: 21.040723, lng: 105.818568,
       audioSegment: { src: '/audio/oral-history/hoang-hoa-tham.m4a', startSec: 299 },
-      videoClip: '/video/gieng-khu-choi.mp4',
+      videoClip: 'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/video/gieng-khu-choi.mp4',
       narratorBio: [
         'Từ Văn Cao có một con đường nhỏ dẫn ra giếng cũ — chỉ người trong khu mới biết tồn tại.',
         'Bên trong: nhiều cây, tòa nhà che nắng, mát hơn ngoài đường. Giờ là sân tập thể dục.',
