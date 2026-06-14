@@ -74,6 +74,7 @@ export interface MemorySpace {
   bgTourAmbient?: string;    // '/tours/location-name/ambient.mp3'
   videoClip?: string;        // '/video/xxx.mp4' — short ambient clip shown inside space
   minimapFlipX?: boolean;    // mirror the minimap path horizontally (when physical path goes left)
+  quyhoachUrl?: string;      // quyhoach.hanoi.vn embed URL — urban planning overlay
   audioSegment?: AudioSegment; // oral history segment for this space
   narratorBio?: string[];    // 2-3 bullet lines for the dossier card
   clues: Clue[];

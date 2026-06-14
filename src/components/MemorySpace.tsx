@@ -166,6 +166,25 @@ export function MemorySpace({ space, story, collectedIds, onCollect, onClueModal
         </AnimatePresence>
       )}
 
+      {/* Quy hoạch urban planning button */}
+      {(space.lat && space.lng) && (
+        <a
+          href={`https://quyhoach.hanoi.vn/#17/${space.lat}/${space.lng}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="absolute bottom-4 left-4 z-[35] flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-mono text-xs transition-all hover:opacity-90 active:scale-95"
+          style={{
+            background: 'rgba(0,0,0,0.45)',
+            color: 'rgba(255,255,255,0.75)',
+            border: '1px solid rgba(255,255,255,0.15)',
+            backdropFilter: 'blur(6px)',
+            textDecoration: 'none',
+          }}
+        >
+          <span style={{ fontSize: 10 }}>📋</span> Quy hoạch
+        </a>
+      )}
+
       {/* Scan placeholder + HTML clue hotspots + bottom strip — placeholder mode only */}
       {!hasTour && (
         <>

@@ -465,7 +465,7 @@ const ESSY: Story = {
       ],
       bgGradient: 'linear-gradient(160deg, #d4c5a9 0%, #c5b08a 40%, #b09060 100%)',
       bgTone: '#6b5a3e',
-      bgTourNodes: applyYaws(makeNodes(essy_duong_vao_nha, [], 'es-ng', [
+      bgTourNodes: withHistoric(applyYaws(makeNodes(essy_duong_vao_nha, [], 'es-ng', [
         { idx: 14, scanUrl: '/scans/nha-essy.glb', label: 'Xem nhà Essy 3D', yaw: 0, pitch: -10 },
       ], [
         // GPS from user's turn-by-turn descriptions
@@ -484,7 +484,12 @@ const ESSY: Story = {
         [21.041330, 105.817918], // es-ng-13 (0268)
         null,                    // es-ng-14 turn right into hẻm
         [21.041427, 105.817931], // es-ng-15 Essy house
-      ]), ES_NG_YAWS),
+      ]), ES_NG_YAWS), [
+        { idx: 9,  url: 'https://www.google.com/maps/embed?pb=!4v1781412371328!6m8!1m7!1s2TWphYbHFgWWSOFqrtsw9A!2m2!1d21.04103909428119!2d105.8178888444568!3f40.074094664986106!4f-19.58369068018274!5f0.7820865974627469' },
+        { idx: 10, url: 'https://www.google.com/maps/embed?pb=!4v1781412386208!6m8!1m7!1s1lZSDXjhNTvxbQG-bxTBtQ!2m2!1d21.0410784735756!2d105.8179891735765!3f88.478552511718!4f-25.48781926972515!5f0.7820865974627469' },
+        { idx: 11, url: 'https://www.google.com/maps/embed?pb=!4v1781412199393!6m8!1m7!1s7d03mG0z6vi2eZtWE7TRFQ!2m2!1d21.04106422876278!2d105.8181299031744!3f107.38807014797955!4f0.4437072786251264!5f0.7820865974627469' },
+        { idx: 14, url: 'https://www.google.com/maps/embed?pb=!4v1781412069003!6m8!1m7!1sUAlJ_dGe8w88WdPKaRZJuw!2m2!1d21.04098537974627!2d105.818354031628!3f202.05707186222304!4f-13.064484507307242!5f0.7820865974627469' },
+      ]),
       clues: [
         {
           id: 'essy-ngo-kho',
@@ -539,7 +544,9 @@ const ESSY: Story = {
       ],
       bgGradient: 'linear-gradient(160deg, #a8c5a0 0%, #7da87a 40%, #5a8a56 100%)',
       bgTone: '#3a6a36',
-      bgTourNodes: makeNodes(essy_playground, [], 'es-gk'),
+      bgTourNodes: withHistoric(makeNodes(essy_playground, [], 'es-gk'), [
+        { idx: 0, url: 'https://www.google.com/maps/embed?pb=!4v1781411941294!6m8!1m7!1s4kK0rMHW11aCh1X_sTPlaQ!2m2!1d21.04034879948579!2d105.817488961791!3f281.32678038512734!4f-16.875345166491712!5f0.7820865974627469' },
+      ]),
       clues: [
         {
           id: 'essy-tre-con-gieng',
