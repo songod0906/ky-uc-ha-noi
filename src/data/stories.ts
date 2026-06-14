@@ -318,12 +318,12 @@ const TRANG: Story = {
       bgTourNodes: withHistoric(applyYaws(makeNodes(ltk_quan_net, [], 'qn', [
         { idx: 16, scanUrl: '/scans/quan-net.glb', label: 'Xem quán net 3D', yaw: 0, pitch: -10 },
       ], [
-        // GPS: cổng trường → pic4 → pic8 → pic10 → pic12 (quán net)
-        [21.023324, 105.812746], null, null,
-        [21.023452, 105.813853], null, null, null,
-        [21.021431, 105.814166], null,
-        [21.020933, 105.814064], null,
-        [21.020861, 105.813559], null, null, null, null, null,
+        // GPS: school → north on Nguyễn Hồng → east at top → south on Thành Công → quán net
+        [21.023324, 105.812746], null, null,      // 0-2: school → going north
+        [21.025000, 105.812800], null, null, null, // 3-6: top corner → going east
+        [21.025000, 105.814100], null,             // 7-8: east end → turning south
+        [21.022500, 105.814100], null,             // 9-10: south on east side
+        [21.020861, 105.813559], null, null, null, null, null, // 11-16: at café
       ]), QN_YAWS), [
         // Historical Google Street View matched to DJI shots — shows same streets before demolition
         { idx: 3,  url: 'https://www.google.com/maps/embed?pb=!4v1781407111689!6m8!1m7!1slPxhHBlAz66aKFd1Embsdw!2m2!1d21.02347691720712!2d105.8137573922583!3f103.09771536124487!4f-11.130644329606284!5f0.7820865974627469' },
@@ -624,12 +624,12 @@ const TRANG_THAI_THINH: Story = {
       bgGradient: 'linear-gradient(160deg, #f0e4c8 0%, #d9c49a 40%, #c4a870 100%)',
       bgTone: '#c4a870',
       bgTourNodes: withHistoric(applyYaws(makeNodes(trang_di_hoc_them, [], 'tt-hoc', undefined, [
-        // GPS: 143 Trung Liệt → rẽ phải → thẳng → rẽ phải → lớp học thêm
+        // GPS: 143 Trung Liệt → going east on Trung Liệt → lớp học thêm (no north drift)
         [21.010361, 105.819077], // tt-hoc-01 start (143 Trung Liệt)
-        [21.010453, 105.819339], // tt-hoc-02 go right
-        [21.010491, 105.819517], // tt-hoc-03
-        [21.010642, 105.819933], // tt-hoc-04 turn right
-        [21.010423, 105.820156], // tt-hoc-05
+        [21.010340, 105.819330], // tt-hoc-02 east
+        [21.010310, 105.819510], // tt-hoc-03 east
+        [21.010250, 105.819800], // tt-hoc-04 east
+        [21.010130, 105.820060], // tt-hoc-05 slight SE
         [21.009981, 105.820251], // tt-hoc-06 study place
         null,                    // tt-hoc-07
       ]), TT_HOC_YAWS), [

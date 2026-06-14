@@ -357,22 +357,36 @@ function gpsBearing(lat1: number, lng1: number, lat2: number, lng2: number): num
  * (no accumulated error). Falls back to yaw-based heading for uncalibrated segments.
  */
 function computePath(nodes: TourNode[]): [number, number][] {
+  // Fill null-GPS nodes by linearly interpolating between known neighbors
+  const gps = nodes.map(n => ({ lat: n.lat, lng: n.lng }));
+  for (let i = 0; i < gps.length; i++) {
+    if (gps[i].lat != null) continue;
+    let prev = -1, next = -1;
+    for (let j = i - 1; j >= 0; j--) { if (gps[j].lat != null) { prev = j; break; } }
+    for (let j = i + 1; j < gps.length; j++) { if (gps[j].lat != null) { next = j; break; } }
+    if (prev >= 0 && next >= 0) {
+      const t = (i - prev) / (next - prev);
+      gps[i].lat = gps[prev].lat! + t * (gps[next].lat! - gps[prev].lat!);
+      gps[i].lng = gps[prev].lng! + t * (gps[next].lng! - gps[prev].lng!);
+    } else if (prev >= 0) { gps[i].lat = gps[prev].lat; gps[i].lng = gps[prev].lng; }
+      else if (next >= 0) { gps[i].lat = gps[next].lat; gps[i].lng = gps[next].lng; }
+  }
+
   const pts: [number, number][] = [[0, 0]];
   let globalPanoDir = 0;
 
   for (let i = 0; i < nodes.length - 1; i++) {
-    const curr = nodes[i], next = nodes[i + 1];
-    const backAnchorNext = next?.navAnchors?.find(a => a.label === 'Quay lại');
+    const backAnchorNext = nodes[i + 1]?.navAnchors?.find(a => a.label === 'Quay lại');
     const backYaw = backAnchorNext?.yaw ?? 180;
 
     let travelDeg: number;
-    if (curr.lat != null && curr.lng != null && next.lat != null && next.lng != null) {
+    if (gps[i].lat != null && gps[i + 1].lat != null) {
       // GPS bearing — physically accurate, no drift
-      travelDeg = gpsBearing(curr.lat, curr.lng, next.lat, next.lng);
+      travelDeg = gpsBearing(gps[i].lat!, gps[i].lng!, gps[i + 1].lat!, gps[i + 1].lng!);
       globalPanoDir = travelDeg + 180 - backYaw;
     } else {
-      // Yaw-based fallback
-      const fwdYaw = curr.navAnchors?.find(
+      // Yaw-based fallback (no GPS at all for this space)
+      const fwdYaw = nodes[i].navAnchors?.find(
         a => a.label === 'Tiếp tục' || a.label === 'Đi tiếp'
       )?.yaw ?? 0;
       travelDeg = globalPanoDir + fwdYaw;
