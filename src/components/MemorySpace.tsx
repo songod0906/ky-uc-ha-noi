@@ -254,6 +254,8 @@ export function MemorySpace({ space, story, collectedIds, onCollect, onClueModal
           <div className="absolute bottom-4 right-4 z-20 w-32">
             <ScanPlaceholder label={space.label} />
           </div>
+          {/* Clues disabled for now */}
+          {/*
           {space.clues.map((clue) => (
             <ClueObject
               key={clue.id}
@@ -268,6 +270,7 @@ export function MemorySpace({ space, story, collectedIds, onCollect, onClueModal
               Nhấp vào những điểm sáng để tìm mảnh ký ức
             </p>
           </div>
+          */}
         </>
       )}
     </motion.div>

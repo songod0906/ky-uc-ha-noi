@@ -156,15 +156,14 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, onBack }: MemoryRo
 
         <button
           onClick={handleFinish}
-          className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl font-serif text-sm transition-all"
+          className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl font-serif text-sm transition-all text-[#0a0806]"
           style={{
-            background: allFound ? narratorColor : 'rgba(0,0,0,0.05)',
-            color: allFound ? '#0a0806' : 'rgba(0,0,0,0.4)',
-            border: `1px solid ${allFound ? narratorColor : 'rgba(0,0,0,0.1)'}`,
+            background: narratorColor,
+            border: `1px solid ${narratorColor}`,
           }}
         >
           <CheckSquare className="w-3.5 h-3.5" />
-          {allFound ? 'Rời khỏi' : `${collected}/${total}`}
+          Rời khỏi
         </button>
       </header>
 
@@ -193,13 +192,7 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, onBack }: MemoryRo
         )}
       </main>
 
-      {/* Tutorial */}
-      {!exploreTutorialDone && (
-        <TutorialOverlay
-          steps={EXPLORE_TUTORIAL}
-          onDone={() => setExploreTutorialDone(true)}
-        />
-      )}
+      {/* Tutorial disabled since clues are disabled */}
     </div>
   );
 }

@@ -229,6 +229,8 @@ function Scene({
         <PanoSphere url={node.panorama} />
       </Suspense>
 
+      {/* Clue hotspots disabled for now */}
+      {/*
       {node.clueAnchors?.map((anchor) => {
         const clue = allClues.find((c) => c.id === anchor.clueId);
         if (!clue) return null;
@@ -242,6 +244,7 @@ function Scene({
           />
         );
       })}
+      */}
 
       {node.navAnchors?.map((anchor) => (
         <NavHotspot key={anchor.toNodeId} anchor={anchor} onNavigate={onNavigate} />
@@ -888,7 +891,7 @@ export function PanoramaViewer({
       {/* Drag hint — shown briefly */}
       <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
         <p className="font-handwritten text-white/70 text-xs text-center drop-shadow">
-          Kéo để nhìn xung quanh · Nhấn vào điểm sáng để nghe ký ức
+          Kéo để nhìn xung quanh
         </p>
       </div>
 
