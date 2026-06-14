@@ -26,7 +26,7 @@ SEQUENCES = [
     ("trang", "quan-oc-oanh",       "quán ốc oanh"),
     ("essy",  "de-la-thanh",        "Dọc đường đê la thành đã bị giải toả"),
     ("essy",  "duong-vao-nha",      "đường từ ngõ 33 Văn Cao vào nhà Essy"),
-    ("essy",  "playground",         "playground nhà essy"),
+    ("essy",  "playground",         "New Folder With Items"),
 ]
 
 def build_nadir_mask(w, h):

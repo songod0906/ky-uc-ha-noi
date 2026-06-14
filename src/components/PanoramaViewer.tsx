@@ -487,6 +487,7 @@ export function PanoramaViewer({
   ambient,
   allClues,
   minimapFlipX = false,
+  onNodeIndexChange,
 }: {
   nodes: TourNode[];
   startNodeId?: string;
@@ -495,8 +496,9 @@ export function PanoramaViewer({
   ambient?: string;
   allClues: Clue[];
   minimapFlipX?: boolean;
+  onNodeIndexChange?: (idx: number) => void;
 }) {
-  // Stable key for this sequence (e.g. "ct" from "ct-01"), used for localStorage
+  // Stable key for this sequence (e.g. \"ct\" from \"ct-01\"), used for localStorage
   const seqKey = useRef(nodes[0]?.id.replace(/-\d+$/, '') ?? 'seq').current;
 
   // localNodes: restore from localStorage if a previous calib session exists for this sequence
@@ -579,6 +581,28 @@ export function PanoramaViewer({
 
   // Reset historic overlay when moving to a different node
   useEffect(() => { setShowHistoric(false); }, [nodeId]);
+
+  // Notify parent component of the current node index change
+  useEffect(() => {
+    if (onNodeIndexChange && nodeIndex >= 0) {
+      onNodeIndexChange(nodeIndex);
+    }
+  }, [nodeIndex, onNodeIndexChange]);
+
+  // Preload neighboring textures to speed up transition
+  useEffect(() => {
+    const preloadImage = (url?: string) => {
+      if (!url) return;
+      const img = new Image();
+      img.src = url;
+    };
+    if (nodeIndex > 0) {
+      preloadImage(localNodes[nodeIndex - 1]?.panorama);
+    }
+    if (nodeIndex < localNodes.length - 1) {
+      preloadImage(localNodes[nodeIndex + 1]?.panorama);
+    }
+  }, [nodeIndex, localNodes]);
 
   // Delete current node from localNodes, move to next/prev
   const deleteNode = useCallback(() => {
@@ -836,22 +860,24 @@ export function PanoramaViewer({
         </p>
       </div>
 
-      {/* Path mini-map */}
-      {localNodes.length > 1 && !CALIB_MODE && (
-        <PathMap nodes={localNodes} currentIndex={nodeIndex} flipX={minimapFlipX} />
-      )}
-
-      {/* Node progress dots (only if multi-node) */}
+      {/* Node progress indicator (only if multi-node) */}
       {localNodes.length > 1 && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-20 pointer-events-none">
-          {localNodes.map((n) => (
-            <div
-              key={n.id}
-              className={`rounded-full transition-all duration-300 ${
-                n.id === nodeId ? 'w-4 h-2 bg-white' : 'w-2 h-2 bg-white/40'
-              }`}
-            />
-          ))}
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-1.5 pointer-events-auto">
+          <div className="bg-black/55 backdrop-blur-sm px-3 py-1 rounded-full text-white text-[11px] font-serif tracking-wide select-none border border-white/10 shadow-lg">
+            Điểm {nodeIndex + 1} / {localNodes.length}
+          </div>
+          <div className="flex gap-1.5 justify-center">
+            {localNodes.map((n, i) => (
+              <button
+                key={n.id}
+                onClick={() => setNodeId(n.id)}
+                className={`h-2 rounded-full transition-all duration-300 ${
+                  n.id === nodeId ? 'w-5 bg-amber-400' : 'w-2 bg-white/40 hover:bg-white/70'
+                }`}
+                title={`Đi tới điểm ${i + 1}`}
+              />
+            ))}
+          </div>
         </div>
       )}
 

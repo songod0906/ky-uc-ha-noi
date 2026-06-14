@@ -239,10 +239,10 @@ const essy_de_la_thanh = [
 export const DE_LA_THANH_NODES: TourNode[] = makeNodes(essy_de_la_thanh, [], 'dla');
 
 const essy_playground = [
-  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/essy/playground/shot-01.jpg',
-  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/essy/playground/shot-02.jpg',
-  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/essy/playground/shot-03.jpg',
-  // shots 04-10 removed during calibration
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/essy/playground/v2/shot-01.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/essy/playground/v2/shot-02.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/essy/playground/v2/shot-03.jpg',
+  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/essy/playground/v2/shot-04.jpg',
 ];
 
 // ─── Story A: LTK / Khu Thành Công ───────────────────────────────────────────
@@ -374,7 +374,8 @@ const TRANG: Story = {
         'Không ai đi cửa chính — người Thành Công luôn lách qua cái cửa sắt không bao giờ mở hết.',
         'Khi giải tỏa, mất không chỉ nhà — mất cả cách một khu phố biết nhau và sống cùng nhau.',
       ],
-      videoClip: 'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/video/ho-thanh-cong.mp4',
+      videoClip: 'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/video/ho-thanh-cong-panoramic.mp4',
+      isPanoramicVideo: true,
       minimapFlipX: true,
       bgGradient: 'linear-gradient(160deg, #c8dde8 0%, #a3c4d5 40%, #7eaabf 100%)',
       bgTone: '#5a7a8a',

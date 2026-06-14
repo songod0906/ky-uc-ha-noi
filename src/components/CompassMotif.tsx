@@ -27,25 +27,7 @@ export function CompassMotif({ size = 64, spinning = false, className = '' }: Co
         className="absolute rounded-full bg-nangthu-glow/60 border border-nangthu/30"
         style={{ width: size * 0.35, height: size * 0.35 }}
       />
-      {/* Direction labels */}
-      {dirs.map((d, i) => {
-        const rad = ((angles[i] - 90) * Math.PI) / 180;
-        const r = size * 0.38;
-        const x = Math.cos(rad) * r;
-        const y = Math.sin(rad) * r;
-        return (
-          <span
-            key={d}
-            className="absolute font-handwritten text-muctim-faded font-bold"
-            style={{
-              fontSize: size * 0.14,
-              transform: `translate(${x}px, ${y}px) translate(-50%, -50%)`,
-            }}
-          >
-            {d}
-          </span>
-        );
-      })}
+
       {/* Needle pointing north */}
       <motion.div
         className="absolute"

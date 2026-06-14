@@ -34,14 +34,7 @@ export function GameStart({ onBegin }: GameStartProps) {
           >
             Ký Ức Hà Nội
           </motion.h1>
-          <motion.p
-            className="font-handwritten text-xl text-nangthu"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-          >
-            Đông · Tây · Nam · Bắc
-          </motion.p>
+
         </div>
 
         <motion.p

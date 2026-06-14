@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { MemorySpace as MemorySpaceType, Story } from '../types';
 import { ClueObject } from './ClueObject';
 import { ScanPlaceholder } from './ScanPlaceholder';
+import { PanoramicVideoViewer } from './PanoramicVideoViewer';
 
 // LOCAL TEST ONLY — PanoramaViewer.tsx is gitignored, do NOT push this import.
 // Revert to the commented-out version before committing.
@@ -21,6 +22,7 @@ interface MemorySpaceProps {
 export function MemorySpace({ space, story, collectedIds, onCollect, onClueModalChange }: MemorySpaceProps) {
   const hasTour = !!space.bgTourNodes?.length;
   const [videoExpanded, setVideoExpanded] = useState(false);
+  const [currentNodeIndex, setCurrentNodeIndex] = useState(0);
 
   return (
     <motion.div
@@ -49,6 +51,7 @@ export function MemorySpace({ space, story, collectedIds, onCollect, onClueModal
             ambient={space.bgTourAmbient}
             allClues={space.clues}
             minimapFlipX={space.minimapFlipX}
+            onNodeIndexChange={setCurrentNodeIndex}
           />
         </Suspense>
       ) : null}
@@ -110,8 +113,8 @@ export function MemorySpace({ space, story, collectedIds, onCollect, onClueModal
       </div>
 
 
-      {/* Video clip overlay */}
-      {space.videoClip && (
+      {/* Video clip overlay — only shown at the end of the tour sequence (or if there is no tour) */}
+      {space.videoClip && (!hasTour || currentNodeIndex === space.bgTourNodes!.length - 1) && (
         <AnimatePresence>
           {!videoExpanded ? (
             <motion.button
@@ -123,7 +126,7 @@ export function MemorySpace({ space, story, collectedIds, onCollect, onClueModal
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.8 }}
               transition={{ delay: 1, duration: 0.4 }}
-              title="Xem đoạn phim"
+              title={space.isPanoramicVideo ? "Xem video toàn cảnh 360°" : "Xem đoạn phim"}
             >
               <video
                 src={space.videoClip}
@@ -137,9 +140,14 @@ export function MemorySpace({ space, story, collectedIds, onCollect, onClueModal
                 </div>
               </div>
               <div className="absolute bottom-0 left-0 right-0 px-2 py-1" style={{ background: 'linear-gradient(transparent, rgba(0,0,0,0.7))' }}>
-                <p className="font-mono text-[7px] text-white/60 uppercase tracking-wider">rec</p>
+                <p className="font-mono text-[7px] text-white/60 uppercase tracking-wider">{space.isPanoramicVideo ? "360° VR" : "rec"}</p>
               </div>
             </motion.button>
+          ) : space.isPanoramicVideo ? (
+            <PanoramicVideoViewer
+              url={space.videoClip}
+              onClose={() => setVideoExpanded(false)}
+            />
           ) : (
             <motion.div
               key="expanded"

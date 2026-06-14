@@ -37,8 +37,26 @@ export function EndingCannotBeMoved({ story, onRestart, onChooseOther }: EndingC
           transition={{ delay: 0.3 }}
         >
           <div className="grid grid-cols-2 gap-y-1.5 gap-x-4">
-            <div><span className="opacity-50">SỐ HỒ SƠ</span><br /><span className="text-muctim font-bold">GTC-2026-{story.id.toUpperCase()}</span></div>
-            <div><span className="opacity-50">QUẬN</span><br /><span className="text-muctim">{story.id === 'trang' ? 'Đống Đa' : 'Đống Đa'}</span></div>
+            <div>
+              <span className="opacity-50">SỐ HỒ SƠ</span>
+              <br />
+              <span className="text-muctim font-bold">
+                {story.id === 'trang'
+                  ? '#TC-CAS3020-2026'
+                  : story.id === 'thai-thinh'
+                  ? '#TL-CAS3020-2026'
+                  : story.id === 'essy'
+                  ? '#HHT-BD-2024-001'
+                  : `GTC-2026-${story.id.toUpperCase()}`}
+              </span>
+            </div>
+            <div>
+              <span className="opacity-50">QUẬN</span>
+              <br />
+              <span className="text-muctim">
+                {story.id === 'thai-thinh' ? 'Đống Đa' : 'Ba Đình'}
+              </span>
+            </div>
             <div><span className="opacity-50">DỰ ÁN</span><br /><span className="text-muctim">Giải tỏa mặt bằng — Quy hoạch đô thị 2026</span></div>
             <div>
               <span className="opacity-50">THỜI GIAN SINH SỐNG</span>
