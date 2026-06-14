@@ -47,8 +47,34 @@ function toPos(yaw: number, pitch: number, r = 80): [number, number, number] {
 // ---------- Three.js scene pieces ----------
 
 /** The 360 sphere. Equirectangular texture painted on the inside. */
-function PanoSphere({ url }: { url: string }) {
+function PanoSphere({ url, nodeId, localNodes }: { url: string; nodeId: string; localNodes: TourNode[] }) {
   const [texture, setTexture] = useState<THREE.Texture | null>(null);
+  const meshRef = useRef<THREE.Mesh>(null);
+  const prevNodeId = useRef(nodeId);
+
+  const transitionRef = useRef({
+    active: false,
+    elapsed: 0,
+    duration: 0.45, // seconds for Google Street View zoom warp
+    direction: 'fwd' as 'fwd' | 'back',
+  });
+
+  // Track node navigation changes to trigger Street View fly transition
+  useEffect(() => {
+    if (prevNodeId.current && prevNodeId.current !== nodeId) {
+      const oldIdx = localNodes.findIndex(n => n.id === prevNodeId.current);
+      const newIdx = localNodes.findIndex(n => n.id === nodeId);
+      const direction = newIdx > oldIdx ? 'fwd' : 'back';
+
+      transitionRef.current = {
+        active: true,
+        elapsed: 0,
+        duration: 0.45,
+        direction,
+      };
+    }
+    prevNodeId.current = nodeId;
+  }, [nodeId, localNodes]);
 
   useEffect(() => {
     let active = true;
@@ -85,6 +111,45 @@ function PanoSphere({ url }: { url: string }) {
     };
   }, [texture]);
 
+  // Frame animation loop for camera FOV and sphere scale warp transition
+  useFrame((state, delta) => {
+    const t = transitionRef.current;
+    if (t.active) {
+      t.elapsed += delta;
+      const progress = Math.min(1, t.elapsed / t.duration);
+
+      // Smooth ease-in-out curve
+      const peak = Math.sin(progress * Math.PI);
+
+      if (t.direction === 'fwd') {
+        // Zoom-in warp: FOV goes from 75 down to 50, then back to 75
+        state.camera.fov = 75 - peak * 25;
+        // Zoom-in push: Mesh scales up from 1.0 to 1.35
+        if (meshRef.current) {
+          meshRef.current.scale.setScalar(1 + peak * 0.35);
+        }
+      } else {
+        // Zoom-out pull: FOV goes from 75 up to 90, then back to 75
+        state.camera.fov = 75 + peak * 15;
+        // Zoom-out stretch: Mesh scales down from 1.0 to 0.75
+        if (meshRef.current) {
+          meshRef.current.scale.setScalar(1 - peak * 0.25);
+        }
+      }
+
+      state.camera.updateProjectionMatrix();
+
+      if (progress >= 1) {
+        t.active = false;
+        state.camera.fov = 75;
+        state.camera.updateProjectionMatrix();
+        if (meshRef.current) {
+          meshRef.current.scale.setScalar(1);
+        }
+      }
+    }
+  });
+
   if (!texture) {
     return (
       <Html center distanceFactor={90} zIndexRange={[10, 15]}>
@@ -96,7 +161,7 @@ function PanoSphere({ url }: { url: string }) {
   }
 
   return (
-    <mesh>
+    <mesh ref={meshRef}>
       <sphereGeometry args={[500, 64, 32]} />
       <meshBasicMaterial map={texture} side={THREE.BackSide} />
     </mesh>
@@ -213,6 +278,7 @@ function Scene({
   onScan,
   calibrate,
   yawElRef,
+  localNodes,
 }: {
   node: TourNode;
   collectedIds: string[];
@@ -222,11 +288,12 @@ function Scene({
   onScan: (url: string) => void;
   calibrate?: boolean;
   yawElRef: React.RefObject<HTMLSpanElement>;
+  localNodes: TourNode[];
 }) {
   return (
     <>
       <Suspense fallback={null}>
-        <PanoSphere url={node.panorama} />
+        <PanoSphere url={node.panorama} nodeId={node.id} localNodes={localNodes} />
       </Suspense>
 
       {/* Clue hotspots disabled for now */}
@@ -810,6 +877,7 @@ export function PanoramaViewer({
           onScan={setActiveScan}
           calibrate={CALIB_MODE}
           yawElRef={yawElRef}
+          localNodes={localNodes}
         />
       </Canvas>
 
