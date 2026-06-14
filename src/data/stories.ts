@@ -376,6 +376,7 @@ const TRANG: Story = {
       ],
       videoClip: 'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/video/ho-thanh-cong-panoramic.mp4',
       isPanoramicVideo: true,
+      vimeoUrl: 'https://player.vimeo.com/video/1201125510?badge=0&autopause=0&player_id=0&app_id=58479',
       minimapFlipX: true,
       bgGradient: 'linear-gradient(160deg, #c8dde8 0%, #a3c4d5 40%, #7eaabf 100%)',
       bgTone: '#5a7a8a',
@@ -538,6 +539,8 @@ const ESSY: Story = {
       lat: 21.040723, lng: 105.818568,
       audioSegment: { src: '/audio/oral-history/hoang-hoa-tham.m4a', startSec: 299 },
       videoClip: 'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/video/gieng-v2.mp4',
+      isPanoramicVideo: true,
+      vimeoUrl: 'https://player.vimeo.com/video/1201125560?badge=0&autopause=0&player_id=0&app_id=58479',
       narratorBio: [
         'Từ Hoàng Hoa Thám sang Văn Cao có một con đường nhỏ — chỉ người trong khu mới biết đến.',
         '"Mình thực sự chưa từng gặp ai không phải người ở đây mà biết con đường đó cả."',
@@ -735,6 +738,8 @@ const TRANG_THAI_THINH: Story = {
       bgGradient: 'linear-gradient(160deg, #e8c890 0%, #d4a060 40%, #b87840 100%)',
       bgTone: '#c48040',
       videoClip: 'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/video/quan-oc-violin.mp4',
+      isPanoramicVideo: true,
+      vimeoUrl: 'https://player.vimeo.com/video/1201125509?badge=0&autopause=0&player_id=0&app_id=58479',
       bgTourNodes: withHistoric(applyYaws(makeNodes(trang_quan_oc, [], 'tt-oc', undefined, [
         // GPS: đường Trung Liệt → rẽ vào ngõ 69 → quán ốc oanh
         [21.010911, 105.820092], // tt-oc-01

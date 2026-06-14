@@ -40,5 +40,19 @@ export const AudioManager = {
     }
   },
 
+  pause() {
+    if (_audio) {
+      _audio.pause();
+    }
+  },
+
+  resume() {
+    if (_audio) {
+      _audio.play().catch((err: unknown) => {
+        console.error('[AudioManager] resume() blocked:', err);
+      });
+    }
+  },
+
   get current(): HTMLAudioElement | null { return _audio; },
 };

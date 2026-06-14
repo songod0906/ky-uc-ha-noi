@@ -74,6 +74,7 @@ export interface MemorySpace {
   bgTourAmbient?: string;    // '/tours/location-name/ambient.mp3'
   videoClip?: string;        // '/video/xxx.mp4' — short ambient clip shown inside space
   isPanoramicVideo?: boolean; // true if the video is a 360-degree panoramic video
+  vimeoUrl?: string;         // Vimeo video player iframe URL (has native 360 player)
   minimapFlipX?: boolean;    // mirror the minimap path horizontally (when physical path goes left)
   quyhoachUrl?: string;      // quyhoach.hanoi.vn embed URL — urban planning overlay
   audioSegment?: AudioSegment; // oral history segment for this space

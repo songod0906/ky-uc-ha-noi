@@ -48,21 +48,52 @@ function toPos(yaw: number, pitch: number, r = 80): [number, number, number] {
 
 /** The 360 sphere. Equirectangular texture painted on the inside. */
 function PanoSphere({ url }: { url: string }) {
-  const texture = useLoader(THREE.TextureLoader, url);
-  texture.colorSpace = THREE.SRGBColorSpace;
-  // Flip U axis: BackSide rendering mirrors the texture horizontally without this.
-  texture.wrapS = THREE.RepeatWrapping;
-  texture.repeat.x = -1;
-  texture.offset.x = 1;
+  const [texture, setTexture] = useState<THREE.Texture | null>(null);
 
-  // Dispose texture + clear loader cache when this node is no longer shown.
-  // Without this, every panorama visited stays in GPU memory for the whole session.
+  useEffect(() => {
+    let active = true;
+    const loader = new THREE.TextureLoader();
+    
+    loader.load(url, (newTex) => {
+      if (!active) {
+        newTex.dispose();
+        return;
+      }
+      newTex.colorSpace = THREE.SRGBColorSpace;
+      newTex.wrapS = THREE.RepeatWrapping;
+      newTex.repeat.x = -1;
+      newTex.offset.x = 1;
+      
+      setTexture(prevTex => {
+        if (prevTex) {
+          prevTex.dispose();
+        }
+        return newTex;
+      });
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [url]);
+
   useEffect(() => {
     return () => {
-      texture.dispose();
-      useLoader.clear(THREE.TextureLoader, url);
+      if (texture) {
+        texture.dispose();
+      }
     };
-  }, [texture, url]);
+  }, [texture]);
+
+  if (!texture) {
+    return (
+      <Html center distanceFactor={90} zIndexRange={[10, 15]}>
+        <div className="font-serif text-white/85 text-xs whitespace-nowrap bg-black/60 px-4 py-2 rounded-xl backdrop-blur-sm border border-white/10 shadow-lg select-none">
+          Đang tải không gian 360°...
+        </div>
+      </Html>
+    );
+  }
 
   return (
     <mesh>
@@ -572,6 +603,7 @@ export function PanoramaViewer({
 
   // Index-based prev/next on localNodes
   const nodeIndex = localNodes.findIndex(n => n.id === nodeId);
+  const fallbackHistoricUrl = localNodes[nodeIndex]?.historicMapUrl || localNodes.find(n => n.historicMapUrl)?.historicMapUrl;
   const goNext = useCallback(() => {
     if (nodeIndex < localNodes.length - 1) setNodeId(localNodes[nodeIndex + 1].id);
   }, [nodeIndex, localNodes]);
@@ -882,7 +914,7 @@ export function PanoramaViewer({
       )}
 
       {/* Historic Street View toggle button */}
-      {localNodes[nodeIndex]?.historicMapUrl && !CALIB_MODE && (
+      {fallbackHistoricUrl && !CALIB_MODE && (
         <button
           onClick={() => setShowHistoric(v => !v)}
           className="absolute top-4 right-4 z-30 flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-mono text-xs transition-all"
@@ -898,10 +930,10 @@ export function PanoramaViewer({
       )}
 
       {/* Historic Street View iframe overlay */}
-      {showHistoric && localNodes[nodeIndex]?.historicMapUrl && (
+      {showHistoric && fallbackHistoricUrl && (
         <div className="absolute inset-0 z-[60] flex flex-col">
           <iframe
-            src={localNodes[nodeIndex].historicMapUrl}
+            src={fallbackHistoricUrl}
             className="flex-1 w-full border-0"
             allowFullScreen
             loading="lazy"
