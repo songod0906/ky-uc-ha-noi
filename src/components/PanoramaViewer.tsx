@@ -47,110 +47,73 @@ function toPos(yaw: number, pitch: number, r = 80): [number, number, number] {
 // ---------- Three.js scene pieces ----------
 
 /** The 360 sphere. Equirectangular texture painted on the inside. */
-function PanoSphere({ url, nodeId, localNodes }: { url: string; nodeId: string; localNodes: TourNode[] }) {
-  const [texture, setTexture] = useState<THREE.Texture | null>(null);
-  const meshRef = useRef<THREE.Mesh>(null);
-  const prevNodeId = useRef(nodeId);
-
-  const transitionRef = useRef({
-    active: false,
-    elapsed: 0,
-    duration: 0.45, // seconds for Google Street View zoom warp
-    direction: 'fwd' as 'fwd' | 'back',
-  });
-
-  // Track node navigation changes to trigger Street View fly transition
-  useEffect(() => {
-    if (prevNodeId.current && prevNodeId.current !== nodeId) {
-      const oldIdx = localNodes.findIndex(n => n.id === prevNodeId.current);
-      const newIdx = localNodes.findIndex(n => n.id === nodeId);
-      const direction = newIdx > oldIdx ? 'fwd' : 'back';
-
-      transitionRef.current = {
-        active: true,
-        elapsed: 0,
-        duration: 0.45,
-        direction,
-      };
-    }
-    prevNodeId.current = nodeId;
-  }, [nodeId, localNodes]);
+function PanoSphere({ url }: { url: string }) {
+  const currRef = useRef<THREE.Mesh>(null);
+  const prevRef = useRef<THREE.Mesh>(null);
+  // Textures stored in refs — no React state churn during crossfade
+  const texRef = useRef<{ curr: THREE.Texture | null; prev: THREE.Texture | null }>({ curr: null, prev: null });
+  const fadeRef = useRef({ active: false, elapsed: 0, duration: 0.38 });
+  const [hasFirst, setHasFirst] = useState(false);
 
   useEffect(() => {
-    let active = true;
+    let cancelled = false;
     const loader = new THREE.TextureLoader();
-    
-    loader.load(url, (newTex) => {
-      if (!active) {
-        newTex.dispose();
-        return;
-      }
-      newTex.colorSpace = THREE.SRGBColorSpace;
-      newTex.wrapS = THREE.RepeatWrapping;
-      newTex.repeat.x = -1;
-      newTex.offset.x = 1;
-      
-      setTexture(prevTex => {
-        if (prevTex) {
-          prevTex.dispose();
-        }
-        return newTex;
-      });
-    });
+    loader.load(url, (tex) => {
+      if (cancelled) { tex.dispose(); return; }
+      tex.colorSpace = THREE.SRGBColorSpace;
+      tex.wrapS = THREE.RepeatWrapping;
+      tex.repeat.x = -1;
+      tex.offset.x = 1;
 
-    return () => {
-      active = false;
-    };
+      const old = texRef.current;
+      if (old.prev) old.prev.dispose();
+      texRef.current = { curr: tex, prev: old.curr };
+      fadeRef.current = { active: true, elapsed: 0, duration: 0.38 };
+
+      if (!hasFirst) setHasFirst(true);
+    });
+    return () => { cancelled = true; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [url]);
 
-  useEffect(() => {
-    return () => {
-      if (texture) {
-        texture.dispose();
-      }
-    };
-  }, [texture]);
+  useFrame((_, delta) => {
+    const { curr, prev } = texRef.current;
 
-  // Frame animation loop for camera FOV and sphere scale warp transition
-  useFrame((state, delta) => {
-    const t = transitionRef.current;
-    if (t.active) {
-      t.elapsed += delta;
-      const progress = Math.min(1, t.elapsed / t.duration);
+    // Keep mesh textures in sync with refs (direct Three.js mutation, no React re-render)
+    if (currRef.current) {
+      const mat = currRef.current.material as THREE.MeshBasicMaterial;
+      if (mat.map !== curr) { mat.map = curr; mat.needsUpdate = true; }
+    }
+    if (prevRef.current) {
+      const mat = prevRef.current.material as THREE.MeshBasicMaterial;
+      if (mat.map !== prev) { mat.map = prev; mat.needsUpdate = true; }
+    }
 
-      // Smooth ease-in-out curve
-      const peak = Math.sin(progress * Math.PI);
+    const f = fadeRef.current;
+    if (!f.active) {
+      if (currRef.current) (currRef.current.material as THREE.MeshBasicMaterial).opacity = 1;
+      if (prevRef.current) (prevRef.current.material as THREE.MeshBasicMaterial).opacity = 0;
+      return;
+    }
 
-      if (t.direction === 'fwd') {
-        // Zoom-in warp: FOV goes from 75 down to 50, then back to 75
-        state.camera.fov = 75 - peak * 25;
-        // Zoom-in push: Mesh scales up from 1.0 to 1.35
-        if (meshRef.current) {
-          meshRef.current.scale.setScalar(1 + peak * 0.35);
-        }
-      } else {
-        // Zoom-out pull: FOV goes from 75 up to 90, then back to 75
-        state.camera.fov = 75 + peak * 15;
-        // Zoom-out stretch: Mesh scales down from 1.0 to 0.75
-        if (meshRef.current) {
-          meshRef.current.scale.setScalar(1 - peak * 0.25);
-        }
-      }
+    f.elapsed += delta;
+    const t = Math.min(1, f.elapsed / f.duration);
+    // Smoothstep — ease in/out without the harsh linear ramp
+    const ease = t * t * (3 - 2 * t);
 
-      state.camera.updateProjectionMatrix();
+    if (currRef.current) (currRef.current.material as THREE.MeshBasicMaterial).opacity = ease;
+    if (prevRef.current) (prevRef.current.material as THREE.MeshBasicMaterial).opacity = 1 - ease;
 
-      if (progress >= 1) {
-        t.active = false;
-        state.camera.fov = 75;
-        state.camera.updateProjectionMatrix();
-        if (meshRef.current) {
-          meshRef.current.scale.setScalar(1);
-        }
+    if (t >= 1) {
+      f.active = false;
+      if (texRef.current.prev) {
+        texRef.current.prev.dispose();
+        texRef.current.prev = null;
       }
     }
   });
 
-  if (!texture) {
+  if (!hasFirst) {
     return (
       <Html center distanceFactor={90} zIndexRange={[10, 15]}>
         <div className="font-serif text-white/85 text-xs whitespace-nowrap bg-black/60 px-4 py-2 rounded-xl backdrop-blur-sm border border-white/10 shadow-lg select-none">
@@ -161,10 +124,18 @@ function PanoSphere({ url, nodeId, localNodes }: { url: string; nodeId: string; 
   }
 
   return (
-    <mesh ref={meshRef}>
-      <sphereGeometry args={[500, 64, 32]} />
-      <meshBasicMaterial map={texture} side={THREE.BackSide} />
-    </mesh>
+    <>
+      {/* Previous panorama — fades out during crossfade */}
+      <mesh ref={prevRef}>
+        <sphereGeometry args={[500, 64, 32]} />
+        <meshBasicMaterial side={THREE.BackSide} transparent opacity={0} />
+      </mesh>
+      {/* Current panorama — fades in during crossfade */}
+      <mesh ref={currRef}>
+        <sphereGeometry args={[500, 64, 32]} />
+        <meshBasicMaterial side={THREE.BackSide} transparent opacity={1} />
+      </mesh>
+    </>
   );
 }
 
@@ -293,7 +264,7 @@ function Scene({
   return (
     <>
       <Suspense fallback={null}>
-        <PanoSphere url={node.panorama} nodeId={node.id} localNodes={localNodes} />
+        <PanoSphere url={node.panorama} />
       </Suspense>
 
       {/* Clue hotspots disabled for now */}
