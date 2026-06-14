@@ -250,6 +250,9 @@ function Scene({
   calibrate,
   yawElRef,
   localNodes,
+  clueVisible,
+  playgroundBlocked,
+  onInteract,
 }: {
   node: TourNode;
   collectedIds: string[];
@@ -260,6 +263,9 @@ function Scene({
   calibrate?: boolean;
   yawElRef: React.RefObject<HTMLSpanElement>;
   localNodes: TourNode[];
+  clueVisible: boolean;
+  playgroundBlocked: boolean;
+  onInteract: () => void;
 }) {
   return (
     <>
@@ -267,9 +273,7 @@ function Scene({
         <PanoSphere url={node.panorama} />
       </Suspense>
 
-      {/* Clue hotspots disabled for now */}
-      {/*
-      {node.clueAnchors?.map((anchor) => {
+      {clueVisible && node.clueAnchors?.map((anchor) => {
         const clue = allClues.find((c) => c.id === anchor.clueId);
         if (!clue) return null;
         return (
@@ -282,11 +286,12 @@ function Scene({
           />
         );
       })}
-      */}
 
-      {node.navAnchors?.map((anchor) => (
-        <NavHotspot key={anchor.toNodeId} anchor={anchor} onNavigate={onNavigate} />
-      ))}
+      {node.navAnchors
+        ?.filter(a => !playgroundBlocked || a.label === 'Quay lại')
+        .map((anchor) => (
+          <NavHotspot key={anchor.toNodeId} anchor={anchor} onNavigate={onNavigate} />
+        ))}
 
       {node.scanAnchors?.map((anchor) => (
         <ScanHotspot key={anchor.scanUrl} anchor={anchor} onOpen={onScan} />
@@ -299,6 +304,7 @@ function Scene({
         enablePan={false}
         rotateSpeed={-0.4}
         makeDefault
+        onChange={onInteract}
       />
     </>
   );
@@ -587,6 +593,8 @@ export function PanoramaViewer({
   const [preview, setPreview] = useState<Clue | null>(null);
   const [activeScan, setActiveScan] = useState<string | null>(null);
   const yawElRef = useRef<HTMLSpanElement>(null);
+  // Only count dwell time after the player first drags at each node (not during narrator card)
+  const nodeInteracted = useRef(false);
 
   // calibYaws: accumulated across ALL sequences via localStorage — restored on every mount
   const [calibYaws, setCalibYaws] = useState<Record<string, { fwd: number; back: number }>>(() => {
@@ -606,6 +614,9 @@ export function PanoramaViewer({
   const [showHistoric, setShowHistoric] = useState(false);
   const [dragHintVisible, setDragHintVisible] = useState(true);
   const [exportText, setExportText] = useState<string | null>(null);
+  const [dwellSecs, setDwellSecs] = useState(0);
+  const clueVisible = dwellSecs >= 8;
+  const playgroundBlocked = !!nodeId?.startsWith('tt-pg') && dwellSecs < 15;
 
   // Persist node list for this sequence whenever it changes
   useEffect(() => {
@@ -647,8 +658,9 @@ export function PanoramaViewer({
   const nodeIndex = localNodes.findIndex(n => n.id === nodeId);
   const fallbackHistoricUrl = localNodes[nodeIndex]?.historicMapUrl || localNodes.find(n => n.historicMapUrl)?.historicMapUrl;
   const goNext = useCallback(() => {
+    if (playgroundBlocked) return;
     if (nodeIndex < localNodes.length - 1) setNodeId(localNodes[nodeIndex + 1].id);
-  }, [nodeIndex, localNodes]);
+  }, [nodeIndex, localNodes, playgroundBlocked]);
   const goPrev = useCallback(() => {
     if (nodeIndex > 0) setNodeId(localNodes[nodeIndex - 1].id);
   }, [nodeIndex, localNodes]);
@@ -662,6 +674,16 @@ export function PanoramaViewer({
     const timer = setTimeout(() => setDragHintVisible(false), 4000);
     return () => clearTimeout(timer);
   }, [dragHintVisible]);
+
+  // Dwell timer — only counts after first drag at each node (narrator card doesn't count)
+  useEffect(() => {
+    nodeInteracted.current = false;
+    setDwellSecs(0);
+    const t = setInterval(() => {
+      if (nodeInteracted.current) setDwellSecs(s => s + 1);
+    }, 1000);
+    return () => clearInterval(t);
+  }, [nodeId]);
 
   // Notify parent component of the current node index change
   useEffect(() => {
@@ -849,6 +871,9 @@ export function PanoramaViewer({
           calibrate={CALIB_MODE}
           yawElRef={yawElRef}
           localNodes={localNodes}
+          clueVisible={clueVisible}
+          playgroundBlocked={playgroundBlocked}
+          onInteract={() => { nodeInteracted.current = true; }}
         />
       </Canvas>
 
@@ -860,12 +885,19 @@ export function PanoramaViewer({
           ◀
         </button>
       )}
-      {nodeIndex < localNodes.length - 1 && (
+      {nodeIndex < localNodes.length - 1 && !playgroundBlocked && (
         <button onClick={goNext}
           aria-label="Tiếp tục"
           className="absolute right-3 top-1/2 -translate-y-1/2 z-40 bg-black/60 hover:bg-black/80 text-white rounded-xl px-3 py-4 font-mono text-lg transition-all">
           ▶
         </button>
+      )}
+      {playgroundBlocked && (
+        <div className="absolute right-3 top-1/2 -translate-y-1/2 z-40 pointer-events-none">
+          <div className="bg-black/55 backdrop-blur-sm text-white/40 rounded-xl px-3 py-4 font-mono text-lg text-center">
+            ⏳
+          </div>
+        </div>
       )}
 
       {/* Delete + Add buttons (calib mode only) */}

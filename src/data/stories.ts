@@ -266,7 +266,10 @@ const TRANG: Story = {
       ],
       bgGradient: 'linear-gradient(160deg, #f5e6c8 0%, #e8d5a3 40%, #d4b896 100%)',
       bgTone: '#c8a96e',
-      bgTourNodes: withHistoric(makeNodes(ltk_cong_truong, [], 'ct', [
+      bgTourNodes: withHistoric(makeNodes(ltk_cong_truong, [
+        { idx: 0, clueId: 'trang-tieng-trong', yaw: 0, pitch: -8 },
+        { idx: 3, clueId: 'trang-an-vat', yaw: 0, pitch: -8 },
+      ], 'ct', [
         { idx: 4, scanUrl: '/scans/quan-an-vat.glb', label: 'Xem quán ăn vặt 3D', yaw: 0, pitch: -10 },
       ]), [
         // Thanh Cong A school area, Google Street View 2018
@@ -315,7 +318,10 @@ const TRANG: Story = {
       ],
       bgGradient: 'linear-gradient(160deg, #2a1f3d 0%, #3d2f5c 50%, #1a1228 100%)',
       bgTone: '#1a1228',
-      bgTourNodes: withHistoric(applyYaws(makeNodes(ltk_quan_net, [], 'qn', [
+      bgTourNodes: withHistoric(applyYaws(makeNodes(ltk_quan_net, [
+        { idx: 5, clueId: 'trang-choi-net', yaw: 0, pitch: -8 },
+        { idx: 14, clueId: 'trang-tieng-chui', yaw: 0, pitch: -8 },
+      ], 'qn', [
         { idx: 16, scanUrl: '/scans/quan-net.glb', label: 'Xem quán net 3D', yaw: 0, pitch: -10 },
       ], [
         // GPS: school → north on Nguyễn Hồng → east at top → south on Thành Công → quán net
@@ -380,7 +386,11 @@ const TRANG: Story = {
       minimapFlipX: true,
       bgGradient: 'linear-gradient(160deg, #c8dde8 0%, #a3c4d5 40%, #7eaabf 100%)',
       bgTone: '#5a7a8a',
-      bgTourNodes: withHistoric(applyYaws(makeNodes(ltk_ho_thanh_cong, [], 'htc', undefined, [
+      bgTourNodes: withHistoric(applyYaws(makeNodes(ltk_ho_thanh_cong, [
+        { idx: 0, clueId: 'trang-xe-dap', yaw: 0, pitch: -8 },
+        { idx: 6, clueId: 'trang-nhac-aerobic', yaw: 0, pitch: -8 },
+        { idx: 10, clueId: 'trang-khu-tap-the', yaw: 0, pitch: -8 },
+      ], 'htc', undefined, [
         // GPS: cổng hồ → thẳng → rẽ trái → cầu thang → vòng quanh hồ
         [21.020445, 105.813269], null, null, null,
         [21.020333, 105.813667], null, null, null,
@@ -467,7 +477,11 @@ const ESSY: Story = {
       ],
       bgGradient: 'linear-gradient(160deg, #d4c5a9 0%, #c5b08a 40%, #b09060 100%)',
       bgTone: '#6b5a3e',
-      bgTourNodes: withHistoric(applyYaws(makeNodes(essy_duong_vao_nha, [], 'es-ng', [
+      bgTourNodes: withHistoric(applyYaws(makeNodes(essy_duong_vao_nha, [
+        { idx: 0, clueId: 'essy-ngo-kho', yaw: 0, pitch: -8 },
+        { idx: 7, clueId: 'essy-ngap-mua', yaw: 0, pitch: -8 },
+        { idx: 14, clueId: 'essy-cay-xanh-ngo', yaw: 0, pitch: -8 },
+      ], 'es-ng', [
         { idx: 14, scanUrl: '/scans/nha-essy.glb', label: 'Xem nhà Essy 3D', yaw: 0, pitch: -10 },
       ], [
         // GPS from user's turn-by-turn descriptions
@@ -548,7 +562,11 @@ const ESSY: Story = {
       ],
       bgGradient: 'linear-gradient(160deg, #a8c5a0 0%, #7da87a 40%, #5a8a56 100%)',
       bgTone: '#3a6a36',
-      bgTourNodes: withHistoric(makeNodes(essy_playground, [], 'es-gk'), [
+      bgTourNodes: withHistoric(makeNodes(essy_playground, [
+        { idx: 0, clueId: 'essy-tre-con-gieng', yaw: 0, pitch: -8 },
+        { idx: 2, clueId: 'essy-gieng-mat', yaw: 0, pitch: -8 },
+        { idx: 3, clueId: 'essy-di-tich', yaw: 0, pitch: -8 },
+      ], 'es-gk'), [
         { idx: 0, url: 'https://www.google.com/maps/embed?pb=!4v1781411941294!6m8!1m7!1s4kK0rMHW11aCh1X_sTPlaQ!2m2!1d21.04034879948579!2d105.817488961791!3f281.32678038512734!4f-16.875345166491712!5f0.7820865974627469' },
       ]),
       clues: [
@@ -627,7 +645,10 @@ const TRANG_THAI_THINH: Story = {
       ],
       bgGradient: 'linear-gradient(160deg, #f0e4c8 0%, #d9c49a 40%, #c4a870 100%)',
       bgTone: '#c4a870',
-      bgTourNodes: withHistoric(applyYaws(makeNodes(trang_di_hoc_them, [], 'tt-hoc', undefined, [
+      bgTourNodes: withHistoric(applyYaws(makeNodes(trang_di_hoc_them, [
+        { idx: 0, clueId: 'thai-thinh-hoc-them', yaw: 0, pitch: -8 },
+        { idx: 3, clueId: 'thai-thinh-pho-khong-xe', yaw: 0, pitch: -8 },
+      ], 'tt-hoc', undefined, [
         // GPS: 143 Trung Liệt → going east on Trung Liệt → lớp học thêm (no north drift)
         [21.010361, 105.819077], // tt-hoc-01 start (143 Trung Liệt)
         [21.010340, 105.819330], // tt-hoc-02 east
@@ -686,7 +707,10 @@ const TRANG_THAI_THINH: Story = {
       ],
       bgGradient: 'linear-gradient(160deg, #b8d4b0 0%, #8aba88 40%, #6a9866 100%)',
       bgTone: '#6a9866',
-      bgTourNodes: applyYaws(makeNodes(trang_playground, [], 'tt-pg', undefined, [
+      bgTourNodes: applyYaws(makeNodes(trang_playground, [
+        { idx: 1, clueId: 'thai-thinh-san-choi', yaw: -65, pitch: -8 },
+        { idx: 3, clueId: 'thai-thinh-tieng-cuoi', yaw: -65, pitch: -8 },
+      ], 'tt-pg', undefined, [
         // GPS: straight from 143 Trung Liệt NW to playground (user: "look to the left")
         [21.010361, 105.819077], // tt-pg-01 same start as hoc-them
         [21.010437, 105.819007], // interpolated
@@ -740,7 +764,10 @@ const TRANG_THAI_THINH: Story = {
       videoClip: 'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/video/quan-oc-violin.mp4',
       isPanoramicVideo: true,
       vimeoUrl: 'https://player.vimeo.com/video/1201125509?badge=0&autopause=0&player_id=0&app_id=58479',
-      bgTourNodes: withHistoric(applyYaws(makeNodes(trang_quan_oc, [], 'tt-oc', undefined, [
+      bgTourNodes: withHistoric(applyYaws(makeNodes(trang_quan_oc, [
+        { idx: 0, clueId: 'thai-thinh-di-voi-me', yaw: 0, pitch: -8 },
+        { idx: 4, clueId: 'thai-thinh-vio-oc', yaw: 0, pitch: -8 },
+      ], 'tt-oc', undefined, [
         // GPS: đường Trung Liệt → rẽ vào ngõ 69 → quán ốc oanh
         [21.010911, 105.820092], // tt-oc-01
         [21.011139, 105.820296], // tt-oc-02
