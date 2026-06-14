@@ -35,6 +35,12 @@ function parseSRT(content: string): Subtitle[] {
   return items;
 }
 
+function formatTime(sec: number): string {
+  const m = Math.floor(sec / 60);
+  const s = Math.floor(sec % 60);
+  return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+}
+
 export function OralHistoryPlayer({ audioEl, narratorName, narratorColor, paused = false, storyId }: OralHistoryPlayerProps) {
   const [playing, setPlaying] = useState(!audioEl.paused);
   const [progress, setProgress] = useState(0);
@@ -45,11 +51,24 @@ export function OralHistoryPlayer({ audioEl, narratorName, narratorColor, paused
   const [subtitles, setSubtitles] = useState<Subtitle[]>([]);
   const [currentSubText, setCurrentSubText] = useState('');
   
+  // Interactive Transcript states
+  const [showTranscript, setShowTranscript] = useState(false);
+  const [lastActiveLanguage, setLastActiveLanguage] = useState<'en' | 'vn'>('en');
+  const [activeSubIndex, setActiveSubIndex] = useState<number>(-1);
+  
   const subtitlesRef = useRef<Subtitle[]>([]);
+  const listRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     subtitlesRef.current = subtitles;
   }, [subtitles]);
+
+  // Sync last active language when user changes it
+  useEffect(() => {
+    if (subLanguage !== 'off') {
+      setLastActiveLanguage(subLanguage);
+    }
+  }, [subLanguage]);
 
   // Map storyId to subtitle filename prefix
   const subKey = (() => {
@@ -61,13 +80,15 @@ export function OralHistoryPlayer({ audioEl, narratorName, narratorColor, paused
 
   // Fetch subtitles file on language or narrator change
   useEffect(() => {
-    if (subLanguage === 'off' || !subKey) {
+    if (!subKey) {
       setSubtitles([]);
       setCurrentSubText('');
       return;
     }
 
-    const langSuffix = subLanguage === 'en' ? 'eng' : 'vie';
+    // Load either active subLanguage or fallback to lastActiveLanguage so transcript is populated
+    const lang = subLanguage === 'off' ? lastActiveLanguage : subLanguage;
+    const langSuffix = lang === 'en' ? 'eng' : 'vie';
     const srtUrl = `/subtitles/${subKey}-${langSuffix}.srt`;
 
     fetch(srtUrl)
@@ -84,7 +105,7 @@ export function OralHistoryPlayer({ audioEl, narratorName, narratorColor, paused
         setSubtitles([]);
         setCurrentSubText('');
       });
-  }, [subKey, subLanguage]);
+  }, [subKey, subLanguage, lastActiveLanguage]);
 
   useEffect(() => {
     if (!document.getElementById('oral-spin-style')) {
@@ -105,10 +126,11 @@ export function OralHistoryPlayer({ audioEl, narratorName, narratorColor, paused
     const onTimeUpdate = () => {
       if (el.duration) setProgress(el.currentTime / el.duration);
       
-      // Sync subtitles
+      // Sync subtitles and index
       const time = el.currentTime;
-      const active = subtitlesRef.current.find(s => time >= s.start && time <= s.end);
-      setCurrentSubText(active ? active.text : '');
+      const index = subtitlesRef.current.findIndex(s => time >= s.start && time <= s.end);
+      setActiveSubIndex(index);
+      setCurrentSubText(index !== -1 ? subtitlesRef.current[index].text : '');
     };
 
     el.addEventListener('play',       onPlay);
@@ -127,6 +149,19 @@ export function OralHistoryPlayer({ audioEl, narratorName, narratorColor, paused
       el.removeEventListener('timeupdate', onTimeUpdate);
     };
   }, [audioEl]);
+
+  // Auto-scroll active line into view smoothly
+  useEffect(() => {
+    if (showTranscript && activeSubIndex !== -1 && listRef.current) {
+      const activeEl = listRef.current.children[activeSubIndex] as HTMLElement;
+      if (activeEl) {
+        activeEl.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest',
+        });
+      }
+    }
+  }, [activeSubIndex, showTranscript]);
 
   // External pause (e.g. clue modal)
   useEffect(() => {
@@ -171,6 +206,105 @@ export function OralHistoryPlayer({ audioEl, narratorName, narratorColor, paused
           exit={{ opacity: 0, y: 8, scale: 0.9 }}
           transition={{ delay: 0.8, duration: 0.4 }}
         >
+          {/* Transcript Panel (Slide up from above the player widget) */}
+          <AnimatePresence>
+            {showTranscript && (
+              <motion.div
+                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                transition={{ duration: 0.25, ease: 'easeOut' }}
+                className="absolute bottom-full left-0 mb-3 w-80 rounded-2xl p-3 border text-white z-[81]"
+                style={{
+                  background: 'rgba(8, 6, 4, 0.92)',
+                  backdropFilter: 'blur(16px)',
+                  borderColor: `${narratorColor}33`,
+                  boxShadow: '0 12px 32px rgba(0, 0, 0, 0.6), inset 0 0 16px rgba(255,255,255,0.02)',
+                }}
+              >
+                {/* Transcript Header */}
+                <div className="flex items-center justify-between border-b border-white/10 pb-2 mb-2">
+                  <h3 className="font-serif text-[11px] font-bold text-amber-50/90 flex items-center gap-1.5 uppercase tracking-wide">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={narratorColor} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    Lời thoại câu kể
+                  </h3>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSubLanguage('en');
+                      }}
+                      className={`px-2 py-0.5 rounded text-[8px] font-mono font-bold transition-all border ${
+                        subLanguage === 'en' || (subLanguage === 'off' && lastActiveLanguage === 'en')
+                          ? 'text-black border-transparent font-extrabold'
+                          : 'text-white/40 border-white/10 hover:bg-white/5 hover:text-white/70'
+                      }`}
+                      style={(subLanguage === 'en' || (subLanguage === 'off' && lastActiveLanguage === 'en')) ? { background: narratorColor } : {}}
+                    >
+                      EN
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSubLanguage('vn');
+                      }}
+                      className={`px-2 py-0.5 rounded text-[8px] font-mono font-bold transition-all border ${
+                        subLanguage === 'vn' || (subLanguage === 'off' && lastActiveLanguage === 'vn')
+                          ? 'text-black border-transparent font-extrabold'
+                          : 'text-white/40 border-white/10 hover:bg-white/5 hover:text-white/70'
+                      }`}
+                      style={(subLanguage === 'vn' || (subLanguage === 'off' && lastActiveLanguage === 'vn')) ? { background: narratorColor } : {}}
+                    >
+                      VN
+                    </button>
+                  </div>
+                </div>
+                
+                {/* Scrollable list */}
+                <div 
+                  ref={listRef}
+                  className="overflow-y-auto pr-1 text-left flex flex-col gap-1.5 scrollbar-thin scrollbar-thumb-white/10 scroll-smooth"
+                  style={{ maxHeight: '200px' }}
+                >
+                  {subtitles.length === 0 ? (
+                    <p className="text-white/30 text-[10px] font-serif py-6 text-center italic">Đang tải lời kể...</p>
+                  ) : (
+                    subtitles.map((sub, idx) => {
+                      const isActive = idx === activeSubIndex;
+                      const formattedTime = formatTime(sub.start);
+                      return (
+                        <div
+                          key={idx}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            audioEl.currentTime = sub.start;
+                            if (audioEl.paused) {
+                              audioEl.play().catch(() => {});
+                            }
+                          }}
+                          className={`p-2 rounded-lg cursor-pointer transition-all hover:bg-white/5 text-[11px] font-serif leading-relaxed ${
+                            isActive ? 'bg-white/10 border-l-2' : ''
+                          }`}
+                          style={{
+                            borderLeftColor: isActive ? narratorColor : 'transparent',
+                            color: isActive ? '#fff' : 'rgba(255,255,255,0.55)',
+                            boxShadow: isActive ? `inset 0 0 8px ${narratorColor}15` : 'none',
+                          }}
+                        >
+                          <span className="font-mono text-[8px] block opacity-40 mb-0.5" style={isActive ? { color: narratorColor, opacity: 0.8 } : {}}>{formattedTime}</span>
+                          <p className={isActive ? 'font-medium' : ''}>{sub.text}</p>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Player Widget Bar */}
           <div
             role="button"
             tabIndex={0}
@@ -233,13 +367,37 @@ export function OralHistoryPlayer({ audioEl, narratorName, narratorColor, paused
               </div>
             </div>
 
+            {/* Transcript Toggle Button */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation(); // Avoid play/pause toggle
+                setShowTranscript(prev => !prev);
+              }}
+              className="flex-shrink-0 w-8 h-8 rounded-lg border transition-all active:scale-90 hover:bg-white/5 flex items-center justify-center"
+              style={{
+                borderColor: `${narratorColor}44`,
+                color: narratorColor,
+                background: showTranscript ? `${narratorColor}25` : 'transparent',
+              }}
+              title="Xem lời thoại / Bản dịch"
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="8" y1="6" x2="21" y2="6"></line>
+                <line x1="8" y1="12" x2="21" y2="12"></line>
+                <line x1="8" y1="18" x2="21" y2="18"></line>
+                <circle cx="3" cy="6" r="1"></circle>
+                <circle cx="3" cy="12" r="1"></circle>
+                <circle cx="3" cy="18" r="1"></circle>
+              </svg>
+            </button>
+
             {/* Subtitle Toggle Button */}
             <button
               onClick={(e) => {
                 e.stopPropagation(); // Avoid play/pause toggle
                 cycleLanguage();
               }}
-              className="flex-shrink-0 px-2.5 py-2 min-w-[44px] min-h-[44px] rounded-lg text-[10px] font-mono border transition-all active:scale-90 hover:bg-white/5 font-semibold text-center select-none uppercase tracking-wider flex items-center justify-center"
+              className="flex-shrink-0 px-2 py-1.5 min-w-[38px] rounded-lg text-[9px] font-mono border transition-all active:scale-90 hover:bg-white/5 font-semibold text-center select-none uppercase tracking-wider flex items-center justify-center"
               style={{
                 borderColor: `${narratorColor}44`,
                 color: narratorColor,
@@ -281,3 +439,4 @@ export function OralHistoryPlayer({ audioEl, narratorName, narratorColor, paused
     </>
   );
 }
+
