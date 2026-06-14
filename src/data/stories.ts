@@ -248,9 +248,9 @@ const essy_playground = [
 // ─── Story A: LTK / Khu Thành Công ───────────────────────────────────────────
 const TRANG: Story = {
   id: 'trang',
-  narrator: 'LTK',
+  narrator: 'Lê Trung Kiên',
   title: 'Khu Thành Công',
-  subtitle: 'Một ngày bình thường hồi bé của LTK',
+  subtitle: 'Một ngày bình thường hồi bé của Lê Trung Kiên',
   coverColor: '#4a3e75',
   spaces: [
     {
