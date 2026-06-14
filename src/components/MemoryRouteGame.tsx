@@ -135,7 +135,7 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, onBack }: MemoryRo
   return (
     <div className="h-screen flex flex-col relative bg-[#FCFAF2] overflow-hidden">
       <div className="absolute inset-0 giay-oly opacity-20 pointer-events-none" />
-      <div className="absolute inset-0 vintage-vignette pointer-events-none z-50" />
+      <div className="absolute inset-0 vintage-vignette pointer-events-none z-[5]" />
 
       {/* Top header */}
       <header className="relative z-30 flex items-center justify-between px-5 py-3 bg-white/50 backdrop-blur-sm border-b border-muctim/8 shadow-xs">

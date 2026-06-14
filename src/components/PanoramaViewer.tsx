@@ -566,6 +566,7 @@ export function PanoramaViewer({
   const [manifestError, setManifestError] = useState<string | null>(null);
   const [copyFlash, setCopyFlash] = useState(false);
   const [showHistoric, setShowHistoric] = useState(false);
+  const [dragHintVisible, setDragHintVisible] = useState(true);
   const [exportText, setExportText] = useState<string | null>(null);
 
   // Persist node list for this sequence whenever it changes
@@ -614,8 +615,15 @@ export function PanoramaViewer({
     if (nodeIndex > 0) setNodeId(localNodes[nodeIndex - 1].id);
   }, [nodeIndex, localNodes]);
 
-  // Reset historic overlay when moving to a different node
-  useEffect(() => { setShowHistoric(false); }, [nodeId]);
+  // Reset historic overlay and show drag hint when moving to a different node
+  useEffect(() => { setShowHistoric(false); setDragHintVisible(true); }, [nodeId]);
+
+  // Auto-fade the drag hint after 4 seconds
+  useEffect(() => {
+    if (!dragHintVisible) return;
+    const timer = setTimeout(() => setDragHintVisible(false), 4000);
+    return () => clearTimeout(timer);
+  }, [dragHintVisible]);
 
   // Notify parent component of the current node index change
   useEffect(() => {
@@ -808,12 +816,14 @@ export function PanoramaViewer({
       {/* Prev / Next buttons */}
       {nodeIndex > 0 && (
         <button onClick={goPrev}
+          aria-label="Quay lại"
           className="absolute left-3 top-1/2 -translate-y-1/2 z-40 bg-black/60 hover:bg-black/80 text-white rounded-xl px-3 py-4 font-mono text-lg transition-all">
           ◀
         </button>
       )}
       {nodeIndex < localNodes.length - 1 && (
         <button onClick={goNext}
+          aria-label="Tiếp tục"
           className="absolute right-3 top-1/2 -translate-y-1/2 z-40 bg-black/60 hover:bg-black/80 text-white rounded-xl px-3 py-4 font-mono text-lg transition-all">
           ▶
         </button>
@@ -888,12 +898,14 @@ export function PanoramaViewer({
         </div>
       )}
 
-      {/* Drag hint — shown briefly */}
-      <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
-        <p className="font-handwritten text-white/70 text-xs text-center drop-shadow">
-          Kéo để nhìn xung quanh
-        </p>
-      </div>
+      {/* Drag hint — auto-fades after 4s */}
+      {dragHintVisible && (
+        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-20 pointer-events-none transition-opacity duration-700">
+          <p className="font-handwritten text-white/70 text-xs text-center drop-shadow">
+            Kéo để nhìn xung quanh
+          </p>
+        </div>
+      )}
 
       {/* Node progress indicator (only if multi-node) */}
       {localNodes.length > 1 && (

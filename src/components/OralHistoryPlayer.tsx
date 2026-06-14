@@ -160,7 +160,11 @@ export function OralHistoryPlayer({ audioEl, narratorName, narratorColor, paused
           transition={{ delay: 0.8, duration: 0.4 }}
         >
           <div
+            role="button"
+            tabIndex={0}
+            aria-label={isSpinning ? 'Tạm dừng lời kể' : 'Phát lời kể'}
             onClick={toggle}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } }}
             className="flex items-center gap-2.5 rounded-2xl px-3.5 py-2.5 text-left transition-all active:scale-95 cursor-pointer"
             style={{
               background: 'rgba(8, 6, 4, 0.82)',
@@ -213,7 +217,7 @@ export function OralHistoryPlayer({ audioEl, narratorName, narratorColor, paused
                 e.stopPropagation(); // Avoid play/pause toggle
                 cycleLanguage();
               }}
-              className="flex-shrink-0 px-2 py-1 rounded-lg text-[8px] font-mono border transition-all active:scale-90 hover:bg-white/5 font-semibold text-center select-none uppercase tracking-wider"
+              className="flex-shrink-0 px-2.5 py-2 min-w-[44px] min-h-[44px] rounded-lg text-[10px] font-mono border transition-all active:scale-90 hover:bg-white/5 font-semibold text-center select-none uppercase tracking-wider flex items-center justify-center"
               style={{
                 borderColor: `${narratorColor}44`,
                 color: narratorColor,

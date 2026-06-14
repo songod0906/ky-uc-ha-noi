@@ -130,7 +130,7 @@ export function MemorySpace({ space, story, collectedIds, onCollect, onClueModal
           {!videoExpanded ? (
             <motion.button
               key="thumb"
-              className="absolute bottom-4 right-4 z-40 rounded-xl overflow-hidden shadow-2xl flex items-center gap-3 px-4 py-3 border transition-all"
+              className="absolute bottom-4 right-4 z-[35] rounded-xl overflow-hidden shadow-2xl flex items-center gap-3 px-4 py-3 border transition-all"
               style={{
                 background: 'rgba(8, 6, 4, 0.85)',
                 borderColor: 'rgba(212, 175, 55, 0.45)',

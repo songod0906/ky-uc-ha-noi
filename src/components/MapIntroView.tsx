@@ -207,7 +207,7 @@ export function MapIntroView({ onSelect }: MapIntroViewProps) {
               <div className="p-5 relative">
                 <button
                   onClick={() => setSelected(null)}
-                  className="absolute top-4 right-4 w-7 h-7 rounded-full flex items-center justify-center"
+                  className="absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center"
                   style={{ background: 'rgba(255,255,255,0.06)' }}
                 >
                   <X className="w-4 h-4 text-amber-200/50" />

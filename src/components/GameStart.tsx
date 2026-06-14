@@ -77,7 +77,7 @@ export function GameStart({ onBegin }: GameStartProps) {
       ].map((pos, i) => (
         <motion.div
           key={i}
-          className="absolute w-2 h-2 rounded-full bg-nangthu/40"
+          className="absolute w-2 h-2 rounded-full bg-nangthu/40 pointer-events-none"
           style={pos as React.CSSProperties}
           initial={{ scale: 0, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
