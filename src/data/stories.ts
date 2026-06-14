@@ -536,7 +536,7 @@ const ESSY: Story = {
       sublabel: 'Con đường chỉ người trong khu mới biết — dẫn ra giếng cũ nay thành sân tập thể',
       lat: 21.040723, lng: 105.818568,
       audioSegment: { src: '/audio/oral-history/hoang-hoa-tham.m4a', startSec: 299 },
-      videoClip: 'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/video/gieng-playground.mp4',
+      videoClip: 'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/video/gieng-v2.mp4',
       narratorBio: [
         'Từ Hoàng Hoa Thám sang Văn Cao có một con đường nhỏ — chỉ người trong khu mới biết đến.',
         '"Mình thực sự chưa từng gặp ai không phải người ở đây mà biết con đường đó cả."',
