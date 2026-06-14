@@ -147,6 +147,18 @@ export function OralHistoryPlayer({ audioEl, narratorName, narratorColor, paused
     });
   };
 
+  const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.stopPropagation(); // Avoid triggering the parent div's play/pause toggle
+    const rect = e.currentTarget.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const width = rect.width;
+    const newProgress = Math.max(0, Math.min(1, clickX / width));
+    if (audioEl && audioEl.duration) {
+      audioEl.currentTime = newProgress * audioEl.duration;
+      setProgress(newProgress);
+    }
+  };
+
   const isSpinning = playing && !paused;
 
   return (
@@ -203,10 +215,20 @@ export function OralHistoryPlayer({ audioEl, narratorName, narratorColor, paused
               <p className="font-serif text-xs font-semibold text-amber-50/85 leading-none">
                 {narratorName} · kể chuyện
               </p>
-              <div className="mt-1.5 w-24 h-0.5 rounded-full overflow-hidden" style={{ background: `${narratorColor}22` }}>
+              {/* Interactive Seek Bar */}
+              <div 
+                onClick={handleSeek}
+                className="mt-2 w-28 h-1 rounded-full cursor-pointer relative group/seek"
+                style={{ background: `${narratorColor}22` }}
+                title="Nhấp để chuyển đoạn âm thanh"
+              >
                 <div
-                  className="h-full rounded-full transition-all duration-1000"
+                  className="h-full rounded-full transition-all"
                   style={{ width: `${Math.max(2, progress * 100)}%`, background: narratorColor }}
+                />
+                <div 
+                  className="absolute top-1/2 -translate-y-1/2 w-2 h-2 rounded-full opacity-0 group-hover/seek:opacity-100 transition-opacity"
+                  style={{ left: `calc(${progress * 100}% - 4px)`, background: narratorColor }}
                 />
               </div>
             </div>

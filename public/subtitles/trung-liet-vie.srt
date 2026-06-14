@@ -213,7 +213,7 @@ một cái mương
 
 47
 00:02:44,520 --> 00:02:47,660
-và sau này nó mở đường, nó lấp mương ra,
+và sau này nó mở đường, nó lấp mương đi,
 nó mở đường.
 
 48
@@ -477,7 +477,7 @@ sang bút mực
 
 102
 00:06:28,928 --> 00:06:33,328
-để từ lớp bốn lớp hai, từ l-- từ năm tuổi
+để từ lớp một lớp hai, từ l-- từ năm tuổi
 lên nâng cao hơn thì mình sẽ phải dùng bút
 
 103
