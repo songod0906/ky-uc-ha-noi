@@ -43,7 +43,7 @@ export function GameStart({ onBegin }: GameStartProps) {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.7 }}
         >
-          Hai khu phố ở Hà Nội sắp bị giải tỏa. Hai người đã lớn lên ở đó.
+          Ba khu phố ở Hà Nội sắp bị giải tỏa. Ba người đã lớn lên ở đó.
           <br className="hidden sm:block" />
           <span className="italic mt-2 block">
             Đi theo họ. Tìm mảnh ký ức. Ghép lại một ngày bình thường trước khi nó biến mất.
