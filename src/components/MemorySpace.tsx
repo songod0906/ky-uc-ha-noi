@@ -28,6 +28,8 @@ export function MemorySpace({ space, story, collectedIds, onCollect, onClueModal
   const [isScanOpen, setIsScanOpen] = useState(false);
   const driveMode = ['quan-net', 'nha-ngo', 'nha-hoc-them'].includes(space.id);
   const driveIntervalMs = space.id === 'nha-ngo' ? 2200 : space.id === 'nha-hoc-them' ? 3200 : 4500;
+  // True when at least one node in this space has a 3D scan anchor
+  const hasScanNodes = space.bgTourNodes?.some(n => n.scanAnchors?.length) ?? false;
 
   // Ambient atmosphere — only for spaces where continuous background sound makes sense.
   // Clue-specific sounds (school-drum, keyboard) must NOT loop; they play only on clue press.
@@ -51,14 +53,22 @@ export function MemorySpace({ space, story, collectedIds, onCollect, onClueModal
     return () => { AudioSynth.stopAmbient(); };
   }, [space.id, currentNodeIndex, isScanOpen]);
 
-  // Play oral history audio when 3D scan is opened, stop when closed
+  // Spaces WITH a 3D scan: oral history plays only while the scan is open
   useEffect(() => {
-    if (isScanOpen && space.audioSegment) {
+    if (!hasScanNodes || !space.audioSegment) return;
+    if (isScanOpen) {
       AudioManager.play(space.audioSegment.src, space.audioSegment.startSec, 0.8, space.audioSegment.endSec);
-    } else if (!isScanOpen) {
+    } else {
       AudioManager.stop();
     }
-  }, [isScanOpen, space.audioSegment]);
+  }, [isScanOpen, hasScanNodes, space.audioSegment]);
+
+  // Spaces WITHOUT a 3D scan: oral history plays automatically on entry
+  useEffect(() => {
+    if (hasScanNodes || !space.audioSegment) return;
+    AudioManager.play(space.audioSegment.src, space.audioSegment.startSec, 0.8, space.audioSegment.endSec);
+    return () => { AudioManager.stop(); };
+  }, [space.id]);
 
   // Auto-expand video when reaching the last panorama node (all isPanoramicVideo spaces)
   useEffect(() => {
