@@ -51,13 +51,23 @@ export function MemorySpace({ space, story, collectedIds, onCollect, onClueModal
     return () => { AudioSynth.stopAmbient(); };
   }, [space.id, currentNodeIndex, isScanOpen]);
 
-  // Auto-expand video on final node for quan-oc-violin
+  // Play oral history audio when 3D scan is opened, stop when closed
   useEffect(() => {
-    if (space.id === 'quan-oc-violin' && currentNodeIndex === 4) {
+    if (isScanOpen && space.audioSegment) {
+      AudioManager.play(space.audioSegment.src, space.audioSegment.startSec, 0.8, space.audioSegment.endSec);
+    } else if (!isScanOpen) {
+      AudioManager.stop();
+    }
+  }, [isScanOpen, space.audioSegment]);
+
+  // Auto-expand video when reaching the last panorama node (all isPanoramicVideo spaces)
+  useEffect(() => {
+    const nodes = space.bgTourNodes;
+    if (space.isPanoramicVideo && nodes && nodes.length > 0 && currentNodeIndex >= nodes.length - 1) {
       setVideoExpanded(true);
       AudioManager.pause();
     }
-  }, [space.id, currentNodeIndex]);
+  }, [space.isPanoramicVideo, currentNodeIndex, space.bgTourNodes]);
 
   const handleOpenVideo = () => {
     setVideoExpanded(true);
