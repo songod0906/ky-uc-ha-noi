@@ -19,6 +19,7 @@ import { X, ArrowUp, ArrowDown } from 'lucide-react';
 import type { TourNode, TourClueAnchor, TourNavAnchor, TourScanAnchor, Clue } from '../types';
 import { ScanViewer } from './ScanViewer';
 import { DriveMinimap } from './DriveMinimap';
+import { MemoryClueIllustration } from './MemoryClueIllustration';
 
 // ---------- helpers ----------
 
@@ -160,22 +161,61 @@ function ClueHotspot({
   onCalibDragStart?: () => void;
   onCalibDragEnd?: () => void;
 }) {
+  const [tilt, setTilt] = useState({ x: 0, y: 0 });
+  const [isHovered, setIsHovered] = useState(false);
   const dragRef = useRef<{ startX: number; startY: number; startYaw: number; startPitch: number } | null>(null);
   const hasDragged = useRef(false);
   const pos = toPos(anchor.yaw, anchor.pitch);
-  const pinColor = collected ? '#f59e0b' : '#fbbf24';
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (onCalibDrag) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left - rect.width / 2;
+    const y = e.clientY - rect.top - rect.height / 2;
+    const rx = -(y / (rect.height / 2)) * 14;
+    const ry = (x / (rect.width / 2)) * 14;
+    setTilt({ x: rx, y: ry });
+  };
+
+  const handleMouseLeave = () => {
+    setTilt({ x: 0, y: 0 });
+    setIsHovered(false);
+  };
+
+  const cardColor = collected ? '#c8a882' : '#8fafb9';
+
   return (
     <Html position={pos} center distanceFactor={90} zIndexRange={[10, 15]}>
-      <div className="flex flex-col items-center" style={{ filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.95))' }}>
+      <div 
+        className="flex flex-col items-center select-none" 
+        style={{ 
+          filter: 'drop-shadow(0 12px 28px rgba(0,0,0,0.65))',
+          perspective: '500px'
+        }}
+      >
         {onCalibRemove && (
           <button
             onClick={() => onCalibRemove(clue.id)}
-            className="mb-1 w-5 h-5 rounded-full bg-red-500/90 text-white text-[10px] flex items-center justify-center hover:bg-red-400 leading-none shadow-lg border border-red-300/30"
+            className="mb-1.5 w-5 h-5 rounded-full bg-red-500/90 text-white text-[10px] flex items-center justify-center hover:bg-red-400 leading-none shadow-lg border border-red-300/30 z-50"
           >✕</button>
         )}
-        <button
-          className={`relative flex flex-col items-center select-none group ${onCalibDrag ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'}`}
-          onClick={() => { if (!hasDragged.current) onPreview(clue); }}
+        <div
+          className={`relative w-[112px] h-[142px] bg-[#fdfcf7] rounded-lg p-2 flex flex-col items-center justify-between border transition-all duration-300 ${
+            collected 
+              ? 'border-amber-400/40 shadow-[0_0_20px_rgba(200,168,130,0.3)]' 
+              : 'border-stone-300/40 shadow-[0_0_12px_rgba(0,0,0,0.25)] opacity-85 hover:opacity-100 card-glitch'
+          }`}
+          style={{
+            transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) scale(${isHovered ? 1.08 : 1})`,
+            transition: isHovered ? 'transform 0.05s ease-out' : 'transform 0.4s ease, opacity 0.3s',
+            cursor: onCalibDrag ? 'grab' : 'pointer'
+          }}
+          onMouseMove={handleMouseMove}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={handleMouseLeave}
+          onClick={() => {
+            if (!hasDragged.current) onPreview(clue);
+          }}
           onPointerDown={onCalibDrag ? (e) => {
             e.stopPropagation();
             e.currentTarget.setPointerCapture(e.pointerId);
@@ -193,36 +233,44 @@ function ClueHotspot({
             onCalibDrag(clue.id, Math.round(newYaw), Math.round(newPitch));
           } : undefined}
           onPointerUp={onCalibDrag ? () => { dragRef.current = null; onCalibDragEnd?.(); } : undefined}
-          onPointerCancel={onCalibDrag ? () => { dragRef.current = null; onCalibDragEnd?.(); } : undefined}
         >
-          {/* Pulsing beacon ring */}
-          <div className="absolute rounded-full border-2 border-amber-300/40 animate-ping pointer-events-none"
-            style={{ width: 46, height: 46, top: -3, left: -3 }} />
-          {/* Pin head circle */}
-          <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xl z-10 relative
-            transition-transform duration-150 group-hover:scale-110 border-2
-            ${collected
-              ? 'bg-amber-500 text-white border-amber-300 shadow-[0_0_10px_rgba(251,191,36,0.5)]'
-              : 'bg-amber-400 text-stone-900 border-amber-200 shadow-[0_0_12px_rgba(251,191,36,0.7)]'
-            }
-          `}>
-            {collected ? '📍' : CLUE_ICONS[clue.type]}
+          {/* Stamps/badges */}
+          <div className="absolute top-1 right-1 flex gap-0.5 z-10">
+            {!collected ? (
+              <span className="text-[5px] font-mono font-bold bg-amber-600/10 text-amber-700 px-1 py-0.5 rounded border border-amber-600/20 uppercase tracking-tight scale-85 origin-top-right">
+                Demolition
+              </span>
+            ) : (
+              <span className="text-[5px] font-mono font-bold bg-emerald-600/10 text-emerald-700 px-1 py-0.5 rounded border border-emerald-600/20 uppercase tracking-tight scale-85 origin-top-right">
+                Preserved
+              </span>
+            )}
           </div>
-          {/* Pin tail */}
-          <div className="-mt-px" style={{
-            width: 0, height: 0,
-            borderLeft: '6px solid transparent',
-            borderRight: '6px solid transparent',
-            borderTop: `10px solid ${collected ? '#f59e0b' : '#fbbf24'}`,
-          }} />
-          {/* Label tooltip above */}
-          <span className="absolute whitespace-nowrap px-2 py-0.5 rounded-lg text-[10px] font-serif
-            bg-black/90 border border-amber-400/40 text-amber-100
-            opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none z-20"
-            style={{ bottom: '100%', marginBottom: 8, left: '50%', transform: 'translateX(-50%)' }}>
-            {clue.label}
-          </span>
-        </button>
+
+          {/* Polaroid inner frame (Illustration container) */}
+          <div className={`w-full aspect-[4/3] rounded bg-[#FCFAF2] border flex items-center justify-center p-1.5 overflow-hidden transition-all duration-300 ${
+            collected ? 'border-amber-400/20 bg-amber-50/5' : 'border-stone-200'
+          }`}>
+            <MemoryClueIllustration clueId={clue.id} color={cardColor} />
+          </div>
+
+          {/* Polaroid label text */}
+          <div className="w-full flex-1 flex flex-col justify-center text-center px-0.5 pt-1.5 overflow-hidden">
+            <span className="font-serif text-[8.5px] leading-tight text-stone-800 font-bold truncate w-full">
+              {clue.label}
+            </span>
+            <span className="font-mono text-[5.5px] text-stone-400 uppercase tracking-widest mt-0.5">
+              {collected ? 'Saved ✓' : 'Click to save'}
+            </span>
+          </div>
+
+          {/* Active glow ring behind the card */}
+          <div className={`absolute -inset-0.5 rounded-lg border pointer-events-none transition-opacity duration-300 ${
+            collected 
+              ? 'border-amber-400/15 animate-pulse opacity-100' 
+              : 'border-blue-400/5 opacity-30'
+          }`} />
+        </div>
       </div>
     </Html>
   );
@@ -393,7 +441,6 @@ function CluePreviewModal({
   onClose: () => void;
 }) {
   const [playing, setPlaying] = useState(false);
-  const [activeTab, setActiveTab] = useState<'memory' | 'planning'>('memory');
   const howlRef = useRef<Howl | null>(null);
 
   useEffect(() => {
@@ -405,129 +452,188 @@ function CluePreviewModal({
       onplay: () => setPlaying(true),
       onend: () => setPlaying(false),
       onstop: () => setPlaying(false),
+      onpause: () => setPlaying(false),
     });
     howlRef.current = snd;
-    // No auto-play — user initiates via the play button
-    return () => { snd.stop(); snd.unload(); };
+    
+    // Autoplay immediate since this is triggered by a user click
+    snd.play();
+    setPlaying(true);
+
+    return () => { 
+      snd.stop(); 
+      snd.unload(); 
+    };
   }, [clue.audioSrc]);
 
   const togglePlay = () => {
     const snd = howlRef.current;
     if (!snd) return;
-    if (snd.playing()) { snd.pause(); setPlaying(false); }
-    else { snd.play(); setPlaying(true); }
+    if (snd.playing()) { 
+      snd.pause(); 
+      setPlaying(false); 
+    } else { 
+      snd.play(); 
+      setPlaying(true); 
+    }
   };
 
   return (
-    <div className="absolute inset-0 z-30 flex items-end justify-center p-4 bg-black/50">
-      <div className="w-full max-w-sm bg-[#FCFAF2] rounded-2xl p-5 shadow-2xl border border-muctim/10 flex flex-col max-h-[85%] overflow-hidden">
-        {/* Header */}
-        <div className="flex items-start justify-between mb-3 flex-none">
-          <div>
-            <p className="font-mono text-[9px] text-muctim-faded uppercase tracking-widest">
-              {CLUE_ICONS[clue.type]} {clue.type}
-            </p>
-            <h3 className="font-serif text-base font-bold text-muctim">{clue.label}</h3>
-          </div>
-          <button onClick={onClose} className="text-muctim-faded hover:text-muctim p-1">
-            <X className="w-4 h-4" />
-          </button>
-        </div>
+    <div className="absolute inset-0 z-[80] flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs">
+      <div 
+        className="w-full max-w-2xl bg-[#FCFAF2] rounded-3xl p-6 shadow-2xl border border-muctim/10 flex flex-col max-h-[90vh] md:max-h-[85vh] overflow-hidden relative"
+        style={{
+          boxShadow: '0 20px 50px rgba(0,0,0,0.4), inset 0 0 40px rgba(200, 168, 130, 0.05)'
+        }}
+      >
+        {/* Close Button */}
+        <button 
+          onClick={onClose} 
+          className="absolute top-4 right-4 text-muctim/40 hover:text-muctim bg-white/40 hover:bg-white/80 p-2 rounded-full transition-all z-10 border border-muctim/5 cursor-pointer"
+        >
+          <X className="w-4 h-4" />
+        </button>
 
-        {/* Tab Selection */}
-        <div className="flex border-b border-muctim/10 mb-4 text-[11px] font-serif font-bold flex-none">
-          <button
-            onClick={() => setActiveTab('memory')}
-            className={`flex-1 pb-2 text-center transition-all ${
-              activeTab === 'memory'
-                ? 'text-muctim border-b-2 border-muctim'
-                : 'text-muctim-faded hover:text-muctim'
-            }`}
-          >
-            📍 Childhood Memory
-          </button>
-          <button
-            onClick={() => setActiveTab('planning')}
-            className={`flex-1 pb-2 text-center transition-all ${
-              activeTab === 'planning'
-                ? 'text-amber-800 border-b-2 border-amber-800'
-                : 'text-muctim-faded hover:text-amber-800'
-            }`}
-          >
-            ⚠️ 2026 Master Plan
-          </button>
-        </div>
-
-        {/* Tab Content (Scrollable if needed) */}
-        <div className="flex-1 overflow-y-auto mb-4 pr-1 scrollbar-thin">
-          {activeTab === 'memory' ? (
+        {/* Modal Content - Two columns on desktop */}
+        <div className="flex-1 overflow-y-auto pr-1 scrollbar-thin flex flex-col md:flex-row gap-6 mt-4 pb-2">
+          
+          {/* Left Column: Warm Memory (Childhood) */}
+          <div className="flex-1 flex flex-col gap-4">
             <div>
-              {/* Quote */}
-              <p className="font-handwritten text-muctim italic mb-3 leading-relaxed text-sm">
-                {clue.quote}
-              </p>
+              <span className="font-mono text-[9px] text-muctim-faded uppercase tracking-widest block mb-1">
+                📍 Childhood Memory
+              </span>
+              <h3 className="font-serif text-lg font-bold text-muctim leading-tight">
+                {clue.label}
+              </h3>
+            </div>
 
-              {/* Oral history audio player */}
-              {clue.audioSrc && (
+            {/* Illustration container */}
+            <div className="w-full aspect-[16/10] bg-[#fdfcf7] border border-amber-200/40 rounded-xl p-3 flex items-center justify-center shadow-inner relative overflow-hidden bg-radial from-[#FCFAF2] to-[#FAF6ED] flex-shrink-0">
+              <div className="w-20 h-20">
+                <MemoryClueIllustration clueId={clue.id} color="#c8a882" />
+              </div>
+            </div>
+
+            {/* Audio Waveform & Player */}
+            {clue.audioSrc && (
+              <div 
+                className={`flex items-center gap-3 w-full px-4 py-3 rounded-2xl transition-all text-left ${
+                  playing 
+                    ? 'bg-amber-100/30 border border-amber-200' 
+                    : 'bg-stone-100 hover:bg-stone-200/60 border border-stone-200'
+                }`}
+              >
                 <button
                   onClick={togglePlay}
-                  className={`flex items-center gap-3 w-full mb-3 px-3 py-2.5 rounded-xl transition-all text-left
-                    ${playing
-                      ? 'bg-muctim/12 border border-muctim/20'
-                      : 'bg-muctim/6 hover:bg-muctim/10 border border-muctim/10'}`}
+                  className={`w-9 h-9 rounded-full flex-none flex items-center justify-center text-xs transition-all shadow-md active:scale-95 cursor-pointer ${
+                    playing ? 'bg-amber-600 text-white' : 'bg-amber-700 text-white'
+                  }`}
                 >
-                  <div className={`w-7 h-7 rounded-full flex-none flex items-center justify-center text-sm transition-all
-                    ${playing ? 'bg-muctim text-white' : 'bg-muctim/15 text-muctim'}`}>
-                    {playing ? '⏸' : '▶'}
+                  {playing ? '⏸' : '▶'}
+                </button>
+                <div className="flex-1 min-w-0">
+                  <p className="font-mono text-[8px] text-amber-800 uppercase tracking-widest font-bold">
+                    {playing ? 'STREAMING ORAL HISTORY' : 'LISTEN TO NARRATIVE'}
+                  </p>
+                  <div className="flex gap-0.5 items-end h-4 mt-1">
+                    {/* Retro waveform bars */}
+                    {[0.3, 0.7, 0.4, 0.9, 0.5, 0.8, 0.6, 0.4, 0.7, 0.5, 0.8, 0.3, 0.9, 0.6, 0.4].map((h, i) => (
+                      <div 
+                        key={i} 
+                        className={`w-[3px] rounded-full transition-all duration-300 ${
+                          playing ? 'bg-amber-600' : 'bg-stone-300'
+                        }`}
+                        style={{ 
+                          height: playing ? `${h * 100}%` : '20%',
+                          animationDelay: `${i * 0.05}s`
+                        }} 
+                      />
+                    ))}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-mono text-[9px] text-muctim-faded uppercase tracking-wider">
-                      {playing ? 'Playing voice memo...' : 'Listen to oral history'}
-                    </p>
-                    {playing && (
-                      <div className="flex gap-0.5 items-end h-2.5 mt-1">
-                        {[0.6, 1, 0.7, 0.9, 0.5, 0.8, 0.6].map((h, i) => (
-                          <div key={i} className="w-0.5 bg-muctim/50 rounded-full animate-pulse"
-                            style={{ height: `${h * 10}px`, animationDelay: `${i * 0.1}s` }} />
-                        ))}
-                      </div>
-                    )}
+                </div>
+              </div>
+            )}
+
+            {/* Poetic quote */}
+            <p className="font-handwritten text-lg text-amber-900 italic leading-relaxed text-center px-2 py-1 bg-amber-500/5 rounded-xl border border-amber-200/10">
+              {clue.quote}
+            </p>
+
+            {/* Detailed voice note */}
+            <p className="font-serif text-xs text-muctim-faded leading-relaxed bg-[#fbfaf5]/50 rounded-xl p-3 border border-muctim/5">
+              {clue.voiceNote}
+            </p>
+          </div>
+
+          {/* Vertical divider on desktop */}
+          <div className="hidden md:block w-px bg-muctim/10 self-stretch my-2" />
+
+          {/* Right Column: Cold Demolition (Master Plan) */}
+          <div className="flex-1 flex flex-col justify-between gap-5">
+            <div className="flex flex-col gap-4">
+              <div>
+                <span className="font-mono text-[9px] text-red-500 uppercase tracking-widest block mb-1 font-bold">
+                  ⚠️ 2026 Master Plan
+                </span>
+                <h3 className="font-serif text-base font-bold text-stone-700 leading-tight">
+                  Demolition & Site Clearance Order
+                </h3>
+              </div>
+
+              {/* Administrative Blueprint Panel */}
+              <div 
+                className="bg-sky-950 text-sky-100/90 border border-sky-800 rounded-2xl p-4 font-mono text-xs leading-relaxed relative overflow-hidden shadow-md flex flex-col justify-between min-h-[140px]"
+                style={{
+                  backgroundImage: 'radial-gradient(circle at top right, rgba(14,165,233,0.15) 0%, transparent 80%)'
+                }}
+              >
+                {/* Blueprint grid background */}
+                <div className="absolute inset-0 opacity-10 pointer-events-none" 
+                  style={{
+                    backgroundImage: 'linear-gradient(to right, white 1px, transparent 1px), linear-gradient(to bottom, white 1px, transparent 1px)',
+                    backgroundSize: '15px 15px'
+                  }} 
+                />
+
+                <div className="relative z-10">
+                  <div className="flex justify-between items-center mb-3 border-b border-sky-850 pb-1.5 text-[8.5px] text-sky-400 font-bold uppercase tracking-widest">
+                    <span>STATE REGULATION NO. 2026-DP</span>
+                    <span className="text-amber-500 animate-pulse">⏳ EXPIRED</span>
                   </div>
+                  <p className="text-[11px] font-sans text-sky-200">
+                    {clue.planningImpact || 'This location falls within the boundaries of the 2026 infrastructure renovation and urban upgrading project. The old structure and existing state will be fully demolished.'}
+                  </p>
+                </div>
+
+                <div className="flex justify-between items-center mt-4 text-[7px] text-sky-500 font-bold border-t border-sky-900 pt-2 relative z-10">
+                  <span>HANOI DEPARTMENT OF PLANNING</span>
+                  <span>APPROVED 2026</span>
+                </div>
+              </div>
+
+              <div className="bg-amber-500/5 border border-amber-500/10 rounded-xl p-3 text-[10.5px] leading-relaxed text-amber-800 font-serif">
+                💡 **Preservation Action**: Saving this fragment uploads its coordinates, audio files, and photo scans to the decentralized **Hanoi Memory Ledger**, securing it from permanent physical erasure.
+              </div>
+            </div>
+
+            {/* Bottom Save Action */}
+            <div className="pt-3 border-t border-muctim/5 flex-none">
+              {collected ? (
+                <div className="w-full py-3 bg-emerald-700/10 border border-emerald-600/30 text-emerald-850 rounded-xl text-center font-serif text-xs font-bold flex items-center justify-center gap-2">
+                  <span>✓</span> Memory Successfully Archived & Safe
+                </div>
+              ) : (
+                <button
+                  onClick={onCollect}
+                  className="w-full py-3 bg-amber-700 hover:bg-amber-800 text-white font-serif text-sm font-semibold rounded-xl transition-all shadow-md active:scale-98 flex items-center justify-center gap-2 hover:shadow-[0_4px_16px_rgba(180,83,9,0.3)] cursor-pointer"
+                >
+                  📥 Save to Digital Archive
                 </button>
               )}
-
-              {/* Voice note text */}
-              <p className="font-serif text-xs text-muctim-faded leading-relaxed">
-                {clue.voiceNote}
-              </p>
             </div>
-          ) : (
-            <div className="bg-stone-100/70 border border-stone-200 rounded-xl p-3.5 font-serif">
-              <p className="font-mono text-[8px] text-stone-500 uppercase tracking-widest mb-1.5 font-bold">
-                Demolition & Land Clearance Decision
-              </p>
-              <p className="text-xs text-stone-700 leading-relaxed font-medium">
-                {clue.planningImpact || 'This location falls within the boundaries of the 2026 infrastructure renovation and urban upgrading project. The old structure and existing state will be fully demolished.'}
-              </p>
-            </div>
-          )}
-        </div>
+          </div>
 
-        {/* Action Button */}
-        <div className="flex-none pt-2 border-t border-muctim/5">
-          {collected ? (
-            <p className="text-center font-serif text-xs text-emerald-700 font-bold">✓ Successfully archived</p>
-          ) : (
-            <button
-              onClick={() => {
-                onCollect();
-                // Play pluck sound via Synth is already done in parent handleCollect
-              }}
-              className="w-full py-2.5 bg-muctim text-white font-serif text-sm font-semibold rounded-xl hover:bg-muctim/80 transition-all shadow-sm"
-            >
-              Archive this memory
-            </button>
-          )}
         </div>
       </div>
     </div>

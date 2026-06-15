@@ -1,3 +1,5 @@
+import { Howl } from 'howler';
+
 /**
  * Web Audio API synthesizer to generate nostalgic Hanoi soundscapes in the browser.
  * Safe from CORS blockage or server missing MP3 assets!
@@ -6,6 +8,7 @@
 
 let audioCtx: AudioContext | null = null;
 const activeNodes: { [key: string]: AudioNode[] } = {};
+const activeHowls: { [key: string]: Howl } = {};
 let ambientLoopTimer: any = null;
 let currentAmbientType: string | null = null;
 
@@ -117,9 +120,34 @@ export const AudioSynth = {
   /**
    * Start custom synthesized ambient effects based on the hotspot visited.
    */
-  startAmbient(type: 'keyboard' | 'aerobic' | 'kids-laughter' | 'cicadas' | 'wind' | 'violin' | 'plucks') {
+  startAmbient(type: 'keyboard' | 'aerobic' | 'kids-laughter' | 'cicadas' | 'wind' | 'violin' | 'plucks' | 'school-drum') {
     this.stopAmbient();
     currentAmbientType = type;
+
+    // Real recorded audio mapping
+    const mp3Mapping: Record<string, string> = {
+      keyboard: '/audio/sound-net.mp3',
+      aerobic: '/audio/sound-aerobic.mp3',
+      violin: '/audio/sound-violin.mp3',
+      'school-drum': '/audio/sound-trong-truong.mp3',
+    };
+
+    if (mp3Mapping[type]) {
+      try {
+        const sound = new Howl({
+          src: [mp3Mapping[type]],
+          html5: true,
+          loop: true,
+          volume: type === 'school-drum' ? 0.35 : 0.2, // Adjust relative volume
+        });
+        sound.play();
+        activeHowls[type] = sound;
+        return;
+      } catch (e) {
+        console.warn(`Failed to play real ambient sound for ${type}, falling back to synth`, e);
+      }
+    }
+
     const ctx = getAudioContext();
     const now = ctx.currentTime;
     
@@ -332,7 +360,7 @@ export const AudioSynth = {
   },
 
   /**
-   * Stop all active synthesized soundscapes
+   * Stop all active synthesized and real ambient soundscapes
    */
   stopAmbient() {
     currentAmbientType = null;
@@ -341,6 +369,17 @@ export const AudioSynth = {
       ambientLoopTimer = null;
     }
     
+    // Stop and unload Howls
+    Object.keys(activeHowls).forEach((key) => {
+      try {
+        activeHowls[key].stop();
+        activeHowls[key].unload();
+      } catch (e) {
+        console.warn('Failed to stop Howl', e);
+      }
+      delete activeHowls[key];
+    });
+
     // Stop and disconnect nodes
     Object.keys(activeNodes).forEach((key) => {
       activeNodes[key].forEach((node) => {

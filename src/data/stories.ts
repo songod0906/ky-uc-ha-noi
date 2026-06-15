@@ -309,7 +309,7 @@ const TRANG: Story = {
             'The elementary classrooms at Thanh Cong A didn\'t have A/C until grade 3 or 4. The windows were always open — letting outside noise flood in. Kien remembers the teachers often having drama: one class being noisy affecting another, the teacher next door coming over to argue. The school drum sound especially triggered strong feelings — "especially feeling rushed and scared of being late, particularly when snacking at the school gate." Now with doors closed and A/C on, those sounds are gone.',
           planningImpact:
             'The renovation plan for Thanh Cong A Elementary School in 2026 will construct new closed 5-story buildings with central A/C and soundproof glass windows. Lecturing sounds leaking to other classes or school drums echoing into the alleys will be completely blocked.',
-          ambient: 'wind',
+          ambient: 'school-drum',
           audioSrc: '/audio/trang-tieng-trong.mp3',
           x: 68,
           y: 42,

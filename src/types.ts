@@ -5,7 +5,8 @@ export type AmbientType =
   | 'cicadas'
   | 'wind'
   | 'violin'
-  | 'plucks';
+  | 'plucks'
+  | 'school-drum';
 
 export type ClueType = 'place' | 'sound' | 'routine' | 'object' | 'loss';
 
