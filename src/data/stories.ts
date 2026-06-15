@@ -265,6 +265,7 @@ const TRANG: Story = {
       label: 'Cổng trường',
       sublabel: 'Trường Tiểu học Thành Công A — tiệm thuê truyện, thẻ sưu tầm, kem son, kem chanh',
       lat: 21.023324, lng: 105.812746,
+      quyhoachUrl: 'https://www.google.com/search?q=bản+đồ+quy+hoạch+phường+Thành+Công+Ba+Đình&tbm=isch',
       audioSegment: { src: '/audio/oral-history/thanh-cong.m4a', startSec: 36, endSec: 439 },
       narratorBio: [
         'Lớp tiểu học không có điều hòa — cửa sổ mở, nghe được tiếng thầy cô các lớp chửi nhau.',
@@ -326,6 +327,7 @@ const TRANG: Story = {
       label: 'Quán net — nhà mình mở',
       sublabel: 'Theo bước Kiên từ cổng trường về quán net nhà mở — màn CRT, tiếng Audition "cọc cọc cọc"',
       lat: 21.020861, lng: 105.813559,
+      quyhoachUrl: 'https://www.google.com/search?q=quy+hoạch+cải+tạo+tập+thể+Thành+Công+Ba+Đình&tbm=isch',
       audioSegment: { src: '/audio/oral-history/thanh-cong.m4a', startSec: 439, endSec: 527 },
       videoClip: 'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/video/quan-net-gaming.mp4',
       narratorBio: [
@@ -402,6 +404,7 @@ const TRANG: Story = {
       label: 'Hồ Thành Công',
       sublabel: 'Cửa sau lách xe vào, bê tông gập ghềnh — con người Thành Công chả ai đi cửa chính',
       lat: 21.020445, lng: 105.813269,
+      quyhoachUrl: 'https://www.google.com/search?q=quy+hoạch+công+viên+hồ+Thành+Công+mở+hàng+rào&tbm=isch',
       audioSegment: { src: '/audio/oral-history/thanh-cong.m4a', startSec: 527, endSec: 660 },
       narratorBio: [
         'Ông bà dẫn ra hồ tập xe đạp cuối tuần — hồ bê tông gập ghềnh, nhiều chó, mùi tanh cá chết.',
@@ -512,6 +515,7 @@ const ESSY: Story = {
       label: 'Nhà / Ngõ',
       sublabel: 'Số 17, 267/33 Hoàng Hoa Thám — rẽ ba bốn lần mới vào được, Grab không bao giờ tìm được',
       lat: 21.041427, lng: 105.817931,
+      quyhoachUrl: 'https://www.google.com/search?q=dự+án+mở+đường+dốc+Tam+Đa+Hoàng+Hoa+Thám+quy+hoạch&tbm=isch',
       audioSegment: { src: '/audio/oral-history/hoang-hoa-tham.m4a', startSec: 1, endSec: 291 },
       narratorBio: [
         'Nhà nằm sâu giữa ba trục đường lớn — Essy biết năm con đường vào nhà từ ba hướng khác nhau.',
@@ -600,6 +604,7 @@ const ESSY: Story = {
       label: 'Giếng / Khu vui chơi',
       sublabel: 'Con đường chỉ người trong khu mới biết — dẫn ra giếng cũ nay thành sân tập thể',
       lat: 21.040723, lng: 105.818568,
+      quyhoachUrl: 'https://www.google.com/search?q=quy+hoạch+dốc+Tam+Đa+phường+Ngọc+Hà+Ba+Đình&tbm=isch',
       audioSegment: { src: '/audio/oral-history/hoang-hoa-tham.m4a', startSec: 291 },
       videoClip: 'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/video/gieng-v2.mp4',
       isPanoramicVideo: true,
@@ -692,6 +697,7 @@ const TRANG_THAI_THINH: Story = {
       label: 'Lớp học thêm',
       sublabel: 'Gần cửa hàng mẹ — chiều 4-5 giờ mẹ dẫn đi bộ ra học, phố không một chiếc ô tô',
       lat: 21.009981, lng: 105.820251,
+      quyhoachUrl: 'https://www.google.com/search?q=bản+đồ+quy+hoạch+đường+Nguyễn+Văn+Tuyết+Đống+Đa&tbm=isch',
       audioSegment: { src: '/audio/oral-history/trung-liet.m4a', startSec: 27, endSec: 214 },
       narratorBio: [
         'Mỗi chiều 4-5 giờ, mẹ dẫn đi bộ qua con phố vắng đến lớp học thêm trước cấp một.',
@@ -758,6 +764,7 @@ const TRANG_THAI_THINH: Story = {
       label: 'Sân chơi khu tập thể',
       sublabel: 'Đi qua vô số lần — chưa bao giờ được vào chơi một lần nào',
       lat: 21.010665, lng: 105.818798,
+      quyhoachUrl: 'https://www.google.com/search?q=quy+hoạch+cải+tạo+chung+cư+cũ+Trung+Liệt+Đống+Đa&tbm=isch',
       audioSegment: { src: '/audio/oral-history/trung-liet.m4a', startSec: 214, endSec: 344 },
       narratorBio: [
         'Trên đường học thêm mỗi buổi chiều, nhìn thấy các bạn chơi trong sân — không được dừng lại.',
@@ -816,6 +823,7 @@ const TRANG_THAI_THINH: Story = {
       label: 'Quán ốc ông violin',
       sublabel: 'Mẹ dẫn đi ăn để an ủi — và lần đầu tiên Trang biết violin là gì',
       lat: 21.011001, lng: 105.820834,
+      quyhoachUrl: 'https://www.google.com/search?q=quy+hoạch+phố+ẩm+thực+Nguyễn+Văn+Tuyết+Đống+Đa&tbm=isch',
       audioSegment: { src: '/audio/oral-history/trung-liet.m4a', startSec: 344, endSec: 645 },
       narratorBio: [
         'Cô giáo đánh vào tay vì dùng tẩy với bút máy — Trang khóc cả đường về. Mẹ dẫn đi ăn ốc.',

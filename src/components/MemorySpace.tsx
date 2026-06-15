@@ -231,12 +231,12 @@ export function MemorySpace({ space, story, collectedIds, onCollect, onClueModal
       )}
 
       {/* Quy hoạch urban planning button */}
-      {(space.lat && space.lng) && (
+      {(space.quyhoachUrl || (space.lat && space.lng)) && (
         <a
-          href={`https://quyhoach.hanoi.vn/#17/${space.lat}/${space.lng}`}
+          href={space.quyhoachUrl || `https://www.google.com/maps/search/?api=1&query=${space.lat},${space.lng}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="absolute bottom-20 left-4 z-[35] flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-mono text-xs transition-all hover:opacity-90 active:scale-95"
+          className="absolute bottom-4 left-4 z-[35] flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-mono text-xs transition-all hover:opacity-90 active:scale-95"
           style={{
             background: 'rgba(0,0,0,0.45)',
             color: 'rgba(255,255,255,0.75)',
