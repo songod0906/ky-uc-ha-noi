@@ -225,48 +225,11 @@ export const AudioSynth = {
   },
 
   startBackgroundMusic() {
-    try {
-      const ctx = getAudioContext();
-      const now = ctx.currentTime;
-      this.stopBackgroundMusic();
-
-      const gainNode = ctx.createGain();
-      gainNode.gain.setValueAtTime(0, now);
-      gainNode.gain.linearRampToValueAtTime(0.06, now + 3);
-      gainNode.connect(ctx.destination);
-      bgMusicGain = gainNode;
-
-      // Soft ambient pad: three detuned triangle oscillators — warm, mid-register
-      const tones = [261.6, 329.6, 392.0]; // C4, E4, G4 — one octave up, less droney
-      tones.forEach((freq, i) => {
-        const osc = ctx.createOscillator();
-        const oscGain = ctx.createGain();
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(freq + i * 0.4, now); // slight detune per voice
-        oscGain.gain.setValueAtTime(1 / tones.length, now);
-        osc.connect(oscGain);
-        oscGain.connect(gainNode);
-        osc.start(now);
-        bgMusicNodes.push(osc, oscGain);
-      });
-    } catch (e) {
-      console.warn('Background music failed', e);
-    }
+    // Synth pad disabled — ambient MP3 loops (violin, keyboard) provide atmosphere instead
   },
 
   stopBackgroundMusic() {
-    if (bgMusicGain && audioCtx) {
-      const now = audioCtx.currentTime;
-      bgMusicGain.gain.linearRampToValueAtTime(0, now + 1.5);
-    }
-    const nodes = bgMusicNodes;
-    bgMusicNodes = [];
-    bgMusicGain = null;
-    setTimeout(() => {
-      nodes.forEach((n) => {
-        try { (n as any).stop?.(); n.disconnect(); } catch (_) {}
-      });
-    }, 1600);
+    // no-op
   },
 
   duckAmbient(ducked: boolean) {
