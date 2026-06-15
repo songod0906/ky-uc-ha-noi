@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Story } from '../types';
 import { MemorySpace as MemorySpaceComponent } from './MemorySpace';
 import { EndingCannotBeMoved } from './EndingCannotBeMoved';
+import { OralHistoryPlayer } from './OralHistoryPlayer';
 import { AudioSynth } from '../utils/AudioSynth';
 import { AudioManager } from '../utils/AudioManager';
 import { ChevronLeft, CheckSquare } from 'lucide-react';
@@ -26,21 +27,35 @@ interface MemoryRouteGameProps {
 export function MemoryRouteGame({ story, initialSpaceIdx = 0, onBack }: MemoryRouteGameProps) {
   const [phase, setPhase] = useState<Phase>('dossier');
   const [spaceIndex] = useState(initialSpaceIdx);
-  // Pre-collect all clues — exhibition mode removes the hunting mechanic
   const [collectedIds, setCollectedIds] = useState<string[]>(
     () => story.spaces[initialSpaceIdx]?.clues.map(c => c.id) ?? []
   );
+  const [audioEl, setAudioEl] = useState<HTMLAudioElement | null>(null);
+
   const narratorColor = NARRATOR_COLOR[story.narrator] ?? '#C8B89A';
   const activeSpace = story.spaces[spaceIndex];
 
+  // Kill any lingering audio on mount/unmount
   useEffect(() => {
     AudioManager.stop();
     return () => { AudioManager.stop(); AudioSynth.stopAmbient(); };
   }, []);
 
-  const handleFinish = () => setPhase('ending');
+  // Autoplay the space's oral history segment when entering explore mode
+  useEffect(() => {
+    if (phase !== 'explore') return;
+    const seg = activeSpace?.audioSegment;
+    if (!seg) return;
+    const el = AudioManager.play(seg.src, seg.startSec, 0.85, seg.endSec);
+    setAudioEl(el);
+    return () => { AudioManager.stop(); setAudioEl(null); };
+  }, [phase, activeSpace]);
+
+  const handleFinish = () => { AudioManager.stop(); setPhase('ending'); };
 
   const handleRestart = () => {
+    AudioManager.stop();
+    setAudioEl(null);
     setCollectedIds(story.spaces[spaceIndex]?.clues.map(c => c.id) ?? []);
     setPhase('dossier');
   };
@@ -62,9 +77,7 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, onBack }: MemoryRo
           story={story}
           space={activeSpace}
           narratorColor={narratorColor}
-          onEnter={() => {
-            setPhase('explore');
-          }}
+          onEnter={() => setPhase('explore')}
         />
       </div>
     );
@@ -128,6 +141,16 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, onBack }: MemoryRo
           onCollect={() => {}}
           onClueModalChange={() => {}}
         />
+
+        {/* Oral history player — bottom-left floating widget, autoplays on space entry */}
+        {audioEl && (
+          <OralHistoryPlayer
+            audioEl={audioEl}
+            narratorName={story.narrator}
+            narratorColor={narratorColor}
+            storyId={story.id}
+          />
+        )}
       </main>
     </div>
   );
