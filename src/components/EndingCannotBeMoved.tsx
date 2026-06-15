@@ -5,11 +5,26 @@ import { AudioSynth } from '../utils/AudioSynth';
 import { RotateCcw, FileText, BookOpen } from 'lucide-react';
 import { CompassMotif } from './CompassMotif';
 
+// Narrative bridge: after each story, what connects to the next
+const STORY_BRIDGE: Record<string, { nextId: string; nextNarrator: string; bridge: string }> = {
+  'trang': {
+    nextId: 'essy',
+    nextNarrator: 'Essy',
+    bridge: 'A few kilometers west, in alley 267 Hoang Hoa Tham, someone else is also packing her last memories of a place that is about to disappear.',
+  },
+  'essy': {
+    nextId: 'thai-thinh',
+    nextNarrator: 'Trang',
+    bridge: 'And just a few streets away in the Trung Liet lanes, the afternoon light is turning golden. A violin is still playing from a sidewalk stall.',
+  },
+};
+
 interface EndingCannotBeMovedProps {
   story: Story;
   diary: DiaryEntry[];
   onRestart: () => void;
   onChooseOther: () => void;
+  onNextStory?: (storyId: string) => void;
 }
 
 const SWEEP_TEXTS: Record<string, string[]> = {
@@ -39,7 +54,8 @@ const SWEEP_TEXTS: Record<string, string[]> = {
   ],
 };
 
-export function EndingCannotBeMoved({ story, diary, onRestart, onChooseOther }: EndingCannotBeMovedProps) {
+export function EndingCannotBeMoved({ story, diary, onRestart, onChooseOther, onNextStory }: EndingCannotBeMovedProps) {
+  const bridge = STORY_BRIDGE[story.id];
   const [sweepPhase, setSweepPhase] = useState<'intro' | 'showCase'>('intro');
   const [typewriterIndex, setTypewriterIndex] = useState(0);
   const orderedDiary = [...diary].sort((a, b) => a.foundAt - b.foundAt);
@@ -197,7 +213,33 @@ export function EndingCannotBeMoved({ story, diary, onRestart, onChooseOther }: 
           </ol>
         )}
 
-        {/* Navigation buttons — prominent at bottom */}
+        {/* Narrative bridge — leads directly to the next story */}
+        {bridge && onNextStory && (
+          <motion.div
+            className="mb-6 rounded-2xl overflow-hidden border border-muctim/12"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+          >
+            <div className="bg-muctim/5 px-5 py-4">
+              <p className="font-mono text-[9px] uppercase tracking-widest text-muctim-faded mb-2">
+                Meanwhile, elsewhere in Hanoi…
+              </p>
+              <p className="font-serif text-sm text-muctim leading-relaxed italic">
+                "{bridge.bridge}"
+              </p>
+            </div>
+            <button
+              onClick={() => onNextStory(bridge.nextId)}
+              className="w-full flex items-center justify-between px-5 py-3.5 bg-muctim text-white font-serif text-sm font-semibold hover:bg-muctim/85 transition-all cursor-pointer"
+            >
+              <span>Follow {bridge.nextNarrator}'s story</span>
+              <span className="font-mono text-base">→</span>
+            </button>
+          </motion.div>
+        )}
+
+        {/* Navigation buttons */}
         <div className="flex flex-col items-center gap-4 border-t border-muctim/10 pt-6 pb-8">
           <CompassMotif size={44} />
 
@@ -211,7 +253,7 @@ export function EndingCannotBeMoved({ story, diary, onRestart, onChooseOther }: 
             </button>
             <button
               onClick={onChooseOther}
-              className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-muctim text-white font-serif text-sm font-semibold hover:bg-muctim/85 transition-all shadow-sm cursor-pointer"
+              className="flex items-center gap-2 px-6 py-2.5 rounded-xl border border-muctim/15 bg-white/75 font-serif text-sm font-semibold text-muctim hover:bg-white transition-all shadow-xs cursor-pointer"
             >
               ← Back to Map
             </button>

@@ -6,6 +6,7 @@ import { ScanPlaceholder } from './ScanPlaceholder';
 import { PanoramicVideoViewer } from './PanoramicVideoViewer';
 import { AudioManager } from '../utils/AudioManager';
 import { AudioSynth } from '../utils/AudioSynth';
+import { OralHistoryAudio } from '../utils/OralHistoryAudio';
 import { SubtitleOverlay } from './SubtitleOverlay';
 
 // LOCAL TEST ONLY — PanoramaViewer.tsx is gitignored, do NOT push this import.
@@ -22,7 +23,11 @@ interface MemorySpaceProps {
   onClueModalChange?: (open: boolean) => void;
 }
 
-export function MemorySpace({ space, story, collectedIds, onCollect, onClueModalChange }: MemorySpaceProps) {
+export function MemorySpace({ space, story, collectedIds, onCollect, onClueModalChange: _onClueModalChange }: MemorySpaceProps) {
+  const onClueModalChange = (open: boolean) => {
+    open ? OralHistoryAudio.duck() : OralHistoryAudio.restore();
+    _onClueModalChange?.(open);
+  };
   const hasTour = !!space.bgTourNodes?.length;
   const [videoExpanded, setVideoExpanded] = useState(false);
   const [currentNodeIndex, setCurrentNodeIndex] = useState(0);
@@ -60,21 +65,21 @@ export function MemorySpace({ space, story, collectedIds, onCollect, onClueModal
     return () => { AudioSynth.stopAmbient(); };
   }, [space.id, currentNodeIndex, isScanOpen]);
 
-  // Spaces WITH a 3D scan: oral history plays only while the scan is open
+  // Spaces WITH a 3D scan: oral history plays on OralHistoryAudio channel while scan is open
   useEffect(() => {
     if (!hasScanNodes || !space.audioSegment) return;
     if (isScanOpen) {
-      AudioManager.play(space.audioSegment.src, space.audioSegment.startSec, 0.8, space.audioSegment.endSec);
+      OralHistoryAudio.play(space.audioSegment.src, space.audioSegment.startSec, space.audioSegment.endSec);
     } else {
-      AudioManager.stop();
+      OralHistoryAudio.stop();
     }
   }, [isScanOpen, hasScanNodes, space.audioSegment]);
 
-  // Spaces WITHOUT a 3D scan: oral history plays automatically on entry
+  // Spaces WITHOUT a 3D scan: oral history plays as background on entry
   useEffect(() => {
     if (hasScanNodes || !space.audioSegment) return;
-    AudioManager.play(space.audioSegment.src, space.audioSegment.startSec, 0.8, space.audioSegment.endSec);
-    return () => { AudioManager.stop(); };
+    OralHistoryAudio.play(space.audioSegment.src, space.audioSegment.startSec, space.audioSegment.endSec);
+    return () => { OralHistoryAudio.stop(); };
   }, [space.id]);
 
   // Auto-expand video when reaching the last panorama node — flash demolition notice first

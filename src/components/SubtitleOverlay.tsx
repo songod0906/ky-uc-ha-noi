@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { AudioManager } from '../utils/AudioManager';
+import { OralHistoryAudio } from '../utils/OralHistoryAudio';
 
 interface SubtitleCue {
   start: number;
@@ -48,7 +48,7 @@ export function SubtitleOverlay({ audioSrc }: { audioSrc: string }) {
   useEffect(() => {
     if (cues.length === 0) return;
     const tick = () => {
-      const el = AudioManager.current;
+      const el = OralHistoryAudio.current;
       if (el && !el.paused) {
         const t = el.currentTime;
         const hit = cues.find(c => t >= c.start && t <= c.end);

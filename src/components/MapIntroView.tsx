@@ -17,6 +17,9 @@ const NARRATOR_COLOR: Record<string, string> = {
   Trang: '#B09EC3',
 };
 
+// Suggested narrative order for the three stories
+const STORY_ORDER: Record<string, number> = { 'trang': 1, 'essy': 2, 'thai-thinh': 3 };
+
 // Flat list of all spaces with their parent story
 type SpacePin = { space: MemorySpace; story: Story; spaceIdx: number };
 
@@ -222,6 +225,11 @@ export function MapIntroView({ onSelect }: MapIntroViewProps) {
                   <span className="mt-1 block font-mono text-[9px] uppercase tracking-wider text-amber-200/40">
                     {pin.space.clues.length} fragments
                   </span>
+                  {pin.spaceIdx === 0 && STORY_ORDER[pin.story.id] && (
+                    <span className="mt-1.5 inline-block font-mono text-[8px] uppercase tracking-widest px-1.5 py-0.5 rounded" style={{ background: `${pinColor}22`, color: pinColor }}>
+                      Part {STORY_ORDER[pin.story.id]}
+                    </span>
+                  )}
                 </button>
               );
             })}

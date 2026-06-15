@@ -55,10 +55,19 @@ export default function App() {
   };
 
   const handleBackToSelect = () => {
-    AudioManager.stop(); // always kill audio before leaving a space
+    AudioManager.stop();
     setActiveStory(null);
     setActiveSpaceIdx(0);
     setPhase('select');
+  };
+
+  const handleNextStory = (storyId: string) => {
+    AudioManager.stop();
+    const next = ALL_STORIES.find((s) => s.id === storyId);
+    if (!next) return;
+    setActiveStory(next);
+    setActiveSpaceIdx(0);
+    setPhase('loading');
   };
 
   const addToDiary = (entry: DiaryEntry) => {
@@ -98,6 +107,7 @@ export default function App() {
             diary={diary}
             addToDiary={addToDiary}
             onBack={handleBackToSelect}
+            onNextStory={handleNextStory}
           />
         )}
       </AnimatePresence>

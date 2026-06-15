@@ -23,9 +23,10 @@ interface MemoryRouteGameProps {
   diary: DiaryEntry[];
   addToDiary: (entry: DiaryEntry) => void;
   onBack: () => void;
+  onNextStory?: (storyId: string) => void;
 }
 
-export function MemoryRouteGame({ story, initialSpaceIdx = 0, diary, addToDiary, onBack }: MemoryRouteGameProps) {
+export function MemoryRouteGame({ story, initialSpaceIdx = 0, diary, addToDiary, onBack, onNextStory }: MemoryRouteGameProps) {
   const [phase, setPhase] = useState<Phase>('dossier');
   const [spaceIndex] = useState(initialSpaceIdx);
   const narratorColor = NARRATOR_COLOR[story.narrator] ?? '#C8B89A';
@@ -131,6 +132,7 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, diary, addToDiary,
         diary={diary}
         onRestart={handleRestart}
         onChooseOther={handleBack}
+        onNextStory={onNextStory}
       />
     );
   }
