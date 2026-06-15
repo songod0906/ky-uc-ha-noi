@@ -1,48 +1,16 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Story } from '../types';
+import { DiaryEntry, Story } from '../types';
 import { AudioSynth } from '../utils/AudioSynth';
-import { RotateCcw, FileText, Sparkles } from 'lucide-react';
+import { RotateCcw, FileText, BookOpen } from 'lucide-react';
 import { CompassMotif } from './CompassMotif';
 
 interface EndingCannotBeMovedProps {
   story: Story;
+  diary: DiaryEntry[];
   onRestart: () => void;
   onChooseOther: () => void;
 }
-
-const DIGITAL_ARTIFACTS: Record<string, { name: string; desc: string; icon: string }> = {
-  'trang': {
-    name: 'Collectible Tin Box & CRT Monitor',
-    desc: 'Preserving soccer/Vinamilk cards and the clacking Audition keyboard sounds in the family net café with air conditioning.',
-    icon: '📦',
-  },
-  'thai-thinh': {
-    name: 'Wooden Violin & Sidewalk Boiled Snails',
-    desc: 'Preserving rustic violin tones by the sidewalk snail stall and the childhood urge to stop and play at the playground.',
-    icon: '🎻',
-  },
-  'essy': {
-    name: 'Shared Courtyard Brick & Ancient Well Scoop',
-    desc: 'Preserving the lemon-jasmine scent of the secluded courtyard and local knowledge of labyrinthine alleys.',
-    icon: '🧱',
-  },
-};
-
-const PRESET_MESSAGES: Record<string, Array<{ author: string; text: string; time: string }>> = {
-  'trang': [
-    { author: 'Hoang Nam, 28 years old', text: 'As a kid, after school I would sneak out to the school gate net café to play Half-Life. Now that complex has been demolished, walking past it hurts my heart.', time: '1 day ago' },
-    { author: 'Minh Trang, 24 years old', text: 'Thanh Cong Lake used to be so uneven, I remember dad helping me learn to cycle and scraping my knees. The lake is nicer now, but dad is no longer here.', time: '3 days ago' },
-  ],
-  'thai-thinh': [
-    { author: 'Ngoc Anh, 26 years old', text: 'In 1st grade, going to tutoring class in Trung Liet alley, I also desperately wanted to enter that playground, but mom kept dragging me along. Reading Trang\'s story hits so close to home.', time: '2 days ago' },
-    { author: 'Tuan Hai, 30 years old', text: 'I\'ll always remember the violin at the snail stall. The owner was so cheerful. Now the food street is too noisy for such artistic moments.', time: '5 days ago' },
-  ],
-  'essy': [
-    { author: 'Thuy Linh, 25 years old', text: 'Hoang Hoa Tham alley is truly a maze, ride-hailing drivers always give up. But it was so breezy, neighbors knew everyone. Now with the main road, it feels distant.', time: '1 day ago' },
-    { author: 'Thanh Son, 29 years old', text: 'Remembering the ancient well and the scent of jasmine when walking with grandma at night. Hanoi is urbanizing so fast, quiet green spots are disappearing.', time: '4 days ago' },
-  ],
-};
 
 const SWEEP_TEXTS: Record<string, string[]> = {
   'trang': [
@@ -71,9 +39,10 @@ const SWEEP_TEXTS: Record<string, string[]> = {
   ],
 };
 
-export function EndingCannotBeMoved({ story, onRestart, onChooseOther }: EndingCannotBeMovedProps) {
+export function EndingCannotBeMoved({ story, diary, onRestart, onChooseOther }: EndingCannotBeMovedProps) {
   const [sweepPhase, setSweepPhase] = useState<'intro' | 'showCase'>('intro');
   const [typewriterIndex, setTypewriterIndex] = useState(0);
+  const orderedDiary = [...diary].sort((a, b) => a.foundAt - b.foundAt);
 
   const lines = SWEEP_TEXTS[story.id] ?? [
     'Hanoi, 2026.',
@@ -96,8 +65,6 @@ export function EndingCannotBeMoved({ story, onRestart, onChooseOther }: EndingC
       return () => clearTimeout(timer);
     }
   }, [typewriterIndex, sweepPhase, lines.length]);
-
-  const artifact = DIGITAL_ARTIFACTS[story.id];
 
   // ── Sweep intro typewriter phase ──
   if (sweepPhase === 'intro') {
@@ -156,77 +123,79 @@ export function EndingCannotBeMoved({ story, onRestart, onChooseOther }: EndingC
         <div className="bg-white/80 backdrop-blur-sm border border-muctim/15 rounded-2xl p-5 mb-6 shadow-xs font-mono text-[10px] text-muctim-faded">
           <div className="grid grid-cols-2 gap-y-1.5 gap-x-4">
             <div>
-              <span className="opacity-50">CASE NO.</span>
+              <span className="opacity-50">FILE</span>
               <br />
-              <span className="text-muctim font-bold">
-                {story.id === 'trang'
-                  ? '#TC-CAS3020-2026'
-                  : story.id === 'thai-thinh'
-                  ? '#TL-CAS3020-2026'
-                  : story.id === 'essy'
-                  ? '#HHT-BD-2024-001'
-                  : `GTC-2026-${story.id.toUpperCase()}`}
-              </span>
+              <span className="text-muctim font-bold">SESSION DIARY</span>
             </div>
             <div>
-              <span className="opacity-50">DISTRICT</span>
+              <span className="opacity-50">MEMORIES SAVED</span>
               <br />
-              <span className="text-muctim font-bold">
-                {story.id === 'thai-thinh' ? 'Dong Da' : 'Ba Dinh'}
-              </span>
+              <span className="text-muctim font-bold">{orderedDiary.length}</span>
             </div>
             <div><span className="opacity-50">STATUS</span><br /><span className="text-emerald-700 font-bold">SEALED & ARCHIVED</span></div>
             <div>
-              <span className="opacity-50">RESIDENCY</span>
+              <span className="opacity-50">LAST SPACE</span>
               <br />
-              <span className="text-muctim font-bold">Entire Childhood</span>
+              <span className="text-muctim font-bold">{story.title}</span>
             </div>
-            <div><span className="opacity-50">URBAN PROJECT</span><br /><span className="text-terracotta font-bold">Road Upgrades & Expansion 2026</span></div>
-            <div><span className="opacity-50">NARRATOR</span><br /><span className="text-muctim font-bold">{story.narrator}</span></div>
+            <div><span className="opacity-50">FORM</span><br /><span className="text-terracotta font-bold">FOUND CLUES ONLY</span></div>
+            <div><span className="opacity-50">CURRENT NARRATOR</span><br /><span className="text-muctim font-bold">{story.narrator}</span></div>
           </div>
         </div>
-
-        {/* Unlocked Artifact display */}
-        {artifact && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.96 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2 }}
-            className="bg-amber-100/50 border border-amber-200/40 rounded-2xl p-4 mb-6 shadow-xs font-serif flex items-start gap-4"
-          >
-            <div className="w-12 h-12 rounded-xl bg-amber-500/10 flex-none flex items-center justify-center text-2xl border border-amber-500/10">
-              {artifact.icon}
-            </div>
-            <div>
-              <h4 className="text-xs font-bold text-amber-900 flex items-center gap-1.5 uppercase tracking-wide font-mono">
-                <Sparkles className="w-3.5 h-3.5 text-amber-600" /> Preserved Artifact
-              </h4>
-              <p className="text-sm font-bold text-stone-850 mt-1 mb-0.5">{artifact.name}</p>
-              <p className="text-[11px] text-stone-600 leading-snug">{artifact.desc}</p>
-            </div>
-          </motion.div>
-        )}
 
         {/* Section title */}
         <div className="flex items-center gap-3 mb-4">
           <FileText className="w-4 h-4 text-muctim-faded" />
-          <h2 className="font-serif text-lg font-bold text-muctim">Things That Cannot Be Moved</h2>
+          <h2 className="font-serif text-lg font-bold text-muctim">The Diary</h2>
         </div>
 
-        {/* The list */}
-        <ul className="space-y-3.5 mb-8 pl-1">
-          {story.cannotBeMoved.map((item, i) => (
-            <motion.li
-              key={i}
-              className="font-serif text-xs text-muctim-faded leading-relaxed pl-3 border-l-2 border-muctim/10"
-              initial={{ opacity: 0, x: -5 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4 + i * 0.1 }}
-            >
-              {item}
-            </motion.li>
-          ))}
-        </ul>
+        {orderedDiary.length === 0 ? (
+          <motion.div
+            className="mb-8 rounded-2xl border border-muctim/10 bg-white/70 p-6 text-center shadow-xs"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25 }}
+          >
+            <BookOpen className="mx-auto mb-3 h-6 w-6 text-muctim-faded" />
+            <p className="font-serif text-sm text-muctim">You left without collecting any memories.</p>
+            <p className="mt-2 font-serif text-xs leading-relaxed text-muctim-faded">
+              Return to the panorama and save the fragments you want this archive to remember.
+            </p>
+          </motion.div>
+        ) : (
+          <ol className="space-y-4 mb-8">
+            {orderedDiary.map((entry, i) => (
+              <motion.li
+                key={entry.clueId}
+                className="relative rounded-2xl border border-muctim/10 bg-white/75 p-4 shadow-xs overflow-hidden"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.25 + i * 0.08 }}
+              >
+                <div
+                  className="absolute left-0 top-0 h-full w-1"
+                  style={{ background: entry.narratorColor }}
+                />
+                <div className="pl-2">
+                  <div className="mb-2 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+                    <p className="font-mono text-[9px] uppercase tracking-widest text-muctim-faded">
+                      Entry {String(i + 1).padStart(2, '0')} · {entry.spaceLabel}
+                    </p>
+                    <p className="font-serif text-xs font-bold" style={{ color: entry.narratorColor }}>
+                      {entry.narratorName}
+                    </p>
+                  </div>
+                  <h3 className="font-serif text-sm font-bold leading-snug text-muctim">
+                    {entry.clueLabel}
+                  </h3>
+                  <blockquote className="mt-2 border-l border-muctim/10 pl-3 font-handwritten text-base italic leading-relaxed text-terracotta">
+                    {entry.quote}
+                  </blockquote>
+                </div>
+              </motion.li>
+            ))}
+          </ol>
+        )}
 
         {/* Navigation buttons — prominent at bottom */}
         <div className="flex flex-col items-center gap-4 border-t border-muctim/10 pt-6 pb-8">

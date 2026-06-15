@@ -14,8 +14,8 @@ import { Suspense, useState, useEffect, useRef, useCallback } from 'react';
 import { Canvas, useLoader, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Html } from '@react-three/drei';
 import * as THREE from 'three';
-import { Howl } from 'howler';
-import { X, ArrowUp, ArrowDown } from 'lucide-react';
+import { Howl, Howler } from 'howler';
+import { X, ArrowUp, ArrowDown, Box, Camera, Check, MapPin, Pause, Play, Volume2 } from 'lucide-react';
 import type { TourNode, TourClueAnchor, TourNavAnchor, TourScanAnchor, Clue } from '../types';
 import { ScanViewer } from './ScanViewer';
 import { DriveMinimap } from './DriveMinimap';
@@ -238,7 +238,7 @@ function ClueHotspot({
           <div className="absolute top-1 right-1 flex gap-0.5 z-10">
             {!collected ? (
               <span className="text-[5px] font-mono font-bold bg-amber-600/10 text-amber-700 px-1 py-0.5 rounded border border-amber-600/20 uppercase tracking-tight scale-85 origin-top-right">
-                Demolition
+                Memory
               </span>
             ) : (
               <span className="text-[5px] font-mono font-bold bg-emerald-600/10 text-emerald-700 px-1 py-0.5 rounded border border-emerald-600/20 uppercase tracking-tight scale-85 origin-top-right">
@@ -260,7 +260,7 @@ function ClueHotspot({
               {clue.label}
             </span>
             <span className="font-mono text-[5.5px] text-stone-400 uppercase tracking-widest mt-0.5">
-              {collected ? 'Saved ✓' : 'Click to save'}
+              {collected ? 'Saved' : 'Click to listen'}
             </span>
           </div>
 
@@ -353,6 +353,8 @@ function Scene({
   yawElRef,
   localNodes,
   clueVisible,
+  showNavigation,
+  suppressForwardNavigation,
   playgroundBlocked,
   onInteract,
   onCalibClueDrag,
@@ -371,6 +373,8 @@ function Scene({
   yawElRef: React.RefObject<HTMLSpanElement>;
   localNodes: TourNode[];
   clueVisible: boolean;
+  showNavigation: boolean;
+  suppressForwardNavigation: boolean;
   playgroundBlocked: boolean;
   onInteract: () => void;
   onCalibClueDrag?: (clueId: string, yaw: number, pitch: number) => void;
@@ -403,8 +407,13 @@ function Scene({
         );
       })}
 
-      {node.navAnchors
-        ?.filter(a => !playgroundBlocked || a.label === 'Quay lại')
+      {showNavigation && node.navAnchors
+        ?.filter((anchor) => {
+          const isBack = anchor.label === 'Quay lại';
+          if (playgroundBlocked) return isBack;
+          if (suppressForwardNavigation) return isBack;
+          return true;
+        })
         .map((anchor) => (
           <NavHotspot key={anchor.toNodeId} anchor={anchor} onNavigate={onNavigate} />
         ))}
@@ -427,192 +436,91 @@ function Scene({
   );
 }
 
-// ---------- Clue preview modal ----------
-
-function CluePreviewModal({
+function MemoryAudioDock({
   clue,
-  collected,
-  onCollect,
+  playing,
+  progress,
+  duration,
+  saved,
+  scanLabel,
+  raised,
+  onToggle,
   onClose,
-  nextHint,
+  onOpenScan,
 }: {
   clue: Clue;
-  collected: boolean;
-  onCollect: () => void;
+  playing: boolean;
+  progress: number;
+  duration: number;
+  saved: boolean;
+  scanLabel?: string;
+  raised?: boolean;
+  onToggle: () => void;
   onClose: () => void;
-  nextHint?: string;
+  onOpenScan?: () => void;
 }) {
-  const [playing, setPlaying] = useState(false);
-  const howlRef = useRef<Howl | null>(null);
-
-  useEffect(() => {
-    if (!clue.audioSrc) return;
-    const snd = new Howl({
-      src: [clue.audioSrc],
-      html5: true,
-      volume: 1,
-      onplay: () => setPlaying(true),
-      onend: () => setPlaying(false),
-      onstop: () => setPlaying(false),
-      onpause: () => setPlaying(false),
-    });
-    howlRef.current = snd;
-    // No autoplay — user presses ▶ when they're ready
-    return () => {
-      snd.stop();
-      snd.unload();
-    };
-  }, [clue.audioSrc]);
-
-  const togglePlay = () => {
-    const snd = howlRef.current;
-    if (!snd) return;
-    if (snd.playing()) { 
-      snd.pause(); 
-      setPlaying(false); 
-    } else { 
-      snd.play(); 
-      setPlaying(true); 
-    }
-  };
+  const pct = duration > 0 ? Math.min(100, (progress / duration) * 100) : 0;
+  const timeLeft = duration > 0 ? Math.max(0, Math.ceil(duration - progress)) : null;
 
   return (
-    <div className="absolute inset-0 z-[80] flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs">
-      <div 
-        className="w-full max-w-2xl bg-[#FCFAF2] rounded-3xl p-6 shadow-2xl border border-muctim/10 flex flex-col max-h-[90vh] md:max-h-[85vh] overflow-hidden relative"
-        style={{
-          boxShadow: '0 20px 50px rgba(0,0,0,0.4), inset 0 0 40px rgba(200, 168, 130, 0.05)'
-        }}
-      >
-        {/* Close Button */}
-        <button 
-          onClick={onClose} 
-          className="absolute top-4 right-4 text-muctim/40 hover:text-muctim bg-white/40 hover:bg-white/80 p-2 rounded-full transition-all z-10 border border-muctim/5 cursor-pointer"
-        >
-          <X className="w-4 h-4" />
-        </button>
+    <div className={`absolute inset-x-3 ${raised ? 'bottom-20' : 'bottom-4'} z-[90] flex justify-center pointer-events-none`}>
+      <div className="w-full max-w-2xl rounded-2xl border border-white/15 bg-[#0b0907]/88 shadow-2xl backdrop-blur-md pointer-events-auto overflow-hidden">
+        <div className="h-1 bg-white/10">
+          <div className="h-full bg-amber-400 transition-[width] duration-300" style={{ width: `${pct}%` }} />
+        </div>
+        <div className="flex items-start gap-3 p-3 sm:p-4">
+          <button
+            onClick={onToggle}
+            aria-label={playing ? 'Pause memory audio' : 'Play memory audio'}
+            className="mt-0.5 flex h-12 w-12 flex-none items-center justify-center rounded-full bg-amber-500 text-black shadow-lg transition-all hover:bg-amber-300 active:scale-95"
+          >
+            {playing ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5 ml-0.5" />}
+          </button>
 
-        {/* Modal Content - Two columns on desktop */}
-        <div className="flex-1 overflow-y-auto pr-1 scrollbar-thin flex flex-col md:flex-row gap-6 mt-4 pb-2">
-          
-          {/* Left Column: Warm Memory (Childhood) */}
-          <div className="flex-1 flex flex-col gap-4">
-            <div>
-              <span className="font-mono text-[9px] text-muctim-faded uppercase tracking-widest block mb-1">
-                📍 Childhood Memory
+          <div className="min-w-0 flex-1">
+            <div className="mb-1 flex flex-wrap items-center gap-x-2 gap-y-1">
+              <span className="flex items-center gap-1 rounded-full bg-white/8 px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest text-amber-100/70">
+                <Volume2 className="h-3 w-3" />
+                Memory audio
               </span>
-              <h3 className="font-serif text-lg font-bold text-muctim leading-tight">
-                {clue.label}
-              </h3>
+              <span className="rounded-full bg-emerald-400/12 px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest text-emerald-200">
+                {saved ? 'Saved to diary' : 'Saving'}
+              </span>
+              {timeLeft !== null && (
+                <span className="font-mono text-[10px] text-white/45">{timeLeft}s left</span>
+              )}
             </div>
-
-            {/* Illustration container */}
-            <div className="w-full aspect-[16/10] bg-[#fdfcf7] border border-amber-200/40 rounded-xl p-3 flex items-center justify-center shadow-inner relative overflow-hidden bg-radial from-[#FCFAF2] to-[#FAF6ED] flex-shrink-0">
-              <div className="w-20 h-20">
-                <MemoryClueIllustration clueId={clue.id} color="#c8a882" />
-              </div>
-            </div>
-
-            {/* Audio Waveform & Player */}
-            {clue.audioSrc && (
-              <div 
-                className={`flex items-center gap-3 w-full px-4 py-3 rounded-2xl transition-all text-left ${
-                  playing 
-                    ? 'bg-amber-100/30 border border-amber-200' 
-                    : 'bg-stone-100 hover:bg-stone-200/60 border border-stone-200'
-                }`}
-              >
+            <h3 className="truncate font-serif text-sm font-bold leading-tight text-white sm:text-base">
+              {clue.label}
+            </h3>
+            <p className="mt-1 line-clamp-2 font-serif text-xs leading-relaxed text-amber-50/78 sm:text-sm">
+              {clue.quote.replace(/^"|"$/g, '')}
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {onOpenScan && (
                 <button
-                  onClick={togglePlay}
-                  className={`w-9 h-9 rounded-full flex-none flex items-center justify-center text-xs transition-all shadow-md active:scale-95 cursor-pointer ${
-                    playing ? 'bg-amber-600 text-white' : 'bg-amber-700 text-white'
-                  }`}
+                  onClick={onOpenScan}
+                  className="flex min-h-10 items-center gap-2 rounded-xl border border-amber-300/25 bg-amber-300/12 px-3 py-2 font-serif text-xs font-semibold text-amber-100 transition-all hover:bg-amber-300/20 active:scale-95"
                 >
-                  {playing ? '⏸' : '▶'}
+                  <Box className="h-4 w-4" />
+                  {scanLabel ?? 'View 3D artifact'}
                 </button>
-                <div className="flex-1 min-w-0">
-                  <p className="font-mono text-[8px] text-amber-800 uppercase tracking-widest font-bold">
-                    {playing ? 'STREAMING ORAL HISTORY' : 'LISTEN TO NARRATIVE'}
-                  </p>
-                  <div className="flex gap-0.5 items-end h-4 mt-1">
-                    {/* Retro waveform bars */}
-                    {[0.3, 0.7, 0.4, 0.9, 0.5, 0.8, 0.6, 0.4, 0.7, 0.5, 0.8, 0.3, 0.9, 0.6, 0.4].map((h, i) => (
-                      <div 
-                        key={i} 
-                        className={`w-[3px] rounded-full transition-all duration-300 ${
-                          playing ? 'bg-amber-600' : 'bg-stone-300'
-                        }`}
-                        style={{ 
-                          height: playing ? `${h * 100}%` : '20%',
-                          animationDelay: `${i * 0.05}s`
-                        }} 
-                      />
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Poetic quote */}
-            <p className="font-handwritten text-lg text-amber-900 italic leading-relaxed text-center px-2 py-1 bg-amber-500/5 rounded-xl border border-amber-200/10">
-              {clue.quote}
-            </p>
-
-            {/* Detailed voice note */}
-            <p className="font-serif text-xs text-muctim-faded leading-relaxed bg-[#fbfaf5]/50 rounded-xl p-3 border border-muctim/5">
-              {clue.voiceNote}
-            </p>
-          </div>
-
-          {/* Vertical divider on desktop */}
-          <div className="hidden md:block w-px bg-muctim/10 self-stretch my-2" />
-
-          {/* Right Column: What Will Be Lost */}
-          <div className="flex-1 flex flex-col justify-between gap-5">
-            <div className="flex flex-col gap-4">
-              <div>
-                <span className="font-mono text-[9px] text-red-500/80 uppercase tracking-widest block mb-1 font-bold">
-                  2026 Urban Redevelopment
+              )}
+              {!clue.audioSrc && (
+                <span className="flex min-h-10 items-center rounded-xl border border-white/10 bg-white/8 px-3 py-2 font-serif text-xs text-white/70">
+                  Silent fragment saved
                 </span>
-                <h3 className="font-serif text-base font-bold text-stone-700 leading-tight">
-                  What will be demolished
-                </h3>
-              </div>
-
-              {clue.planningImpact && (
-                <div className="bg-stone-100/60 border border-stone-200 rounded-2xl p-4 font-serif text-[11.5px] leading-relaxed text-stone-700">
-                  {clue.planningImpact}
-                </div>
-              )}
-            </div>
-
-            {/* Bottom Save Action */}
-            <div className="pt-3 border-t border-muctim/5 flex-none">
-              {collected ? (
-                <div className="flex flex-col gap-2">
-                  <div className="w-full py-2.5 bg-emerald-700/10 border border-emerald-600/30 rounded-xl text-center font-serif text-xs font-bold text-emerald-800 flex items-center justify-center gap-2">
-                    <span>✓</span> Memory Archived
-                  </div>
-                  {nextHint && (
-                    <button
-                      onClick={onClose}
-                      className="w-full py-2.5 bg-stone-800 hover:bg-stone-700 text-amber-200 font-serif text-xs font-semibold rounded-xl transition-all flex items-center justify-center gap-2"
-                    >
-                      {nextHint} →
-                    </button>
-                  )}
-                </div>
-              ) : (
-                <button
-                  onClick={onCollect}
-                  className="w-full py-3 bg-amber-700 hover:bg-amber-800 text-white font-serif text-sm font-semibold rounded-xl transition-all shadow-md active:scale-98 flex items-center justify-center gap-2 hover:shadow-[0_4px_16px_rgba(180,83,9,0.3)] cursor-pointer"
-                >
-                  📥 Save to Digital Archive
-                </button>
               )}
             </div>
           </div>
 
+          <button
+            onClick={onClose}
+            aria-label="Close memory audio"
+            className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-white/8 text-white/65 transition-all hover:bg-white/14 hover:text-white active:scale-95"
+          >
+            <X className="h-4 w-4" />
+          </button>
         </div>
       </div>
     </div>
@@ -834,6 +742,8 @@ export function PanoramaViewer({
   minimapFlipX = false,
   onNodeIndexChange,
   driveMode = false,
+  driveIntervalMs = 4500,
+  backgroundMode = false,
 }: {
   nodes: TourNode[];
   startNodeId?: string;
@@ -844,6 +754,8 @@ export function PanoramaViewer({
   minimapFlipX?: boolean;
   onNodeIndexChange?: (idx: number) => void;
   driveMode?: boolean;
+  driveIntervalMs?: number;
+  backgroundMode?: boolean;
 }) {
   // Stable key for this sequence (e.g. \"ct\" from \"ct-01\"), used for localStorage
   const seqKey = useRef(nodes[0]?.id.replace(/-\d+$/, '') ?? 'seq').current;
@@ -859,8 +771,13 @@ export function PanoramaViewer({
   });
 
   const [nodeId, setNodeId] = useState(startNodeId ?? nodes[0]?.id);
-  const [preview, setPreview] = useState<Clue | null>(null);
+  const [activeClue, setActiveClue] = useState<Clue | null>(null);
+  const [memoryPlaying, setMemoryPlaying] = useState(false);
+  const [memoryProgress, setMemoryProgress] = useState(0);
+  const [memoryDuration, setMemoryDuration] = useState(0);
   const [activeScan, setActiveScan] = useState<string | null>(null);
+  const memoryHowlRef = useRef<Howl | null>(null);
+  const memoryProgressTimerRef = useRef<number | null>(null);
   const yawElRef = useRef<HTMLSpanElement>(null);
   // Only count dwell time after the player first drags at each node (not during narrator card)
   const nodeInteracted = useRef(false);
@@ -885,12 +802,10 @@ export function PanoramaViewer({
   const [dragHintVisible, setDragHintVisible] = useState(true);
   const [exportText, setExportText] = useState<string | null>(null);
   const [dwellSecs, setDwellSecs] = useState(0);
-  // Clue hotspot cards removed from 3D — exhibition mode is free-explore
-  const clueVisible = false;
+  const clueVisible = true;
   const playgroundBlocked = !CALIB_MODE && !!nodeId?.startsWith('tt-pg') && dwellSecs < 15;
 
   // Drive mode — auto-advance through nodes like a moving car
-  const DRIVE_MS = 4500;
   const [drivePlaying, setDrivePlaying] = useState(true);
   const [driveProgress, setDriveProgress] = useState(0); // 0–100
   const driveElapsedRef = useRef(0);
@@ -952,14 +867,101 @@ export function PanoramaViewer({
 
   // Index-based prev/next on localNodes
   const nodeIndex = localNodes.findIndex(n => n.id === nodeId);
+  const rawNode = localNodes.find(n => n.id === nodeId) ?? localNodes[0];
   const fallbackHistoricUrl = localNodes[nodeIndex]?.historicMapUrl || localNodes.find(n => n.historicMapUrl)?.historicMapUrl;
+  const blockingClueId = driveMode
+    ? rawNode?.clueAnchors?.find((anchor) => !collectedIds.includes(anchor.clueId) && activeClue?.id !== anchor.clueId)?.clueId
+    : undefined;
   const goNext = useCallback(() => {
+    if (blockingClueId) return;
     if (playgroundBlocked) return;
     if (nodeIndex < localNodes.length - 1) setNodeId(localNodes[nodeIndex + 1].id);
-  }, [nodeIndex, localNodes, playgroundBlocked]);
+  }, [nodeIndex, localNodes, playgroundBlocked, blockingClueId]);
   const goPrev = useCallback(() => {
     if (nodeIndex > 0) setNodeId(localNodes[nodeIndex - 1].id);
   }, [nodeIndex, localNodes]);
+
+  const clearMemoryProgressTimer = useCallback(() => {
+    if (!memoryProgressTimerRef.current) return;
+    window.clearInterval(memoryProgressTimerRef.current);
+    memoryProgressTimerRef.current = null;
+  }, []);
+
+  const stopMemoryAudio = useCallback(() => {
+    clearMemoryProgressTimer();
+    memoryHowlRef.current?.stop();
+    memoryHowlRef.current?.unload();
+    memoryHowlRef.current = null;
+    setMemoryPlaying(false);
+  }, [clearMemoryProgressTimer]);
+
+  const startMemoryClue = useCallback((clue: Clue) => {
+    onCollect(clue.id);
+    setActiveClue(clue);
+    setMemoryProgress(0);
+    setMemoryDuration(0);
+    stopMemoryAudio();
+
+    if (!clue.audioSrc) return;
+
+    try {
+      if (Howler.ctx?.state === 'suspended') {
+        void Howler.ctx.resume();
+      }
+    } catch {
+      // If the browser does not expose an audio context, Howler can still try playback.
+    }
+
+    const sound = new Howl({
+      src: [clue.audioSrc],
+      volume: 1,
+      onload: () => setMemoryDuration(sound.duration()),
+      onplay: () => {
+        setMemoryPlaying(true);
+        setMemoryDuration(sound.duration());
+        clearMemoryProgressTimer();
+        memoryProgressTimerRef.current = window.setInterval(() => {
+          const seek = sound.seek();
+          setMemoryProgress(typeof seek === 'number' ? seek : 0);
+        }, 250);
+      },
+      onpause: () => setMemoryPlaying(false),
+      onstop: () => setMemoryPlaying(false),
+      onend: () => {
+        setMemoryPlaying(false);
+        setMemoryProgress(sound.duration());
+        clearMemoryProgressTimer();
+      },
+      onplayerror: () => {
+        setMemoryPlaying(false);
+        clearMemoryProgressTimer();
+      },
+    });
+
+    memoryHowlRef.current = sound;
+    sound.play();
+  }, [clearMemoryProgressTimer, onCollect, stopMemoryAudio]);
+
+  const toggleMemoryAudio = useCallback(() => {
+    const sound = memoryHowlRef.current;
+    if (!sound || !activeClue?.audioSrc) return;
+    if (sound.playing()) {
+      sound.pause();
+    } else {
+      sound.play();
+    }
+  }, [activeClue]);
+
+  const closeMemoryDock = useCallback(() => {
+    stopMemoryAudio();
+    setActiveClue(null);
+    setMemoryProgress(0);
+    setMemoryDuration(0);
+  }, [stopMemoryAudio]);
+
+  useEffect(() => {
+    return () => stopMemoryAudio();
+  }, [stopMemoryAudio]);
 
   // Reset historic overlay and show drag hint when moving to a different node
   useEffect(() => { setShowHistoric(false); setDragHintVisible(true); }, [nodeId]);
@@ -993,13 +995,13 @@ export function PanoramaViewer({
   useEffect(() => {
     if (!driveMode) return;
     const id = setInterval(() => {
-      if (!drivePlaying || preview) return;
+      if (!drivePlaying || blockingClueId) return;
       const now = Date.now();
       driveElapsedRef.current += now - driveLastRef.current;
       driveLastRef.current = now;
-      const pct = Math.min(100, (driveElapsedRef.current / DRIVE_MS) * 100);
+      const pct = Math.min(100, (driveElapsedRef.current / driveIntervalMs) * 100);
       setDriveProgress(pct);
-      if (driveElapsedRef.current >= DRIVE_MS) {
+      if (driveElapsedRef.current >= driveIntervalMs) {
         driveElapsedRef.current = 0;
         setDriveProgress(0);
         setNodeId(cur => {
@@ -1009,7 +1011,7 @@ export function PanoramaViewer({
       }
     }, 80);
     return () => clearInterval(id);
-  }, [driveMode, drivePlaying, preview, localNodes]);
+  }, [driveMode, drivePlaying, blockingClueId, driveIntervalMs, localNodes]);
 
   // Notify parent component of the current node index change
   useEffect(() => {
@@ -1172,8 +1174,6 @@ export function PanoramaViewer({
     setNodeId(id);
   }, [goPrev, goNext]);
 
-  const rawNode = localNodes.find(n => n.id === nodeId) ?? localNodes[0];
-
   // Shots already in the sequence (to exclude from the add panel)
   const inSequence = new Set(localNodes.map(n => n.panorama));
 
@@ -1217,6 +1217,8 @@ export function PanoramaViewer({
   // Ambient audio disabled
 
   if (!node) return null;
+  const currentScanAnchor = node.scanAnchors?.[0];
+  const foundCount = allClues.filter((clue) => collectedIds.includes(clue.id)).length;
 
   return (
     <div className="absolute inset-0">
@@ -1226,13 +1228,15 @@ export function PanoramaViewer({
           node={node}
           collectedIds={collectedIds}
           allClues={allClues}
-          onPreview={setPreview}
+          onPreview={startMemoryClue}
           onNavigate={handleNavigate}
           onScan={setActiveScan}
           calibrate={CALIB_MODE}
           yawElRef={yawElRef}
           localNodes={localNodes}
           clueVisible={clueVisible}
+          showNavigation={!backgroundMode}
+          suppressForwardNavigation={!!blockingClueId}
           playgroundBlocked={playgroundBlocked}
           onInteract={() => { nodeInteracted.current = true; }}
           onCalibClueDrag={CALIB_MODE ? (clueId, yaw, pitch) => {
@@ -1253,22 +1257,40 @@ export function PanoramaViewer({
         />
       </Canvas>
 
+      {!backgroundMode && !CALIB_MODE && allClues.length > 0 && (
+        <div className="absolute left-4 top-24 z-30 pointer-events-none">
+          <div className="rounded-2xl border border-black/10 bg-[#FCFAF2]/90 px-4 py-3 shadow-lg backdrop-blur-md">
+            <p className="font-mono text-[10px] uppercase tracking-widest text-muctim-faded">
+              Memory fragments
+            </p>
+            <p className="mt-0.5 font-serif text-sm font-bold text-muctim">
+              {foundCount} / {allClues.length} found
+            </p>
+            {blockingClueId && (
+              <p className="mt-1 max-w-[210px] font-serif text-[12px] leading-snug text-terracotta">
+                A memory is here. Click the card to listen.
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Prev / Next buttons */}
-      {nodeIndex > 0 && (
+      {!backgroundMode && nodeIndex > 0 && (
         <button onClick={goPrev}
           aria-label="Quay lại"
           className="absolute left-3 top-1/2 -translate-y-1/2 z-40 bg-black/60 hover:bg-black/80 text-white rounded-xl px-3 py-4 font-mono text-lg transition-all">
           ◀
         </button>
       )}
-      {nodeIndex < localNodes.length - 1 && !playgroundBlocked && (
+      {!backgroundMode && nodeIndex < localNodes.length - 1 && !playgroundBlocked && !blockingClueId && (
         <button onClick={goNext}
           aria-label="Tiếp tục"
           className="absolute right-3 top-1/2 -translate-y-1/2 z-40 bg-black/60 hover:bg-black/80 text-white rounded-xl px-3 py-4 font-mono text-lg transition-all">
           ▶
         </button>
       )}
-      {playgroundBlocked && (
+      {!backgroundMode && playgroundBlocked && (
         <div className="absolute right-3 top-1/2 -translate-y-1/2 z-40 pointer-events-none">
           <div className="bg-black/55 backdrop-blur-sm text-white/40 rounded-xl px-3 py-4 font-mono text-lg text-center">
             ⏳
@@ -1385,12 +1407,12 @@ export function PanoramaViewer({
       )}
 
       {/* Minimap — show whenever nodes carry GPS, regardless of drive mode */}
-      {!CALIB_MODE && localNodes.some(n => n.lat != null) && (
+      {!backgroundMode && !CALIB_MODE && localNodes.some(n => n.lat != null) && (
         <DriveMinimap nodes={localNodes} currentIndex={nodeIndex} />
       )}
 
       {/* Drive mode — progress bar + play/pause + walking badge */}
-      {driveMode && !CALIB_MODE && (
+      {!backgroundMode && driveMode && !CALIB_MODE && (
         <>
           {/* Drive progress bar — thin strip at the very bottom */}
           <div className="absolute bottom-0 left-0 right-0 z-30 h-[3px] bg-white/10">
@@ -1414,7 +1436,8 @@ export function PanoramaViewer({
               backdropFilter: 'blur(6px)',
             }}
           >
-            {drivePlaying ? '⏸' : '▶'} {drivePlaying ? 'pause' : 'resume'}
+            {drivePlaying ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
+            {drivePlaying ? 'pause route' : 'resume route'}
           </button>
 
           {/* "Đang đi" badge — top centre label */}
@@ -1428,7 +1451,6 @@ export function PanoramaViewer({
                 backdropFilter: 'blur(4px)',
               }}
             >
-              <span style={{ fontSize: 9 }}>🚶</span>
               {drivePlaying ? 'Navigating...' : 'Paused'}
             </div>
           </div>
@@ -1436,7 +1458,7 @@ export function PanoramaViewer({
       )}
 
       {/* Drag hint — auto-fades after 4s */}
-      {dragHintVisible && (
+      {!backgroundMode && dragHintVisible && (
         <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-20 pointer-events-none transition-opacity duration-700">
           <p className="font-handwritten text-white/70 text-xs text-center drop-shadow">
             Drag to look around
@@ -1445,7 +1467,7 @@ export function PanoramaViewer({
       )}
 
       {/* Node progress indicator (only if multi-node) */}
-      {localNodes.length > 1 && (
+      {!backgroundMode && !driveMode && localNodes.length > 1 && (
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-1.5 pointer-events-auto">
           <div className="bg-black/55 backdrop-blur-sm px-3 py-1 rounded-full text-white text-[11px] font-serif tracking-wide select-none border border-white/10 shadow-lg">
             Point {nodeIndex + 1} / {localNodes.length}
@@ -1466,7 +1488,7 @@ export function PanoramaViewer({
       )}
 
       {/* Historic Street View toggle button */}
-      {fallbackHistoricUrl && !CALIB_MODE && (
+      {!backgroundMode && fallbackHistoricUrl && !CALIB_MODE && (
         <button
           onClick={() => setShowHistoric(v => !v)}
           className="absolute top-4 right-4 z-30 flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-mono text-xs transition-all"
@@ -1477,7 +1499,7 @@ export function PanoramaViewer({
             backdropFilter: 'blur(6px)',
           }}
         >
-          <span style={{ fontSize: 10 }}>📷</span> Past Comparison
+          <Camera className="w-3 h-3" /> Past Comparison
         </button>
       )}
 
@@ -1525,6 +1547,21 @@ export function PanoramaViewer({
         </div>
       )}
 
+      {activeClue && (
+        <MemoryAudioDock
+          clue={activeClue}
+          playing={memoryPlaying}
+          progress={memoryProgress}
+          duration={memoryDuration}
+          saved={collectedIds.includes(activeClue.id)}
+          scanLabel={currentScanAnchor?.label}
+          raised={!!activeScan}
+          onToggle={toggleMemoryAudio}
+          onClose={closeMemoryDock}
+          onOpenScan={currentScanAnchor ? () => setActiveScan(currentScanAnchor.scanUrl) : undefined}
+        />
+      )}
+
       {/* Calib export modal — shown when clipboard API is unavailable (http://IP) */}
       {exportText && (
         <div className="absolute inset-0 z-[60] flex items-center justify-center bg-black/80 p-6">
@@ -1545,35 +1582,6 @@ export function PanoramaViewer({
         </div>
       )}
 
-      {/* Clue preview modal (rendered over the canvas, outside R3F) */}
-      {preview && (() => {
-        // Find where the next uncollected clue lives so modal can direct the player
-        const currentNodeIdx = localNodes.findIndex(n =>
-          n.clueAnchors?.some(a => a.clueId === preview.id)
-        );
-        const nextNode = localNodes.find((n, i) =>
-          i !== currentNodeIdx &&
-          n.clueAnchors?.some(a => !collectedIds.includes(a.clueId) && a.clueId !== preview.id)
-        );
-        const nextIdx = nextNode ? localNodes.indexOf(nextNode) : -1;
-        const nextHint = nextNode
-          ? nextIdx > nodeIndex
-            ? `Go to Point ${nextIdx + 1}`
-            : `Go back to Point ${nextIdx + 1}`
-          : undefined;
-        return (
-          <CluePreviewModal
-            clue={preview}
-            collected={collectedIds.includes(preview.id)}
-            onCollect={() => {
-              onCollect(preview.id);
-              setPreview(null);
-            }}
-            onClose={() => setPreview(null)}
-            nextHint={nextHint}
-          />
-        );
-      })()}
     </div>
   );
 }

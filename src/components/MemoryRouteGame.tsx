@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Story } from '../types';
+import { DiaryEntry, Story } from '../types';
 import { MemorySpace as MemorySpaceComponent } from './MemorySpace';
 import { EndingCannotBeMoved } from './EndingCannotBeMoved';
-import { OralHistoryPlayer } from './OralHistoryPlayer';
 import { AudioSynth } from '../utils/AudioSynth';
 import { AudioManager } from '../utils/AudioManager';
 import { ChevronLeft, CheckSquare } from 'lucide-react';
@@ -21,19 +20,21 @@ interface MemoryRouteGameProps {
   story: Story;
   initialSpaceIdx?: number;
   singleSpaceMode?: boolean;
+  diary: DiaryEntry[];
+  addToDiary: (entry: DiaryEntry) => void;
   onBack: () => void;
 }
 
-export function MemoryRouteGame({ story, initialSpaceIdx = 0, onBack }: MemoryRouteGameProps) {
+export function MemoryRouteGame({ story, initialSpaceIdx = 0, diary, addToDiary, onBack }: MemoryRouteGameProps) {
   const [phase, setPhase] = useState<Phase>('dossier');
   const [spaceIndex] = useState(initialSpaceIdx);
-  const [collectedIds, setCollectedIds] = useState<string[]>(
-    () => story.spaces[initialSpaceIdx]?.clues.map(c => c.id) ?? []
-  );
-  const [audioEl, setAudioEl] = useState<HTMLAudioElement | null>(null);
-
   const narratorColor = NARRATOR_COLOR[story.narrator] ?? '#C8B89A';
   const activeSpace = story.spaces[spaceIndex];
+  const getDiaryIdsForSpace = () =>
+    activeSpace?.clues
+      .filter((clue) => diary.some((entry) => entry.clueId === clue.id))
+      .map((clue) => clue.id) ?? [];
+  const [collectedIds, setCollectedIds] = useState<string[]>(getDiaryIdsForSpace);
 
   // Kill any lingering audio on mount/unmount
   useEffect(() => {
@@ -41,22 +42,50 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, onBack }: MemoryRo
     return () => { AudioManager.stop(); AudioSynth.stopAmbient(); };
   }, []);
 
-  // Autoplay the space's oral history segment when entering explore mode
+  useEffect(() => {
+    setCollectedIds((prev) => Array.from(new Set([...prev, ...getDiaryIdsForSpace()])));
+  }, [diary, activeSpace]);
+
   useEffect(() => {
     if (phase !== 'explore') return;
-    const seg = activeSpace?.audioSegment;
-    if (!seg) return;
-    const el = AudioManager.play(seg.src, seg.startSec, 0.85, seg.endSec);
-    setAudioEl(el);
-    return () => { AudioManager.stop(); setAudioEl(null); };
+    const ambientType = activeSpace?.clues.find((clue) => clue.ambient)?.ambient;
+    if (ambientType) AudioSynth.startAmbient(ambientType);
+    return () => AudioSynth.stopAmbient();
   }, [phase, activeSpace]);
 
-  const handleFinish = () => { AudioManager.stop(); setPhase('ending'); };
+  const handleBack = () => {
+    AudioManager.stop();
+    AudioSynth.stopAmbient();
+    onBack();
+  };
+
+  const handleFinish = () => {
+    AudioManager.stop();
+    AudioSynth.stopAmbient();
+    setPhase('ending');
+  };
+
+  const handleCollect = (clueId: string) => {
+    setCollectedIds((prev) => prev.includes(clueId) ? prev : [...prev, clueId]);
+
+    const clue = activeSpace.clues.find((candidate) => candidate.id === clueId);
+    if (!clue) return;
+
+    addToDiary({
+      clueId,
+      spaceLabel: activeSpace.label,
+      narratorName: story.narrator,
+      narratorColor,
+      clueLabel: clue.label,
+      quote: clue.quote,
+      foundAt: Date.now(),
+    });
+  };
 
   const handleRestart = () => {
     AudioManager.stop();
-    setAudioEl(null);
-    setCollectedIds(story.spaces[spaceIndex]?.clues.map(c => c.id) ?? []);
+    AudioSynth.stopAmbient();
+    setCollectedIds(getDiaryIdsForSpace());
     setPhase('dossier');
   };
 
@@ -66,7 +95,7 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, onBack }: MemoryRo
       <div className="h-screen flex flex-col relative bg-[#0a0806] overflow-hidden">
         <header className="relative z-30 flex items-center px-5 py-3 bg-black/30 border-b border-amber-200/5">
           <button
-            onClick={() => { AudioManager.stop(); onBack(); }}
+            onClick={handleBack}
             className="flex items-center gap-1.5 text-amber-200/30 hover:text-amber-200/60 font-serif text-sm transition-colors"
           >
             <ChevronLeft className="w-4 h-4" />
@@ -88,8 +117,9 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, onBack }: MemoryRo
     return (
       <EndingCannotBeMoved
         story={story}
+        diary={diary}
         onRestart={handleRestart}
-        onChooseOther={onBack}
+        onChooseOther={handleBack}
       />
     );
   }
@@ -103,7 +133,7 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, onBack }: MemoryRo
       {/* Top header */}
       <header className="relative z-30 flex items-center justify-between px-5 py-3 bg-white/50 backdrop-blur-sm border-b border-muctim/8 shadow-xs">
         <button
-          onClick={onBack}
+          onClick={handleBack}
           className="flex items-center gap-1.5 text-muctim-faded hover:text-muctim font-serif text-sm transition-colors"
         >
           <ChevronLeft className="w-4 h-4" />
@@ -138,19 +168,9 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, onBack }: MemoryRo
           space={activeSpace}
           story={story}
           collectedIds={collectedIds}
-          onCollect={() => {}}
+          onCollect={handleCollect}
           onClueModalChange={() => {}}
         />
-
-        {/* Oral history player — bottom-left floating widget, autoplays on space entry */}
-        {audioEl && (
-          <OralHistoryPlayer
-            audioEl={audioEl}
-            narratorName={story.narrator}
-            narratorColor={narratorColor}
-            storyId={story.id}
-          />
-        )}
       </main>
     </div>
   );

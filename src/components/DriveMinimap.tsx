@@ -34,10 +34,12 @@ function interpolateCoords(nodes: TourNode[]): [number, number][] {
 export function DriveMinimap({ nodes, currentIndex }: DriveMinimapProps) {
   const seqKey = nodes[0]?.id.split('-')[0] ?? '';
   let labelText = 'Thanh Cong';
-  if (seqKey === 'hh') {
+  if (seqKey === 'es') {
     labelText = 'Hoang Hoa Tham';
   } else if (seqKey === 'tt') {
     labelText = 'Trung Liet';
+  } else if (seqKey === 'qn') {
+    labelText = 'Quan Net';
   }
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);

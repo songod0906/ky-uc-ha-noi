@@ -32,27 +32,27 @@ function makePinIcon(color: string) {
   return L.divIcon({
     className: '',
     html: `
-      <div style="position:relative;width:36px;height:36px;cursor:pointer;">
+      <div style="position:relative;width:48px;height:48px;cursor:pointer;">
         <div style="
           position:absolute;inset:0;border-radius:50%;
           background:${color}22;
           animation:mapPulse 2.2s ease-out infinite;
         "></div>
         <div style="
-          position:absolute;inset:6px;border-radius:50%;
+          position:absolute;inset:8px;border-radius:50%;
           background:${color}44;
           animation:mapPulse 2.2s ease-out infinite;
           animation-delay:0.4s;
         "></div>
         <div style="
-          position:absolute;inset:12px;border-radius:50%;
+          position:absolute;inset:17px;border-radius:50%;
           background:${color};
           box-shadow:0 0 10px ${color}99, 0 0 20px ${color}44;
         "></div>
       </div>
     `,
-    iconSize: [36, 36],
-    iconAnchor: [18, 18],
+    iconSize: [48, 48],
+    iconAnchor: [24, 24],
   });
 }
 
@@ -60,6 +60,12 @@ export function MapIntroView({ onSelect }: MapIntroViewProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const [selected, setSelected] = useState<SpacePin | null>(null);
+  const pins = getAllSpacePins();
+
+  const selectPin = (pin: SpacePin) => {
+    setSelected(pin);
+    mapRef.current?.flyTo([pin.space.lat!, pin.space.lng!], 16, { duration: 0.55 });
+  };
 
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return;
@@ -91,8 +97,6 @@ export function MapIntroView({ onSelect }: MapIntroViewProps) {
       document.head.appendChild(style);
     }
 
-    const pins = getAllSpacePins();
-
     const map = L.map(mapContainerRef.current, {
       zoom: 14,
       center: [21.025, 105.817],
@@ -121,8 +125,14 @@ export function MapIntroView({ onSelect }: MapIntroViewProps) {
       const color = NARRATOR_COLOR[pin.story.narrator] ?? '#ffffff';
       const marker = L.marker([pin.space.lat!, pin.space.lng!], {
         icon: makePinIcon(color),
+        title: `${pin.space.label}, ${pin.story.narrator}`,
+        alt: pin.space.label,
+        keyboard: true,
       }).addTo(map);
-      marker.on('click', () => setSelected(pin));
+      marker.on('click', () => {
+        setSelected(pin);
+        map.flyTo([pin.space.lat!, pin.space.lng!], 16, { duration: 0.55 });
+      });
     });
 
     mapRef.current = map;
@@ -182,9 +192,46 @@ export function MapIntroView({ onSelect }: MapIntroViewProps) {
         ))}
       </motion.div>
 
+      {/* Named location strip — gives phone visitors a clear tap target when pins cluster */}
+      {!selected && (
+        <motion.div
+          className="absolute left-0 right-0 bottom-5 z-20 px-4"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.05 }}
+        >
+          <div className="mx-auto flex max-w-3xl gap-2 overflow-x-auto rounded-2xl border border-amber-200/10 bg-black/65 p-2 shadow-2xl backdrop-blur-md">
+            {pins.map((pin) => {
+              const pinColor = NARRATOR_COLOR[pin.story.narrator] ?? '#fff';
+              return (
+                <button
+                  key={`${pin.story.id}-${pin.space.id}`}
+                  onClick={() => selectPin(pin)}
+                  className="min-w-[170px] rounded-xl border px-3 py-2 text-left transition-all active:scale-[0.98]"
+                  style={{
+                    borderColor: `${pinColor}33`,
+                    background: `${pinColor}10`,
+                  }}
+                >
+                  <span className="block font-mono text-[9px] uppercase tracking-widest" style={{ color: pinColor }}>
+                    {pin.story.narrator}
+                  </span>
+                  <span className="mt-0.5 block truncate font-serif text-sm font-semibold text-amber-50/90">
+                    {pin.space.label}
+                  </span>
+                  <span className="mt-1 block font-mono text-[9px] uppercase tracking-wider text-amber-200/40">
+                    {pin.space.clues.length} fragments
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </motion.div>
+      )}
+
       {/* Bottom credit */}
       <motion.div
-        className="absolute bottom-5 left-5 z-20 pointer-events-none font-mono text-[9px] text-amber-200/30 uppercase tracking-widest leading-5"
+        className="absolute bottom-5 left-5 z-20 pointer-events-none hidden font-mono text-[9px] text-amber-200/30 uppercase tracking-widest leading-5 md:block"
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2 }}
       >
         <div>{ALL_STORIES.reduce((n, s) => n + s.spaces.length, 0)} locations · {ALL_STORIES.length} narrators</div>

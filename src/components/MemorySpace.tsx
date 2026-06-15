@@ -24,6 +24,8 @@ export function MemorySpace({ space, story, collectedIds, onCollect, onClueModal
   const hasTour = !!space.bgTourNodes?.length;
   const [videoExpanded, setVideoExpanded] = useState(false);
   const [currentNodeIndex, setCurrentNodeIndex] = useState(0);
+  const driveMode = ['quan-net', 'nha-ngo', 'nha-hoc-them'].includes(space.id);
+  const driveIntervalMs = space.id === 'nha-ngo' ? 2200 : space.id === 'nha-hoc-them' ? 3200 : 4500;
 
   const handleOpenVideo = () => {
     setVideoExpanded(true);
@@ -63,7 +65,8 @@ export function MemorySpace({ space, story, collectedIds, onCollect, onClueModal
             allClues={space.clues}
             minimapFlipX={space.minimapFlipX}
             onNodeIndexChange={setCurrentNodeIndex}
-            driveMode={space.id === 'quan-net'}
+            driveMode={driveMode}
+            driveIntervalMs={driveIntervalMs}
           />
         </Suspense>
       ) : null}

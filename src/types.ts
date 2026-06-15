@@ -98,6 +98,16 @@ export interface Story {
   cluesNeededToUnlock: number;
 }
 
+export interface DiaryEntry {
+  clueId: string;
+  spaceLabel: string;
+  narratorName: string;
+  narratorColor: string;
+  clueLabel: string;
+  quote: string;
+  foundAt: number;
+}
+
 export type GamePhase =
   | 'start'
   | 'select-story'

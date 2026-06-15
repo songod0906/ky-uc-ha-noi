@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { AnimatePresence } from 'motion/react';
-import { Story } from './types';
+import { DiaryEntry, Story } from './types';
 import { GameStart } from './components/GameStart';
 import { MapIntroView } from './components/MapIntroView';
 import { MemoryRouteGame } from './components/MemoryRouteGame';
@@ -18,6 +18,7 @@ export default function App() {
   const [phase, setPhase] = useState<AppPhase>('start');
   const [activeStory, setActiveStory] = useState<Story | null>(null);
   const [activeSpaceIdx, setActiveSpaceIdx] = useState(0);
+  const [diary, setDiary] = useState<DiaryEntry[]>([]);
 
   if (scanUrl !== null) {
     return (
@@ -38,6 +39,14 @@ export default function App() {
     setActiveStory(null);
     setActiveSpaceIdx(0);
     setPhase('select');
+  };
+
+  const addToDiary = (entry: DiaryEntry) => {
+    setDiary((prev) =>
+      prev.some((existing) => existing.clueId === entry.clueId)
+        ? prev
+        : [...prev, entry]
+    );
   };
 
   return (
@@ -66,6 +75,8 @@ export default function App() {
             story={activeStory}
             initialSpaceIdx={activeSpaceIdx}
             singleSpaceMode
+            diary={diary}
+            addToDiary={addToDiary}
             onBack={handleBackToSelect}
           />
         )}

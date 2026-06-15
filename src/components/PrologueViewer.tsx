@@ -15,6 +15,7 @@ export function PrologueViewer({ onEnter }: { onEnter: () => void }) {
           collectedIds={[]}
           onCollect={() => {}}
           allClues={[]}
+          backgroundMode
         />
         <div className="absolute top-4 left-4 z-50 bg-black/70 text-white font-mono text-[10px] uppercase tracking-widest px-3 py-1.5 rounded-lg pointer-events-none">
           2026 · Under Demolition
@@ -67,7 +68,7 @@ export function PrologueViewer({ onEnter }: { onEnter: () => void }) {
           transition={{ delay: 1.4, duration: 0.6 }}
           whileHover={{ scale: 1.03 }}
         >
-          Listen to their stories →
+          Enter the archive
         </motion.button>
       </div>
     </div>
