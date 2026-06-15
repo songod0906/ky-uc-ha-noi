@@ -24,6 +24,10 @@ let masterGain: GainNode | null = null;
 const activeSynthNodes: { [key: string]: AudioNode[] } = {};
 let currentSynthType: string | null = null;
 
+// --- Background music ---
+let bgMusicNodes: AudioNode[] = [];
+let bgMusicGain: GainNode | null = null;
+
 function getAudioContext() {
   if (!audioCtx) {
     audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -51,6 +55,45 @@ function createNoiseBuffer(ctx: AudioContext) {
     data[i] = Math.random() * 2 - 1;
   }
   return buffer;
+}
+
+/** Short UI click sound — call on any button press */
+export function playClick() {
+  try {
+    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(880, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.08);
+    gain.gain.setValueAtTime(0.12, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.12);
+  } catch (_) {}
+}
+
+/** Discovery chime — call when a clue is collected */
+export function playDiscover() {
+  try {
+    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const freqs = [523.25, 659.25, 783.99]; // C5, E5, G5
+    freqs.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.12);
+      gain.gain.setValueAtTime(0, ctx.currentTime + i * 0.12);
+      gain.gain.linearRampToValueAtTime(0.18, ctx.currentTime + i * 0.12 + 0.04);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.12 + 0.8);
+      osc.start(ctx.currentTime + i * 0.12);
+      osc.stop(ctx.currentTime + i * 0.12 + 0.85);
+    });
+  } catch (_) {}
 }
 
 export const AudioSynth = {
@@ -179,6 +222,51 @@ export const AudioSynth = {
       });
       delete activeSynthNodes[key];
     });
+  },
+
+  startBackgroundMusic() {
+    try {
+      const ctx = getAudioContext();
+      const now = ctx.currentTime;
+      this.stopBackgroundMusic();
+
+      const gainNode = ctx.createGain();
+      gainNode.gain.setValueAtTime(0, now);
+      gainNode.gain.linearRampToValueAtTime(0.06, now + 3);
+      gainNode.connect(ctx.destination);
+      bgMusicGain = gainNode;
+
+      // Soft ambient pad: three detuned sine oscillators at low frequencies
+      const tones = [130.8, 164.8, 196.0]; // C3, E3, G3 — gentle major chord
+      tones.forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const oscGain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq + i * 0.3, now); // slight detune per voice
+        oscGain.gain.setValueAtTime(1 / tones.length, now);
+        osc.connect(oscGain);
+        oscGain.connect(gainNode);
+        osc.start(now);
+        bgMusicNodes.push(osc, oscGain);
+      });
+    } catch (e) {
+      console.warn('Background music failed', e);
+    }
+  },
+
+  stopBackgroundMusic() {
+    if (bgMusicGain && audioCtx) {
+      const now = audioCtx.currentTime;
+      bgMusicGain.gain.linearRampToValueAtTime(0, now + 1.5);
+    }
+    const nodes = bgMusicNodes;
+    bgMusicNodes = [];
+    bgMusicGain = null;
+    setTimeout(() => {
+      nodes.forEach((n) => {
+        try { (n as any).stop?.(); n.disconnect(); } catch (_) {}
+      });
+    }, 1600);
   },
 
   duckAmbient(ducked: boolean) {

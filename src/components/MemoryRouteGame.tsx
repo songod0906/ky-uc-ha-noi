@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { DiaryEntry, Story } from '../types';
 import { MemorySpace as MemorySpaceComponent } from './MemorySpace';
 import { EndingCannotBeMoved } from './EndingCannotBeMoved';
-import { AudioSynth } from '../utils/AudioSynth';
+import { AudioSynth, playClick, playDiscover } from '../utils/AudioSynth';
 import { AudioManager } from '../utils/AudioManager';
 import { ChevronLeft, CheckSquare } from 'lucide-react';
 import { SpaceDossier } from './SpaceDossier';
@@ -39,8 +39,17 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, diary, addToDiary,
   // Kill any lingering audio on mount/unmount
   useEffect(() => {
     AudioManager.stop();
-    return () => { AudioManager.stop(); AudioSynth.stopAmbient(); };
+    return () => { AudioManager.stop(); AudioSynth.stopAmbient(); AudioSynth.stopBackgroundMusic(); };
   }, []);
+
+  // Start background music when entering explore phase
+  useEffect(() => {
+    if (phase === 'explore') {
+      AudioSynth.startBackgroundMusic();
+    } else {
+      AudioSynth.stopBackgroundMusic();
+    }
+  }, [phase]);
 
   useEffect(() => {
     setCollectedIds((prev) => Array.from(new Set([...prev, ...getDiaryIdsForSpace()])));
@@ -49,18 +58,23 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, diary, addToDiary,
 
 
   const handleBack = () => {
+    playClick();
     AudioManager.stop();
     AudioSynth.stopAmbient();
+    AudioSynth.stopBackgroundMusic();
     onBack();
   };
 
   const handleFinish = () => {
+    playClick();
     AudioManager.stop();
     AudioSynth.stopAmbient();
+    AudioSynth.stopBackgroundMusic();
     setPhase('ending');
   };
 
   const handleCollect = (clueId: string) => {
+    playDiscover();
     setCollectedIds((prev) => prev.includes(clueId) ? prev : [...prev, clueId]);
 
     const clue = activeSpace.clues.find((candidate) => candidate.id === clueId);
@@ -78,8 +92,10 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, diary, addToDiary,
   };
 
   const handleRestart = () => {
+    playClick();
     AudioManager.stop();
     AudioSynth.stopAmbient();
+    AudioSynth.stopBackgroundMusic();
     setCollectedIds(getDiaryIdsForSpace());
     setPhase('dossier');
   };
@@ -91,7 +107,7 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, diary, addToDiary,
         <header className="relative z-30 flex items-center px-5 py-3 bg-black/30 border-b border-amber-200/5">
           <button
             onClick={handleBack}
-            className="flex items-center gap-1.5 text-amber-200/30 hover:text-amber-200/60 font-serif text-sm transition-colors"
+            className="flex items-center gap-1.5 text-white/60 hover:text-white font-serif text-sm transition-colors"
           >
             <ChevronLeft className="w-4 h-4" />
             Map
@@ -126,20 +142,19 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, diary, addToDiary,
       <div className="absolute inset-0 vintage-vignette pointer-events-none z-[5]" />
 
       {/* Top header */}
-      <header className="relative z-30 flex items-center justify-between px-5 py-3 bg-white/50 backdrop-blur-sm border-b border-muctim/8 shadow-xs">
+      <header className="relative z-30 flex items-center justify-between px-5 py-3 bg-black/60 backdrop-blur-sm border-b border-white/8">
         <button
           onClick={handleBack}
-          className="flex items-center gap-1.5 text-muctim-faded hover:text-muctim font-serif text-sm transition-colors"
+          className="flex items-center gap-1.5 text-white/60 hover:text-white font-serif text-sm transition-colors"
         >
           <ChevronLeft className="w-4 h-4" />
           Map
         </button>
 
         <div className="text-center">
-          <p className="font-serif text-sm font-bold text-muctim leading-none">{activeSpace.label}</p>
-          <p className="font-mono text-[9px] text-muctim-faded uppercase tracking-widest">
-            {story.narrator} · {story.title}
-          </p>
+          <p className="font-serif text-sm font-bold text-white leading-none tracking-wide uppercase">{activeSpace.label}</p>
+          <p className="font-mono text-[10px] text-white/65 uppercase tracking-widest mt-0.5">{story.title}</p>
+          <p className="font-mono text-[9px] text-white/35 uppercase tracking-wider">{story.narrator}</p>
         </div>
 
         <button
