@@ -228,7 +228,7 @@ export function OralHistoryPlayer({ audioEl, narratorName, narratorColor, paused
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={narratorColor} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                     </svg>
-                    Lời thoại câu kể
+                    Transcript
                   </h3>
                   <div className="flex items-center gap-1">
                     <button
@@ -269,7 +269,7 @@ export function OralHistoryPlayer({ audioEl, narratorName, narratorColor, paused
                   style={{ maxHeight: '200px' }}
                 >
                   {subtitles.length === 0 ? (
-                    <p className="text-white/30 text-[10px] font-serif py-6 text-center italic">Đang tải lời kể...</p>
+                    <p className="text-white/30 text-[10px] font-serif py-6 text-center italic">Loading transcript...</p>
                   ) : (
                     subtitles.map((sub, idx) => {
                       const isActive = idx === activeSubIndex;
@@ -308,7 +308,7 @@ export function OralHistoryPlayer({ audioEl, narratorName, narratorColor, paused
           <div
             role="button"
             tabIndex={0}
-            aria-label={isSpinning ? 'Tạm dừng lời kể' : 'Phát lời kể'}
+            aria-label={isSpinning ? 'Pause narration' : 'Play narration'}
             onClick={toggle}
             onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } }}
             className="flex items-center gap-2.5 rounded-2xl px-3.5 py-2.5 text-left transition-all active:scale-95 cursor-pointer"
@@ -344,17 +344,17 @@ export function OralHistoryPlayer({ audioEl, narratorName, narratorColor, paused
 
             <div className="min-w-0">
               <p className="font-mono text-[8px] uppercase tracking-[0.18em] mb-0.5" style={{ color: narratorColor, opacity: 0.65 }}>
-                {isSpinning ? 'đang phát' : 'đã dừng'}
+                {isSpinning ? 'playing' : 'paused'}
               </p>
               <p className="font-serif text-xs font-semibold text-amber-50/85 leading-none">
-                {narratorName} · kể chuyện
+                {narratorName} · narration
               </p>
               {/* Interactive Seek Bar */}
               <div 
                 onClick={handleSeek}
                 className="mt-2 w-28 h-1 rounded-full cursor-pointer relative group/seek"
                 style={{ background: `${narratorColor}22` }}
-                title="Nhấp để chuyển đoạn âm thanh"
+                title="Click to seek"
               >
                 <div
                   className="h-full rounded-full transition-all"
@@ -379,7 +379,7 @@ export function OralHistoryPlayer({ audioEl, narratorName, narratorColor, paused
                 color: narratorColor,
                 background: showTranscript ? `${narratorColor}25` : 'transparent',
               }}
-              title="Xem lời thoại / Bản dịch"
+              title="View transcript / translation"
             >
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="8" y1="6" x2="21" y2="6"></line>
@@ -403,9 +403,9 @@ export function OralHistoryPlayer({ audioEl, narratorName, narratorColor, paused
                 color: narratorColor,
                 background: subLanguage !== 'off' ? `${narratorColor}15` : 'transparent',
               }}
-              title="Chuyển đổi phụ đề"
+              title="Toggle subtitles"
             >
-              {subLanguage === 'en' ? 'Sub: EN' : subLanguage === 'vn' ? 'Sub: VN' : 'Sub: Tắt'}
+              {subLanguage === 'en' ? 'Sub: EN' : subLanguage === 'vn' ? 'Sub: VN' : 'Sub: Off'}
             </button>
 
             {/* Play/pause */}

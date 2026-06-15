@@ -31,10 +31,10 @@ type Phase =
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const DIRS: Array<{ id: DirId; label: string }> = [
-  { id: 'B', label: 'BẮC' },   // top-left
-  { id: 'Đ', label: 'ĐÔNG' },  // top-right
-  { id: 'T', label: 'TÂY' },   // bottom-left
-  { id: 'N', label: 'NAM' },   // bottom-right
+  { id: 'B', label: 'NORTH' }, // top-left
+  { id: 'Đ', label: 'EAST' },  // top-right
+  { id: 'T', label: 'WEST' },  // bottom-left
+  { id: 'N', label: 'SOUTH' }, // bottom-right
 ];
 
 // Numbers the player can freely choose — matches physical game convention
@@ -140,7 +140,7 @@ export function FortuneFolder({
 
       const key = `${activeDir}-${panel}`;
       const content: FortuneReveal = contentMap[key] ?? {
-        text: 'Không có gì ở đây...',
+        text: 'Nothing here...',
         isQuote: false,
       };
 
@@ -453,7 +453,7 @@ export function FortuneFolder({
                 opacity: 0.75,
               }}
             >
-              {selectedDirData.label} — chọn số bước
+              {selectedDirData.label} — choose steps
             </p>
             <div className="flex gap-1.5">
               {PICK_NUMBERS.map((n) => (
@@ -522,7 +522,7 @@ export function FortuneFolder({
             animate={{ opacity: 0.6 }}
             exit={{ opacity: 0 }}
           >
-            chọn một ô
+            choose a slot
           </motion.p>
         )}
 
@@ -535,7 +535,7 @@ export function FortuneFolder({
             animate={{ opacity: 0.5 }}
             exit={{ opacity: 0 }}
           >
-            chọn một hướng
+            choose a direction
           </motion.p>
         )}
       </AnimatePresence>

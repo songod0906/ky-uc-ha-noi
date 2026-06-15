@@ -48,10 +48,10 @@ function loadImage(src: string): Promise<void> {
 }
 
 const MESSAGES = [
-  'Đang thức dậy ký ức...',
-  'Lắng nghe tiếng phố xưa...',
-  'Nhặt lại những mảnh ký ức...',
-  'Chuẩn bị không gian 360°...',
+  'Awakening memories...',
+  'Listening to sounds of old streets...',
+  'Gathering memory fragments...',
+  'Preparing 360° space...',
 ];
 
 export function StoryLoadingScreen({ story, spaceIdx, onReady }: Props) {
@@ -117,7 +117,7 @@ export function StoryLoadingScreen({ story, spaceIdx, onReady }: Props) {
       {/* Content */}
       <div className="relative flex flex-col items-center gap-3 text-center px-8 mb-16">
         <p className="font-mono text-[9px] text-white/30 uppercase tracking-[0.25em]">
-          Ký Ức Hà Nội
+          Hanoi Memories
         </p>
 
         <h1 className="font-serif text-4xl md:text-5xl text-amber-50/90 leading-tight mt-1">
@@ -155,7 +155,7 @@ export function StoryLoadingScreen({ story, spaceIdx, onReady }: Props) {
           exit={{ opacity: 0, y: -4 }}
           transition={{ duration: 0.4 }}
         >
-          {pct === 100 ? 'Sẵn sàng' : MESSAGES[msgIdx]}
+          {pct === 100 ? 'READY' : MESSAGES[msgIdx]}
         </motion.p>
       </div>
     </motion.div>

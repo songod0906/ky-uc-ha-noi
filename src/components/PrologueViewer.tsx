@@ -17,7 +17,7 @@ export function PrologueViewer({ onEnter }: { onEnter: () => void }) {
           allClues={[]}
         />
         <div className="absolute top-4 left-4 z-50 bg-black/70 text-white font-mono text-[10px] uppercase tracking-widest px-3 py-1.5 rounded-lg pointer-events-none">
-          2026 · Đang bị phá dỡ
+          2026 · Under Demolition
         </div>
       </div>
 
@@ -32,10 +32,10 @@ export function PrologueViewer({ onEnter }: { onEnter: () => void }) {
           allowFullScreen
           loading="lazy"
           referrerPolicy="no-referrer-when-downgrade"
-          title="Đê La Thành 2022"
+          title="De La Thanh 2022"
         />
         <div className="absolute top-4 right-4 z-50 bg-black/70 text-white font-mono text-[10px] uppercase tracking-widest px-3 py-1.5 rounded-lg pointer-events-none">
-          2022 · Phố Đê La Thành
+          2022 · De La Thanh Street
         </div>
       </div>
 
@@ -48,14 +48,14 @@ export function PrologueViewer({ onEnter }: { onEnter: () => void }) {
           className="text-center max-w-lg px-4"
         >
           <h1 className="font-serif text-2xl font-bold text-white drop-shadow-lg tracking-wide">
-            Đê La Thành không phải nơi duy nhất.
+            De La Thanh is not the only place.
           </h1>
           <p className="font-serif text-sm text-white/75 mt-2 leading-relaxed">
-            Hai người lớn lên ở những khu phố đang chịu cùng số phận —<br />
-            những ngõ nhỏ, sân chơi, giếng làng sắp bị xóa.
+            Three people who grew up in neighborhoods facing the same fate —<br />
+            narrow alleys, playgrounds, and village wells about to be erased.
           </p>
           <p className="font-serif text-xs text-white/45 mt-1.5 italic">
-            Đây là ký ức của họ, trước khi không còn gì để nhớ.
+            These are their memories, before there is nothing left to remember.
           </p>
         </motion.div>
 
@@ -67,7 +67,7 @@ export function PrologueViewer({ onEnter }: { onEnter: () => void }) {
           transition={{ delay: 1.4, duration: 0.6 }}
           whileHover={{ scale: 1.03 }}
         >
-          Nghe câu chuyện của họ →
+          Listen to their stories →
         </motion.button>
       </div>
     </div>

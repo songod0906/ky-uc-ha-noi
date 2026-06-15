@@ -128,21 +128,21 @@ export function PanoramicVideoViewer({ url, onClose }: PanoramicVideoViewerProps
         
         {loading && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/60 text-white font-serif z-10">
-            Đang tải video 360°...
+            Loading 360° video...
           </div>
         )}
 
         {/* Drag Hint overlay */}
         <div className="absolute top-20 left-1/2 -translate-x-1/2 pointer-events-none z-10">
           <span className="bg-black/55 backdrop-blur-sm px-3 py-1.5 rounded-full text-white/90 text-xs font-serif shadow-lg border border-white/10">
-            Kéo để nhìn xung quanh toàn cảnh 360°
+            Drag to look around 360° panorama
           </span>
         </div>
 
         {/* Top bar controls */}
         <div className="absolute top-4 left-4 right-4 flex justify-between items-center z-20 pointer-events-none">
           <div className="bg-black/60 backdrop-blur-sm px-3 py-1.5 rounded-xl border border-white/10 text-white font-serif shadow-lg pointer-events-auto">
-            Góc nhìn Toàn cảnh (360° Video)
+            360° Panoramic Video View
           </div>
           <button
             onClick={onClose}

@@ -330,7 +330,7 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, onBack }: MemoryRo
       {!exploreTutorialDone && (
         <TutorialOverlay
           steps={EXPLORE_TUTORIAL}
-          onComplete={() => setExploreTutorialDone(true)}
+          onDone={() => setExploreTutorialDone(true)}
         />
       )}
     </div>

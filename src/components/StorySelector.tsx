@@ -29,9 +29,9 @@ export function StorySelector({ onSelect }: StorySelectorProps) {
         transition={{ duration: 0.6 }}
       >
         <div className="text-center mb-10">
-          <h2 className="font-serif text-3xl font-bold text-muctim">Chọn câu chuyện</h2>
+          <h2 className="font-serif text-3xl font-bold text-muctim">Select a Story</h2>
           <p className="font-serif text-muctim-faded mt-2 text-sm">
-            Hai người, ba khu phố, những ngày bình thường sắp biến mất.
+            Three people, three neighborhoods, ordinary days about to disappear.
           </p>
         </div>
 
