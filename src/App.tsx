@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AnimatePresence } from 'motion/react';
 import { DiaryEntry, Story } from './types';
 import { GameStart } from './components/GameStart';
