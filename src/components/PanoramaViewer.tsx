@@ -885,8 +885,8 @@ export function PanoramaViewer({
   const [dragHintVisible, setDragHintVisible] = useState(true);
   const [exportText, setExportText] = useState<string | null>(null);
   const [dwellSecs, setDwellSecs] = useState(0);
-  // Clues visible from the start — no dwell gate needed
-  const clueVisible = true;
+  // Clue hotspot cards removed from 3D — exhibition mode is free-explore
+  const clueVisible = false;
   const playgroundBlocked = !CALIB_MODE && !!nodeId?.startsWith('tt-pg') && dwellSecs < 15;
 
   // Drive mode — auto-advance through nodes like a moving car
