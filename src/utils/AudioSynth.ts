@@ -7,94 +7,318 @@ const AMBIENT_MAP: Partial<Record<AmbientType, string>> = {
   violin: '/audio/sound-violin.mp3',
 };
 
+// --- HTML Audio Player (for MP3s) ---
 let ambientEl: HTMLAudioElement | null = null;
-let fadeTimer: number | null = null;
+let htmlFadeTimer: number | null = null;
 
-const clearFade = () => {
-  if (!fadeTimer) return;
-  window.clearInterval(fadeTimer);
-  fadeTimer = null;
+const clearHtmlFade = () => {
+  if (htmlFadeTimer) {
+    window.clearInterval(htmlFadeTimer);
+    htmlFadeTimer = null;
+  }
 };
 
+// --- Web Audio API Synthesizer (for nostalgic soundscapes) ---
+let audioCtx: AudioContext | null = null;
+let masterGain: GainNode | null = null;
+const activeSynthNodes: { [key: string]: AudioNode[] } = {};
+let currentSynthType: string | null = null;
+
+function getAudioContext() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+  }
+  if (audioCtx.state === 'suspended') {
+    void audioCtx.resume();
+  }
+  return audioCtx;
+}
+
+function getMasterGain(ctx: AudioContext) {
+  if (!masterGain) {
+    masterGain = ctx.createGain();
+    masterGain.gain.setValueAtTime(1.0, ctx.currentTime);
+    masterGain.connect(ctx.destination);
+  }
+  return masterGain;
+}
+
+function createNoiseBuffer(ctx: AudioContext) {
+  const bufferSize = ctx.sampleRate * 2; // 2 seconds of noise
+  const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) {
+    data[i] = Math.random() * 2 - 1;
+  }
+  return buffer;
+}
+
 export const AudioSynth = {
-  playSnap() {},
-  playPluck(_freq?: number, _duration?: number, _volume?: number) {},
-  playGuitarArpeggio() {},
+  /** Play Origami paper snap */
+  playSnap() {
+    try {
+      const ctx = getAudioContext();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      
+      osc.connect(gain);
+      gain.connect(getMasterGain(ctx));
+      
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(120, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.08);
+      
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.12);
+      
+      osc.start();
+      osc.stop(ctx.currentTime + 0.15);
+    } catch (e) {
+      console.warn('Audio play failed', e);
+    }
+  },
+
+  /** Play guitar pluck */
+  playPluck(freq = 220, duration = 1.2, volume = 0.25) {
+    try {
+      const ctx = getAudioContext();
+      const now = ctx.currentTime;
+      
+      const osc1 = ctx.createOscillator();
+      const osc2 = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const filter = ctx.createBiquadFilter();
+      
+      osc1.type = 'sawtooth';
+      osc1.frequency.setValueAtTime(freq, now);
+      
+      osc2.type = 'triangle';
+      osc2.frequency.setValueAtTime(freq * 1.01, now); // slight detune
+      
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(1200, now);
+      filter.frequency.exponentialRampToValueAtTime(150, now + duration * 0.7);
+      
+      gain.gain.setValueAtTime(0.01, now);
+      gain.gain.exponentialRampToValueAtTime(volume, now + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + duration);
+      
+      osc1.connect(filter);
+      osc2.connect(filter);
+      filter.connect(gain);
+      gain.connect(getMasterGain(ctx));
+      
+      osc1.start(now);
+      osc2.start(now);
+      
+      osc1.stop(now + duration);
+      osc2.stop(now + duration);
+    } catch (e) {
+      console.warn('Audio play failed', e);
+    }
+  },
+
+  /** Play guitar arpeggio */
+  playGuitarArpeggio() {
+    const chord = [220, 275, 330, 440, 550]; // A-major
+    chord.forEach((freq, idx) => {
+      setTimeout(() => {
+        this.playPluck(freq, 1.5, 0.2);
+      }, idx * 180);
+    });
+  },
 
   startAmbient(type: AmbientType) {
-    const src = AMBIENT_MAP[type];
-    if (!src) return;
+    // 1. Stop whatever is currently playing
+    this.stopAmbient();
 
-    clearFade();
-    if (ambientEl) {
-      ambientEl.pause();
-      ambientEl = null;
-    }
+    const mp3Src = AMBIENT_MAP[type];
+    if (mp3Src) {
+      // --- MP3 Loops ---
+      const el = new Audio(mp3Src);
+      ambientEl = el;
+      el.loop = true;
+      el.volume = 0;
 
-    const el = new Audio(src);
-    ambientEl = el;
-    el.loop = true;
-    el.volume = 0;
+      el.play().catch(() => {
+        if (ambientEl === el) ambientEl = null;
+      });
 
-    el.play().catch(() => {
-      if (ambientEl === el) ambientEl = null;
-    });
+      let volume = 0;
+      htmlFadeTimer = window.setInterval(() => {
+        if (ambientEl !== el) {
+          clearHtmlFade();
+          return;
+        }
+        volume = Math.min(volume + 0.025, 0.25);
+        el.volume = volume;
+        if (volume >= 0.25) clearHtmlFade();
+      }, 50);
+    } else {
+      // --- Web Audio API Synth Loops ---
+      try {
+        const ctx = getAudioContext();
+        const now = ctx.currentTime;
+        const mainGain = getMasterGain(ctx);
 
-    let volume = 0;
-    fadeTimer = window.setInterval(() => {
-      if (ambientEl !== el) {
-        clearFade();
-        return;
+        // Reset master gain to full volume when starting a new synth
+        mainGain.gain.setValueAtTime(1.0, now);
+
+        currentSynthType = type;
+        const nodes: AudioNode[] = [];
+        activeSynthNodes[type] = nodes;
+
+        if (type === 'wind') {
+          // Hanoi wind sweep
+          const noise = ctx.createBufferSource();
+          noise.buffer = createNoiseBuffer(ctx);
+          noise.loop = true;
+          
+          const filter = ctx.createBiquadFilter();
+          filter.type = 'lowpass';
+          filter.frequency.setValueAtTime(300, now);
+          
+          const lfo = ctx.createOscillator();
+          lfo.frequency.setValueAtTime(0.1, now); // slow swing
+          const lfoGain = ctx.createGain();
+          lfoGain.gain.value = 180;
+          
+          const gain = ctx.createGain();
+          gain.gain.setValueAtTime(0.15, now); // wind volume
+          
+          lfo.connect(lfoGain);
+          lfoGain.connect(filter.frequency);
+          noise.connect(filter);
+          filter.connect(gain);
+          gain.connect(mainGain);
+          
+          noise.start(now);
+          lfo.start(now);
+          nodes.push(noise, lfo, gain);
+        }
+        else if (type === 'cicadas') {
+          // Cricket chirping
+          const noise = ctx.createBufferSource();
+          noise.buffer = createNoiseBuffer(ctx);
+          noise.loop = true;
+          
+          const filter = ctx.createBiquadFilter();
+          filter.type = 'bandpass';
+          filter.frequency.setValueAtTime(3200, now);
+          filter.Q.setValueAtTime(15, now);
+          
+          const modulator = ctx.createOscillator();
+          modulator.frequency.value = 6; // 6 Hz chirp
+          const modGain = ctx.createGain();
+          modGain.gain.value = 800;
+          
+          const gain = ctx.createGain();
+          gain.gain.setValueAtTime(0.015, now);
+          
+          modulator.connect(modGain);
+          modGain.connect(filter.frequency);
+          noise.connect(filter);
+          filter.connect(gain);
+          gain.connect(mainGain);
+          
+          noise.start(now);
+          modulator.start(now);
+          nodes.push(noise, modulator, gain);
+        }
+        else if (type === 'kids-laughter') {
+          // Playful bubbles/xylophone
+          const playGiggle = () => {
+            if (currentSynthType !== 'kids-laughter') return;
+            const notes = [440, 494, 523, 587, 659];
+            const rNote = notes[Math.floor(Math.random() * notes.length)];
+            
+            const nowTime = ctx.currentTime;
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(rNote, nowTime);
+            osc.frequency.setValueAtTime(rNote * 1.5, nowTime + 0.05);
+            
+            gain.gain.setValueAtTime(0.04, nowTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, nowTime + 0.2);
+            
+            osc.connect(gain);
+            gain.connect(mainGain);
+            
+            osc.start();
+            osc.stop(nowTime + 0.25);
+            
+            setTimeout(playGiggle, 500 + Math.random() * 1200);
+          };
+          playGiggle();
+        }
+        else if (type === 'plucks') {
+          // Slow guitar strums
+          const playPlucks = () => {
+            if (currentSynthType !== 'plucks') return;
+            this.playGuitarArpeggio();
+            setTimeout(playPlucks, 5000);
+          };
+          playPlucks();
+        }
+      } catch (e) {
+        console.warn('Ambient play failed', e);
       }
-
-      volume = Math.min(volume + 0.025, 0.25);
-      el.volume = volume;
-      if (volume >= 0.25) clearFade();
-    }, 50);
+    }
   },
 
   stopAmbient() {
-    if (!ambientEl) return;
+    // 1. Stop HTML Audio
+    clearHtmlFade();
+    if (ambientEl) {
+      ambientEl.pause();
+      try { ambientEl.src = ''; } catch (_) {}
+      ambientEl = null;
+    }
 
-    clearFade();
-    const el = ambientEl;
-    ambientEl = null;
-    let volume = el.volume;
-
-    fadeTimer = window.setInterval(() => {
-      volume = Math.max(volume - 0.025, 0);
-      el.volume = volume;
-      if (volume <= 0) {
-        el.pause();
-        clearFade();
-      }
-    }, 50);
+    // 2. Stop Web Audio API synths
+    currentSynthType = null;
+    Object.keys(activeSynthNodes).forEach((key) => {
+      activeSynthNodes[key].forEach((node) => {
+        try {
+          (node as any).stop?.();
+          node.disconnect();
+        } catch (_) {}
+      });
+      delete activeSynthNodes[key];
+    });
   },
 
   duckAmbient(ducked: boolean) {
-    if (!ambientEl) return;
-    clearFade();
-    const targetVolume = ducked ? 0.03 : 0.25;
-    const currentVolume = ambientEl.volume;
-    if (currentVolume === targetVolume) return;
-
-    const step = 0.025;
-    const interval = 50;
-    const el = ambientEl;
-
-    fadeTimer = window.setInterval(() => {
-      if (ambientEl !== el) {
-        clearFade();
-        return;
+    // 1. Duck HTML Audio element
+    if (ambientEl) {
+      clearHtmlFade();
+      const targetVolume = ducked ? 0.03 : 0.25;
+      const currentVolume = ambientEl.volume;
+      if (currentVolume !== targetVolume) {
+        const step = 0.025;
+        const el = ambientEl;
+        htmlFadeTimer = window.setInterval(() => {
+          if (ambientEl !== el) {
+            clearHtmlFade();
+            return;
+          }
+          let vol = el.volume;
+          if (ducked) {
+            vol = Math.max(vol - step, targetVolume);
+          } else {
+            vol = Math.min(vol + step, targetVolume);
+          }
+          el.volume = vol;
+          if (vol === targetVolume) clearHtmlFade();
+        }, 50);
       }
-      let vol = el.volume;
-      if (ducked) {
-        vol = Math.max(vol - step, targetVolume);
-      } else {
-        vol = Math.min(vol + step, targetVolume);
-      }
-      el.volume = vol;
-      if (vol === targetVolume) clearFade();
-    }, interval);
+    }
+
+    // 2. Duck master gain for Web Audio API synthesizers
+    if (audioCtx && masterGain) {
+      const targetVal = ducked ? 0.12 : 1.0;
+      masterGain.gain.linearRampToValueAtTime(targetVal, audioCtx.currentTime + 0.3);
+    }
   },
 };

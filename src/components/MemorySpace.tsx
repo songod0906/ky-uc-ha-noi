@@ -25,23 +25,53 @@ export function MemorySpace({ space, story, collectedIds, onCollect, onClueModal
   const hasTour = !!space.bgTourNodes?.length;
   const [videoExpanded, setVideoExpanded] = useState(false);
   const [currentNodeIndex, setCurrentNodeIndex] = useState(0);
+  const [isScanOpen, setIsScanOpen] = useState(false);
   const driveMode = ['quan-net', 'nha-ngo', 'nha-hoc-them'].includes(space.id);
   const driveIntervalMs = space.id === 'nha-ngo' ? 2200 : space.id === 'nha-hoc-them' ? 3200 : 4500;
 
-  // Manage ambient sound dynamically based on currentNodeIndex
+  // Manage ambient sound dynamically based on currentNodeIndex and active scan state
   useEffect(() => {
     let ambientType: AmbientType | undefined = undefined;
 
     if (space.id === 'quan-net') {
-      if (currentNodeIndex >= 5) {
+      if (isScanOpen) {
         ambientType = 'keyboard';
       }
     } else if (space.id === 'quan-oc-violin') {
       if (currentNodeIndex >= 4) {
         ambientType = 'violin';
       }
+    } else if (space.id === 'cong-truong') {
+      if (currentNodeIndex === 0 || currentNodeIndex === 1) {
+        ambientType = 'school-drum';
+      } else {
+        ambientType = 'wind';
+      }
     } else {
-      ambientType = space.clues.find((clue) => clue.ambient)?.ambient;
+      // Find the closest node with a clue and use its ambient setting
+      let closestClueId: string | undefined = undefined;
+      let minDist = Infinity;
+      if (space.bgTourNodes) {
+        space.bgTourNodes.forEach((node, idx) => {
+          const firstClueId = node.clueAnchors?.[0]?.clueId;
+          if (firstClueId) {
+            const dist = Math.abs(idx - currentNodeIndex);
+            if (dist < minDist) {
+              minDist = dist;
+              closestClueId = firstClueId;
+            }
+          }
+        });
+      }
+
+      if (closestClueId) {
+        const closestClue = space.clues.find((clue) => clue.id === closestClueId);
+        if (closestClue) {
+          ambientType = closestClue.ambient;
+        }
+      } else {
+        ambientType = space.clues.find((clue) => clue.ambient)?.ambient;
+      }
     }
 
     if (ambientType) {
@@ -53,7 +83,15 @@ export function MemorySpace({ space, story, collectedIds, onCollect, onClueModal
     return () => {
       AudioSynth.stopAmbient();
     };
-  }, [space.id, currentNodeIndex, space.clues]);
+  }, [space.id, currentNodeIndex, space.clues, isScanOpen]);
+
+  // Auto-expand video on final node for quan-oc-violin
+  useEffect(() => {
+    if (space.id === 'quan-oc-violin' && currentNodeIndex === 4) {
+      setVideoExpanded(true);
+      AudioManager.pause();
+    }
+  }, [space.id, currentNodeIndex]);
 
   const handleOpenVideo = () => {
     setVideoExpanded(true);
@@ -95,6 +133,7 @@ export function MemorySpace({ space, story, collectedIds, onCollect, onClueModal
             onNodeIndexChange={setCurrentNodeIndex}
             driveMode={driveMode}
             driveIntervalMs={driveIntervalMs}
+            onScanChange={setIsScanOpen}
           />
         </Suspense>
       ) : null}

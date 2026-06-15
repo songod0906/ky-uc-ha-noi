@@ -434,8 +434,8 @@ function Scene({
     // 2. Set camera position and target in OrbitControls
     const r = 0.1;
     const yawRad = (targetYaw * Math.PI) / 180;
-    const x = -r * Math.sin(yawRad);
-    const z = -r * Math.cos(yawRad);
+    const x = r * Math.sin(yawRad);
+    const z = r * Math.cos(yawRad);
 
     camera.position.set(x, 0, z);
     camera.lookAt(0, 0, 0);
@@ -825,6 +825,7 @@ export function PanoramaViewer({
   driveMode = false,
   driveIntervalMs = 4500,
   backgroundMode = false,
+  onScanChange,
 }: {
   nodes: TourNode[];
   startNodeId?: string;
@@ -837,6 +838,7 @@ export function PanoramaViewer({
   driveMode?: boolean;
   driveIntervalMs?: number;
   backgroundMode?: boolean;
+  onScanChange?: (isOpen: boolean) => void;
 }) {
   // Stable key for this sequence (e.g. \"ct\" from \"ct-01\"), used for localStorage
   const seqKey = useRef(nodes[0]?.id.replace(/-\d+$/, '') ?? 'seq').current;
@@ -857,6 +859,12 @@ export function PanoramaViewer({
   const [memoryProgress, setMemoryProgress] = useState(0);
   const [memoryDuration, setMemoryDuration] = useState(0);
   const [activeScan, setActiveScan] = useState<string | null>(null);
+
+  // Notify parent component of active 3D scan state changes
+  useEffect(() => {
+    onScanChange?.(!!activeScan);
+  }, [activeScan, onScanChange]);
+
   const memoryHowlRef = useRef<Howl | null>(null);
   const memoryProgressTimerRef = useRef<number | null>(null);
   const lastNavDirRef = useRef<'fwd' | 'back' | 'none'>('none');
