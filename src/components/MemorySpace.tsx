@@ -29,49 +29,17 @@ export function MemorySpace({ space, story, collectedIds, onCollect, onClueModal
   const driveMode = ['quan-net', 'nha-ngo', 'nha-hoc-them'].includes(space.id);
   const driveIntervalMs = space.id === 'nha-ngo' ? 2200 : space.id === 'nha-hoc-them' ? 3200 : 4500;
 
-  // Manage ambient sound dynamically based on currentNodeIndex and active scan state
+  // Ambient atmosphere — only for spaces where continuous background sound makes sense.
+  // Clue-specific sounds (school-drum, keyboard) must NOT loop; they play only on clue press.
   useEffect(() => {
     let ambientType: AmbientType | undefined = undefined;
 
-    if (space.id === 'quan-net') {
-      if (isScanOpen) {
-        ambientType = 'keyboard';
-      }
-    } else if (space.id === 'quan-oc-violin') {
-      if (currentNodeIndex >= 4) {
-        ambientType = 'violin';
-      }
-    } else if (space.id === 'cong-truong') {
-      if (currentNodeIndex === 0 || currentNodeIndex === 1) {
-        ambientType = 'school-drum';
-      } else {
-        ambientType = 'wind';
-      }
-    } else {
-      // Find the closest node with a clue and use its ambient setting
-      let closestClueId: string | undefined = undefined;
-      let minDist = Infinity;
-      if (space.bgTourNodes) {
-        space.bgTourNodes.forEach((node, idx) => {
-          const firstClueId = node.clueAnchors?.[0]?.clueId;
-          if (firstClueId) {
-            const dist = Math.abs(idx - currentNodeIndex);
-            if (dist < minDist) {
-              minDist = dist;
-              closestClueId = firstClueId;
-            }
-          }
-        });
-      }
-
-      if (closestClueId) {
-        const closestClue = space.clues.find((clue) => clue.id === closestClueId);
-        if (closestClue) {
-          ambientType = closestClue.ambient;
-        }
-      } else {
-        ambientType = space.clues.find((clue) => clue.ambient)?.ambient;
-      }
+    if (space.id === 'quan-net' && isScanOpen) {
+      // Keyboard clatter only plays while inside the 3D net-café scan
+      ambientType = 'keyboard';
+    } else if (space.id === 'quan-oc-violin' && currentNodeIndex >= 4) {
+      // Violin drifts in once you reach the stall itself
+      ambientType = 'violin';
     }
 
     if (ambientType) {
@@ -80,10 +48,8 @@ export function MemorySpace({ space, story, collectedIds, onCollect, onClueModal
       AudioSynth.stopAmbient();
     }
 
-    return () => {
-      AudioSynth.stopAmbient();
-    };
-  }, [space.id, currentNodeIndex, space.clues, isScanOpen]);
+    return () => { AudioSynth.stopAmbient(); };
+  }, [space.id, currentNodeIndex, isScanOpen]);
 
   // Auto-expand video on final node for quan-oc-violin
   useEffect(() => {

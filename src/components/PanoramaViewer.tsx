@@ -434,8 +434,8 @@ function Scene({
     // 2. Set camera position and target in OrbitControls
     const r = 0.1;
     const yawRad = (targetYaw * Math.PI) / 180;
-    const x = -r * Math.sin(yawRad);
-    const z = -r * Math.cos(yawRad);
+    const x = r * Math.sin(yawRad);
+    const z = r * Math.cos(yawRad);
 
     camera.position.set(x, 0, z);
     camera.lookAt(0, 0, 0);
