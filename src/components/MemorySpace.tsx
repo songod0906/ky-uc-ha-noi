@@ -1,10 +1,11 @@
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { MemorySpace as MemorySpaceType, Story } from '../types';
+import { MemorySpace as MemorySpaceType, Story, AmbientType } from '../types';
 import { ClueObject } from './ClueObject';
 import { ScanPlaceholder } from './ScanPlaceholder';
 import { PanoramicVideoViewer } from './PanoramicVideoViewer';
 import { AudioManager } from '../utils/AudioManager';
+import { AudioSynth } from '../utils/AudioSynth';
 
 // LOCAL TEST ONLY — PanoramaViewer.tsx is gitignored, do NOT push this import.
 // Revert to the commented-out version before committing.
@@ -26,6 +27,33 @@ export function MemorySpace({ space, story, collectedIds, onCollect, onClueModal
   const [currentNodeIndex, setCurrentNodeIndex] = useState(0);
   const driveMode = ['quan-net', 'nha-ngo', 'nha-hoc-them'].includes(space.id);
   const driveIntervalMs = space.id === 'nha-ngo' ? 2200 : space.id === 'nha-hoc-them' ? 3200 : 4500;
+
+  // Manage ambient sound dynamically based on currentNodeIndex
+  useEffect(() => {
+    let ambientType: AmbientType | undefined = undefined;
+
+    if (space.id === 'quan-net') {
+      if (currentNodeIndex >= 5) {
+        ambientType = 'keyboard';
+      }
+    } else if (space.id === 'quan-oc-violin') {
+      if (currentNodeIndex >= 4) {
+        ambientType = 'violin';
+      }
+    } else {
+      ambientType = space.clues.find((clue) => clue.ambient)?.ambient;
+    }
+
+    if (ambientType) {
+      AudioSynth.startAmbient(ambientType);
+    } else {
+      AudioSynth.stopAmbient();
+    }
+
+    return () => {
+      AudioSynth.stopAmbient();
+    };
+  }, [space.id, currentNodeIndex, space.clues]);
 
   const handleOpenVideo = () => {
     setVideoExpanded(true);

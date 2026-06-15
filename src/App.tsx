@@ -8,6 +8,7 @@ import { ScanViewer } from './components/ScanViewer';
 import { PrologueViewer } from './components/PrologueViewer';
 import { StoryLoadingScreen } from './components/StoryLoadingScreen';
 import { AudioManager } from './utils/AudioManager';
+import { ALL_STORIES } from './data/stories';
 
 // ?scan=<url> in the URL shows the 3D scan viewer directly (dev testing only)
 const scanUrl = new URLSearchParams(window.location.search).get('scan');
@@ -15,10 +16,29 @@ const scanUrl = new URLSearchParams(window.location.search).get('scan');
 type AppPhase = 'start' | 'prologue' | 'select' | 'loading' | 'play';
 
 export default function App() {
-  const [phase, setPhase] = useState<AppPhase>('start');
-  const [activeStory, setActiveStory] = useState<Story | null>(null);
-  const [activeSpaceIdx, setActiveSpaceIdx] = useState(0);
+  const [activeStory, setActiveStory] = useState<Story | null>(() => {
+    const storyId = new URLSearchParams(window.location.search).get('story');
+    if (storyId) {
+      return ALL_STORIES.find((s) => s.id === storyId) || null;
+    }
+    return null;
+  });
+  const [activeSpaceIdx, setActiveSpaceIdx] = useState(() => {
+    const spaceIdx = new URLSearchParams(window.location.search).get('space');
+    return spaceIdx ? parseInt(spaceIdx, 10) : 0;
+  });
+  const [phase, setPhase] = useState<AppPhase>(() => {
+    const storyId = new URLSearchParams(window.location.search).get('story');
+    return storyId ? 'play' : 'start';
+  });
   const [diary, setDiary] = useState<DiaryEntry[]>([]);
+
+  // Redirect to selector map if story is invalid in play mode
+  useEffect(() => {
+    if (phase === 'play' && !activeStory) {
+      setPhase('select');
+    }
+  }, [phase, activeStory]);
 
   if (scanUrl !== null) {
     return (

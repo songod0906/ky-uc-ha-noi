@@ -46,12 +46,7 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, diary, addToDiary,
     setCollectedIds((prev) => Array.from(new Set([...prev, ...getDiaryIdsForSpace()])));
   }, [diary, activeSpace]);
 
-  useEffect(() => {
-    if (phase !== 'explore') return;
-    const ambientType = activeSpace?.clues.find((clue) => clue.ambient)?.ambient;
-    if (ambientType) AudioSynth.startAmbient(ambientType);
-    return () => AudioSynth.stopAmbient();
-  }, [phase, activeSpace]);
+
 
   const handleBack = () => {
     AudioManager.stop();

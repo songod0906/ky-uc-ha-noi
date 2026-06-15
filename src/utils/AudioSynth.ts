@@ -70,4 +70,31 @@ export const AudioSynth = {
       }
     }, 50);
   },
+
+  duckAmbient(ducked: boolean) {
+    if (!ambientEl) return;
+    clearFade();
+    const targetVolume = ducked ? 0.03 : 0.25;
+    const currentVolume = ambientEl.volume;
+    if (currentVolume === targetVolume) return;
+
+    const step = 0.025;
+    const interval = 50;
+    const el = ambientEl;
+
+    fadeTimer = window.setInterval(() => {
+      if (ambientEl !== el) {
+        clearFade();
+        return;
+      }
+      let vol = el.volume;
+      if (ducked) {
+        vol = Math.max(vol - step, targetVolume);
+      } else {
+        vol = Math.min(vol + step, targetVolume);
+      }
+      el.volume = vol;
+      if (vol === targetVolume) clearFade();
+    }, interval);
+  },
 };

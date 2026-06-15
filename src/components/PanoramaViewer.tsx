@@ -20,6 +20,7 @@ import type { TourNode, TourClueAnchor, TourNavAnchor, TourScanAnchor, Clue } fr
 import { ScanViewer } from './ScanViewer';
 import { DriveMinimap } from './DriveMinimap';
 import { MemoryClueIllustration } from './MemoryClueIllustration';
+import { AudioSynth } from '../utils/AudioSynth';
 
 // ---------- helpers ----------
 
@@ -30,6 +31,8 @@ const CLUE_ICONS: Record<string, string> = {
   object: '📦',
   loss: '🕯',
 };
+
+const SHOW_EDGE_NAV = false; // Set to true to restore 2D edge chevrons (◀/▶)
 
 /**
  * Convert yaw/pitch angles to a 3D position on a sphere of radius r.
@@ -256,7 +259,16 @@ function ClueHotspot({
 
           {/* Polaroid label text */}
           <div className="w-full flex-1 flex flex-col justify-center text-center px-0.5 pt-1.5 overflow-hidden">
-            <span className="font-serif text-[8.5px] leading-tight text-stone-800 font-bold truncate w-full">
+            <span 
+              className="font-serif text-[7.5px] leading-tight text-stone-800 font-bold whitespace-normal w-full"
+              style={{
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis'
+              }}
+            >
               {clue.label}
             </span>
             <span className="font-mono text-[5.5px] text-stone-400 uppercase tracking-widest mt-0.5">
@@ -362,6 +374,7 @@ function Scene({
   onCalibClueDragStart,
   onCalibClueDragEnd,
   clueIsDragging,
+  lastNavDir,
 }: {
   node: TourNode;
   collectedIds: string[];
@@ -382,7 +395,57 @@ function Scene({
   onCalibClueDragStart?: () => void;
   onCalibClueDragEnd?: () => void;
   clueIsDragging?: boolean;
+  lastNavDir?: 'fwd' | 'back' | 'none';
 }) {
+  const { camera } = useThree();
+  const controlsRef = useRef<any>(null);
+
+  useEffect(() => {
+    // 1. Determine target yaw
+    let targetYaw = 0;
+    let found = false;
+
+    if (lastNavDir === 'fwd') {
+      const fwdAnchor = node.navAnchors?.find(
+        (a) => a.label === 'Tiếp tục' || a.label === 'Đi tiếp' || !a.label
+      );
+      if (fwdAnchor) {
+        targetYaw = fwdAnchor.yaw;
+        found = true;
+      }
+    } else if (lastNavDir === 'back') {
+      const backAnchor = node.navAnchors?.find((a) => a.label === 'Quay lại');
+      if (backAnchor) {
+        targetYaw = backAnchor.yaw;
+        found = true;
+      }
+    }
+
+    // Fallback: if not found, look for any forward nav anchor
+    if (!found) {
+      const fwdAnchor = node.navAnchors?.find(
+        (a) => a.label === 'Tiếp tục' || a.label === 'Đi tiếp' || !a.label
+      );
+      if (fwdAnchor) {
+        targetYaw = fwdAnchor.yaw;
+      }
+    }
+
+    // 2. Set camera position and target in OrbitControls
+    const r = 0.1;
+    const yawRad = (targetYaw * Math.PI) / 180;
+    const x = -r * Math.sin(yawRad);
+    const z = -r * Math.cos(yawRad);
+
+    camera.position.set(x, 0, z);
+    camera.lookAt(0, 0, 0);
+
+    if (controlsRef.current) {
+      controlsRef.current.target.set(0, 0, 0);
+      controlsRef.current.update();
+    }
+  }, [node.id, lastNavDir, camera]);
+
   return (
     <>
       <Suspense fallback={null}>
@@ -414,9 +477,26 @@ function Scene({
           if (suppressForwardNavigation) return isBack;
           return true;
         })
-        .map((anchor) => (
-          <NavHotspot key={anchor.toNodeId} anchor={anchor} onNavigate={onNavigate} />
-        ))}
+        .map((anchor) => {
+          // Implement Option A: Clearance Zone / overlap nudging
+          let adjustedAnchor = { ...anchor };
+          if (clueVisible && node.clueAnchors) {
+            for (const clueAnchor of node.clueAnchors) {
+              let diff = (adjustedAnchor.yaw - clueAnchor.yaw) % 360;
+              if (diff > 180) diff -= 360;
+              if (diff < -180) diff += 360;
+
+              // If they are too close in yaw (less than 28 degrees), nudge the nav arrow
+              if (Math.abs(diff) < 28) {
+                const nudge = diff >= 0 ? 30 : -30;
+                adjustedAnchor.yaw += nudge;
+                // Also nudge pitch slightly down to avoid overlapping the card height
+                adjustedAnchor.pitch = Math.min(adjustedAnchor.pitch, -18);
+              }
+            }
+          }
+          return <NavHotspot key={adjustedAnchor.toNodeId} anchor={adjustedAnchor} onNavigate={onNavigate} />;
+        })}
 
       {node.scanAnchors?.map((anchor) => (
         <ScanHotspot key={anchor.scanUrl} anchor={anchor} onOpen={onScan} />
@@ -425,6 +505,7 @@ function Scene({
       {calibrate && <CalibTracker yawElRef={yawElRef} />}
 
       <OrbitControls
+        ref={controlsRef}
         enableZoom={false}
         enablePan={false}
         rotateSpeed={-0.4}
@@ -778,9 +859,18 @@ export function PanoramaViewer({
   const [activeScan, setActiveScan] = useState<string | null>(null);
   const memoryHowlRef = useRef<Howl | null>(null);
   const memoryProgressTimerRef = useRef<number | null>(null);
+  const lastNavDirRef = useRef<'fwd' | 'back' | 'none'>('none');
   const yawElRef = useRef<HTMLSpanElement>(null);
   // Only count dwell time after the player first drags at each node (not during narrator card)
   const nodeInteracted = useRef(false);
+
+  // Reset lastNavDir after it has been used in this render cycle
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      lastNavDirRef.current = 'none';
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [nodeId]);
 
   // calibYaws: accumulated across ALL sequences via localStorage — restored on every mount
   const [calibYaws, setCalibYaws] = useState<Record<string, { fwd: number; back: number }>>(() => {
@@ -875,10 +965,16 @@ export function PanoramaViewer({
   const goNext = useCallback(() => {
     if (blockingClueId) return;
     if (playgroundBlocked) return;
-    if (nodeIndex < localNodes.length - 1) setNodeId(localNodes[nodeIndex + 1].id);
+    if (nodeIndex < localNodes.length - 1) {
+      lastNavDirRef.current = 'fwd';
+      setNodeId(localNodes[nodeIndex + 1].id);
+    }
   }, [nodeIndex, localNodes, playgroundBlocked, blockingClueId]);
   const goPrev = useCallback(() => {
-    if (nodeIndex > 0) setNodeId(localNodes[nodeIndex - 1].id);
+    if (nodeIndex > 0) {
+      lastNavDirRef.current = 'back';
+      setNodeId(localNodes[nodeIndex - 1].id);
+    }
   }, [nodeIndex, localNodes]);
 
   const clearMemoryProgressTimer = useCallback(() => {
@@ -991,11 +1087,24 @@ export function PanoramaViewer({
     setDriveProgress(0);
   }, [nodeId, driveMode]);
 
+  // Reset drive timer when state changes to avoid time-jumps on resume
+  useEffect(() => {
+    driveLastRef.current = Date.now();
+  }, [drivePlaying, blockingClueId, memoryPlaying]);
+
+  // Duck ambient loop when memory narration plays
+  useEffect(() => {
+    AudioSynth.duckAmbient(memoryPlaying);
+  }, [memoryPlaying]);
+
   // Drive mode: tick forward, auto-advance when timer expires
   useEffect(() => {
     if (!driveMode) return;
     const id = setInterval(() => {
-      if (!drivePlaying || blockingClueId) return;
+      if (!drivePlaying || blockingClueId || memoryPlaying) {
+        driveLastRef.current = Date.now();
+        return;
+      }
       const now = Date.now();
       driveElapsedRef.current += now - driveLastRef.current;
       driveLastRef.current = now;
@@ -1006,12 +1115,16 @@ export function PanoramaViewer({
         setDriveProgress(0);
         setNodeId(cur => {
           const idx = localNodes.findIndex(n => n.id === cur);
-          return idx < localNodes.length - 1 ? localNodes[idx + 1].id : cur;
+          if (idx < localNodes.length - 1) {
+            lastNavDirRef.current = 'fwd';
+            return localNodes[idx + 1].id;
+          }
+          return cur;
         });
       }
     }, 80);
     return () => clearInterval(id);
-  }, [driveMode, drivePlaying, blockingClueId, driveIntervalMs, localNodes]);
+  }, [driveMode, drivePlaying, blockingClueId, memoryPlaying, driveIntervalMs, localNodes]);
 
   // Notify parent component of the current node index change
   useEffect(() => {
@@ -1171,8 +1284,16 @@ export function PanoramaViewer({
   const handleNavigate = useCallback((id: string) => {
     if (id === '__prev__') { goPrev(); return; }
     if (id === '__next__') { goNext(); return; }
+    
+    const curIdx = localNodes.findIndex(n => n.id === nodeId);
+    const targetIdx = localNodes.findIndex(n => n.id === id);
+    if (targetIdx > curIdx) {
+      lastNavDirRef.current = 'fwd';
+    } else if (targetIdx < curIdx) {
+      lastNavDirRef.current = 'back';
+    }
     setNodeId(id);
-  }, [goPrev, goNext]);
+  }, [nodeId, localNodes, goPrev, goNext]);
 
   // Shots already in the sequence (to exclude from the add panel)
   const inSequence = new Set(localNodes.map(n => n.panorama));
@@ -1239,6 +1360,7 @@ export function PanoramaViewer({
           suppressForwardNavigation={!!blockingClueId}
           playgroundBlocked={playgroundBlocked}
           onInteract={() => { nodeInteracted.current = true; }}
+          lastNavDir={lastNavDirRef.current}
           onCalibClueDrag={CALIB_MODE ? (clueId, yaw, pitch) => {
             setCalibClues(prev => {
               const filtered = prev.filter(c => !(c.nodeId === nodeId && c.clueId === clueId));
@@ -1267,8 +1389,8 @@ export function PanoramaViewer({
               {foundCount} / {allClues.length} found
             </p>
             {blockingClueId && (
-              <p className="mt-1 max-w-[210px] font-serif text-[12px] leading-snug text-terracotta">
-                A memory is here. Click the card to listen.
+              <p className="mt-2.5 max-w-[210px] font-serif text-[11px] leading-relaxed text-[#c25e42] flex items-center gap-1.5 border-t border-dashed border-[#c25e42]/20 pt-2 font-medium">
+                <span className="animate-pulse">📍</span> A memory fragment is here. Click the Polaroid card to archive it.
               </p>
             )}
           </div>
@@ -1276,14 +1398,14 @@ export function PanoramaViewer({
       )}
 
       {/* Prev / Next buttons */}
-      {!backgroundMode && nodeIndex > 0 && (
+      {SHOW_EDGE_NAV && !backgroundMode && nodeIndex > 0 && (
         <button onClick={goPrev}
           aria-label="Quay lại"
           className="absolute left-3 top-1/2 -translate-y-1/2 z-40 bg-black/60 hover:bg-black/80 text-white rounded-xl px-3 py-4 font-mono text-lg transition-all">
           ◀
         </button>
       )}
-      {!backgroundMode && nodeIndex < localNodes.length - 1 && !playgroundBlocked && !blockingClueId && (
+      {SHOW_EDGE_NAV && !backgroundMode && nodeIndex < localNodes.length - 1 && !playgroundBlocked && !blockingClueId && (
         <button onClick={goNext}
           aria-label="Tiếp tục"
           className="absolute right-3 top-1/2 -translate-y-1/2 z-40 bg-black/60 hover:bg-black/80 text-white rounded-xl px-3 py-4 font-mono text-lg transition-all">
@@ -1292,8 +1414,10 @@ export function PanoramaViewer({
       )}
       {!backgroundMode && playgroundBlocked && (
         <div className="absolute right-3 top-1/2 -translate-y-1/2 z-40 pointer-events-none">
-          <div className="bg-black/55 backdrop-blur-sm text-white/40 rounded-xl px-3 py-4 font-mono text-lg text-center">
-            ⏳
+          <div className="bg-black/85 backdrop-blur-md text-amber-50/90 rounded-2xl px-5 py-4 border border-amber-400/25 text-center flex flex-col items-center gap-1.5 shadow-2xl min-w-[140px] whitespace-nowrap">
+            <div className="w-5 h-5 border-2 border-amber-400/20 border-t-amber-400 rounded-full animate-spin" />
+            <span className="font-serif text-[12px] font-bold tracking-wider uppercase mt-1 text-amber-100">Exploring</span>
+            <span className="font-mono text-[11px] font-medium text-amber-400/90">{Math.max(0, 15 - dwellSecs)}s remaining</span>
           </div>
         </div>
       )}
