@@ -6,6 +6,7 @@ import { ScanPlaceholder } from './ScanPlaceholder';
 import { PanoramicVideoViewer } from './PanoramicVideoViewer';
 import { AudioManager } from '../utils/AudioManager';
 import { AudioSynth } from '../utils/AudioSynth';
+import { SubtitleOverlay } from './SubtitleOverlay';
 
 // LOCAL TEST ONLY — PanoramaViewer.tsx is gitignored, do NOT push this import.
 // Revert to the commented-out version before committing.
@@ -30,6 +31,12 @@ export function MemorySpace({ space, story, collectedIds, onCollect, onClueModal
   const driveIntervalMs = space.id === 'nha-ngo' ? 2200 : space.id === 'nha-hoc-them' ? 3200 : 4500;
   // True when at least one node in this space has a 3D scan anchor
   const hasScanNodes = space.bgTourNodes?.some(n => n.scanAnchors?.length) ?? false;
+  const [demolitionFlash, setDemolitionFlash] = useState(false);
+
+  // Memory fade: desaturate scene as player walks deeper into the sequence
+  const totalNodes = space.bgTourNodes?.length ?? 1;
+  const fadeProgress = totalNodes > 1 ? currentNodeIndex / (totalNodes - 1) : 0;
+  const sceneFilter = `saturate(${1 - fadeProgress * 0.4}) sepia(${fadeProgress * 0.2})`;
 
   // Ambient atmosphere — only for spaces where continuous background sound makes sense.
   // Clue-specific sounds (school-drum, keyboard) must NOT loop; they play only on clue press.
@@ -70,12 +77,17 @@ export function MemorySpace({ space, story, collectedIds, onCollect, onClueModal
     return () => { AudioManager.stop(); };
   }, [space.id]);
 
-  // Auto-expand video when reaching the last panorama node (all isPanoramicVideo spaces)
+  // Auto-expand video when reaching the last panorama node — flash demolition notice first
   useEffect(() => {
     const nodes = space.bgTourNodes;
     if (space.isPanoramicVideo && nodes && nodes.length > 0 && currentNodeIndex >= nodes.length - 1) {
-      setVideoExpanded(true);
       AudioManager.pause();
+      setDemolitionFlash(true);
+      const t = setTimeout(() => {
+        setDemolitionFlash(false);
+        setVideoExpanded(true);
+      }, 2800);
+      return () => clearTimeout(t);
     }
   }, [space.isPanoramicVideo, currentNodeIndex, space.bgTourNodes]);
 
@@ -104,25 +116,84 @@ export function MemorySpace({ space, story, collectedIds, onCollect, onClueModal
       }
     >
       {hasTour ? (
-        <Suspense fallback={
-          <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-            <p className="font-serif text-white/60 text-sm">Loading 360° space...</p>
-          </div>
-        }>
-          <PanoramaViewer
-            nodes={space.bgTourNodes!}
-            collectedIds={collectedIds}
-            onCollect={onCollect}
-            ambient={space.bgTourAmbient}
-            allClues={space.clues}
-            minimapFlipX={space.minimapFlipX}
-            onNodeIndexChange={setCurrentNodeIndex}
-            driveMode={driveMode}
-            driveIntervalMs={driveIntervalMs}
-            onScanChange={setIsScanOpen}
-          />
-        </Suspense>
+        <div className="absolute inset-0" style={{ filter: sceneFilter, transition: 'filter 1s ease' }}>
+          <Suspense fallback={
+            <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+              <p className="font-serif text-white/60 text-sm">Loading 360° space...</p>
+            </div>
+          }>
+            <PanoramaViewer
+              nodes={space.bgTourNodes!}
+              collectedIds={collectedIds}
+              onCollect={onCollect}
+              ambient={space.bgTourAmbient}
+              allClues={space.clues}
+              minimapFlipX={space.minimapFlipX}
+              onNodeIndexChange={setCurrentNodeIndex}
+              driveMode={driveMode}
+              driveIntervalMs={driveIntervalMs}
+              onScanChange={setIsScanOpen}
+            />
+          </Suspense>
+        </div>
       ) : null}
+
+      {/* Demolition flash — shown just before panoramic video auto-expands */}
+      <AnimatePresence>
+        {demolitionFlash && (
+          <motion.div
+            className="absolute inset-0 z-[200] flex flex-col items-center justify-center bg-[#080604]"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <motion.p
+              className="font-mono text-[9px] text-red-400/70 uppercase tracking-[0.3em] mb-6"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4 }}
+            >
+              Urban Planning Document · Classified
+            </motion.p>
+            <motion.h2
+              className="font-serif text-4xl font-bold text-white text-center px-10 leading-tight"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.7, duration: 0.6 }}
+            >
+              {space.label}
+            </motion.h2>
+            <motion.p
+              className="font-mono text-xs text-white/30 mt-4 tracking-widest"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1.2 }}
+            >
+              Hanoi, 2026 — scheduled for clearance
+            </motion.p>
+            <motion.div
+              className="mt-8 h-px bg-red-400/30"
+              initial={{ width: 0 }}
+              animate={{ width: 72 }}
+              transition={{ delay: 1.5, duration: 0.7 }}
+            />
+            <motion.p
+              className="font-mono text-[9px] text-red-300/40 uppercase tracking-widest mt-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 2.1 }}
+            >
+              Loading last memory…
+            </motion.p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Live subtitles for oral history audio */}
+      {space.audioSegment && !videoExpanded && !demolitionFlash && (
+        <SubtitleOverlay audioSrc={space.audioSegment.src} />
+      )}
 
       {/* Street View panorama — Google Maps embed, placeholder until 360 scan is ready */}
       {!hasTour && space.bgStreetView && (
