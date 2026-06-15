@@ -19,14 +19,14 @@ const SIDE_LABEL: Record<string, string> = {
 // One evocative line per space — pulled from the oral history transcripts
 // This is the cassette label "title" — intimate, not clinical
 const SPACE_TAGLINE: Record<string, string> = {
-  'cong-truong':       'Tiếng trống reo — đang ăn kem chanh ở cổng',
-  'quan-net':          'Nhà mình mở quán net. Tuổi thơ tuyệt vời.',
-  'ho-thanh-cong':     'Người Thành Công chả bao giờ đi cửa chính',
-  'nha-ngo':           'Rẽ ba bốn lần mới vào được. Grab không biết đường.',
-  'gieng-khu-choi':    'Cuối ngõ có một cái giếng — chỉ người ở đây mới biết',
-  'nha-hoc-them':      'Con phố từng là mương, không một chiếc ô tô',
-  'san-choi-tap-the':  'Đã đi qua vô số lần — chưa bao giờ được vào',
-  'quan-oc-violin':    'Lần đầu nghe violin là ở quán ốc',
+  'cong-truong':       'School drum sounding while eating lemon ice cream at the gate',
+  'quan-net':          'Our family ran a net café. An amazing childhood.',
+  'ho-thanh-cong':     'People from Thanh Cong never enter through the main gate',
+  'nha-ngo':           'Turning three or four times to enter. Grab drivers get lost.',
+  'gieng-khu-choi':    'At the end of the alley lies a well — known only to locals',
+  'nha-hoc-them':      'The street used to be a ditch, not a single car',
+  'san-choi-tap-the':  'Passed by countless times — never allowed to enter',
+  'quan-oc-violin':    'Hearing the violin for the first time at a snail stall',
 };
 
 export function SpaceDossier({ story, space, narratorColor, onEnter }: SpaceDossierProps) {
@@ -231,7 +231,7 @@ export function SpaceDossier({ story, space, narratorColor, onEnter }: SpaceDoss
           transition={{ delay: 0.4, duration: 0.5 }}
         >
           <p className="font-mono text-[9px] uppercase tracking-[0.28em] text-amber-200/30">
-            {space.clues.length} mảnh ký ức · {story.title}
+            {space.clues.length} memory fragments · {story.title}
           </p>
 
           <button
@@ -250,14 +250,14 @@ export function SpaceDossier({ story, space, narratorColor, onEnter }: SpaceDoss
                   <rect x="1" y="1" width="4" height="10" rx="1.5" />
                   <rect x="7" y="1" width="4" height="10" rx="1.5" />
                 </svg>
-                Đang phát...
+                Playing...
               </>
             ) : (
               <>
                 <svg width="11" height="13" viewBox="0 0 11 13" fill="currentColor">
                   <path d="M0 0L11 6.5 0 13V0Z" />
                 </svg>
-                Phát — bắt đầu nghe
+                Play cassette to enter
               </>
             )}
           </button>

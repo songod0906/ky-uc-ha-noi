@@ -143,7 +143,7 @@ export function MapIntroView({ onSelect }: MapIntroViewProps) {
           className="font-mono text-[9px] uppercase tracking-[0.35em] text-amber-200/40 mb-1.5"
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}
         >
-          Hà Nội · 2026 · Giải tỏa mặt bằng
+          Hanoi · 2026 · Land Clearance
         </motion.p>
         <motion.h1
           className="font-serif text-2xl md:text-3xl font-bold text-amber-50/90 text-center drop-shadow-lg"
@@ -155,7 +155,7 @@ export function MapIntroView({ onSelect }: MapIntroViewProps) {
           className="font-serif text-xs text-amber-200/50 mt-1 text-center"
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.9 }}
         >
-          Chọn một địa điểm đang biến mất để bước vào
+          Select a disappearing location to enter
         </motion.p>
       </div>
 
@@ -179,8 +179,8 @@ export function MapIntroView({ onSelect }: MapIntroViewProps) {
         className="absolute bottom-5 left-5 z-20 pointer-events-none font-mono text-[9px] text-amber-200/30 uppercase tracking-widest leading-5"
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2 }}
       >
-        <div>{ALL_STORIES.reduce((n, s) => n + s.spaces.length, 0)} địa điểm · {ALL_STORIES.length} người kể</div>
-        <div>Ký Ức Hà Nội · CAS3020 · VinUniversity</div>
+        <div>{ALL_STORIES.reduce((n, s) => n + s.spaces.length, 0)} locations · {ALL_STORIES.length} narrators</div>
+        <div>Hanoi Memories · CAS3020 · VinUniversity</div>
       </motion.div>
 
       {/* Space detail panel */}
@@ -234,7 +234,7 @@ export function MapIntroView({ onSelect }: MapIntroViewProps) {
                     className="font-mono text-[9px] uppercase tracking-widest px-2.5 py-1 rounded-full"
                     style={{ background: `${color}18`, color, border: `1px solid ${color}33` }}
                   >
-                    {selected.space.clues.length} mảnh ký ức
+                    {selected.space.clues.length} memory fragments
                   </span>
                   {selected.space.bgTourNodes && (
                     <span
@@ -251,7 +251,7 @@ export function MapIntroView({ onSelect }: MapIntroViewProps) {
                   className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl font-serif text-sm font-medium transition-all duration-200 active:scale-95"
                   style={{ background: color, color: '#0a0806' }}
                 >
-                  Bước vào địa điểm này
+                  Enter this space
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </div>

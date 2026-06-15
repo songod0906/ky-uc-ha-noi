@@ -32,7 +32,7 @@ export function GameStart({ onBegin }: GameStartProps) {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
           >
-            Ký Ức Hà Nội
+            Hanoi Memories
           </motion.h1>
 
         </div>
@@ -43,10 +43,10 @@ export function GameStart({ onBegin }: GameStartProps) {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.7 }}
         >
-          Ba khu phố ở Hà Nội sắp bị giải tỏa. Ba người đã lớn lên ở đó.
+          Three neighborhoods in Hanoi are about to be demolished. Three people grew up there.
           <br className="hidden sm:block" />
           <span className="italic mt-2 block">
-            Đi theo họ. Tìm mảnh ký ức. Ghép lại một ngày bình thường trước khi nó biến mất.
+            Follow them. Find memory fragments. Reassemble an ordinary day before it disappears.
           </span>
         </motion.p>
 
@@ -60,7 +60,7 @@ export function GameStart({ onBegin }: GameStartProps) {
             onClick={handleBegin}
             className="px-8 py-3 bg-muctim text-white font-serif text-lg font-semibold rounded-2xl hover:bg-muctim/80 transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5"
           >
-            Bắt đầu
+            Begin
           </button>
           <p className="font-mono text-[10px] text-muctim-faded uppercase tracking-widest">
             CAS3020 · Digital Arts & Sciences · 2026

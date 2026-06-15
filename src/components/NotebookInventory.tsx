@@ -47,9 +47,9 @@ export function NotebookInventory({ story, collectedIds, onClose, cluesNeeded }:
           <div className="flex items-center gap-3">
             <BookOpen className="w-5 h-5 text-muctim" />
             <div>
-              <h3 className="font-serif text-lg font-bold text-muctim">Sổ tay ký ức</h3>
+              <h3 className="font-serif text-lg font-bold text-muctim">Memory Journal</h3>
               <p className="font-mono text-[10px] text-muctim-faded uppercase tracking-wider">
-                {collected.length}/{allClues.length} mảnh ghép
+                {collected.length}/{allClues.length} fragments
               </p>
             </div>
           </div>
@@ -64,8 +64,8 @@ export function NotebookInventory({ story, collectedIds, onClose, cluesNeeded }:
         {/* Progress bar */}
         <div className="relative px-5 py-3 border-b border-muctim/5">
           <div className="flex justify-between text-[10px] font-mono text-muctim-faded mb-1.5 uppercase tracking-wider">
-            <span>Tiến độ khám phá</span>
-            <span>{collected.length} / {cluesNeeded} để mở câu đố</span>
+            <span>Discovery Progress</span>
+            <span>{collected.length} / {cluesNeeded} to unlock puzzle</span>
           </div>
           <div className="h-2 bg-muctim/10 rounded-full overflow-hidden">
             <motion.div
@@ -82,7 +82,7 @@ export function NotebookInventory({ story, collectedIds, onClose, cluesNeeded }:
               animate={{ opacity: 1 }}
             >
               <Sparkles className="w-3 h-3" />
-              Đã đủ mảnh ghép — sẵn sàng lắp ráp ký ức!
+              All fragments gathered — ready to assemble memories!
             </motion.div>
           )}
         </div>
@@ -92,7 +92,7 @@ export function NotebookInventory({ story, collectedIds, onClose, cluesNeeded }:
           {collected.length === 0 ? (
             <div className="text-center py-8">
               <p className="font-serif text-muctim-faded text-sm italic">
-                Chưa có mảnh ghép nào. Hãy tìm kiếm trong các không gian.
+                No fragments found yet. Keep searching in the memory spaces.
               </p>
             </div>
           ) : (

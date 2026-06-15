@@ -118,7 +118,7 @@ function PanoSphere({ url }: { url: string }) {
     return (
       <Html center distanceFactor={90} zIndexRange={[10, 15]}>
         <div className="font-serif text-white/85 text-xs whitespace-nowrap bg-black/60 px-4 py-2 rounded-xl backdrop-blur-sm border border-white/10 shadow-lg select-none">
-          Đang tải không gian 360°...
+          Loading 360° space...
         </div>
       </Html>
     );
@@ -248,7 +248,7 @@ function NavHotspot({
           <ArrowUp className="w-5 h-5 text-amber-400 group-hover:text-amber-200 transition-all drop-shadow-[0_2px_4px_rgba(0,0,0,1)]" />
         )}
         <span className="px-3 py-1 rounded-lg text-[11px] font-serif bg-black/55 text-white/90 group-hover:bg-black/75 group-hover:text-white transition-all whitespace-nowrap shadow-lg backdrop-blur-sm">
-          {anchor.label ?? 'Đi tiếp'}
+          {anchor.label === 'Quay lại' ? 'Go Back' : (anchor.label === 'Tiếp tục' || anchor.label === 'Đi tiếp' || !anchor.label) ? 'Go Forward' : anchor.label}
         </span>
         {isBack && (
           <ArrowDown className="w-5 h-5 text-amber-400 group-hover:text-amber-200 transition-all drop-shadow-[0_2px_4px_rgba(0,0,0,1)]" />
@@ -444,7 +444,7 @@ function CluePreviewModal({
                 : 'text-muctim-faded hover:text-muctim'
             }`}
           >
-            📍 Ký ức tuổi thơ
+            📍 Childhood Memory
           </button>
           <button
             onClick={() => setActiveTab('planning')}
@@ -454,7 +454,7 @@ function CluePreviewModal({
                 : 'text-muctim-faded hover:text-amber-800'
             }`}
           >
-            ⚠️ Quy hoạch 2026
+            ⚠️ 2026 Master Plan
           </button>
         </div>
 
@@ -482,7 +482,7 @@ function CluePreviewModal({
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-mono text-[9px] text-muctim-faded uppercase tracking-wider">
-                      {playing ? 'Đang phát giọng kể...' : 'Nghe lời kể trực tiếp'}
+                      {playing ? 'Playing voice memo...' : 'Listen to oral history'}
                     </p>
                     {playing && (
                       <div className="flex gap-0.5 items-end h-2.5 mt-1">
@@ -504,10 +504,10 @@ function CluePreviewModal({
           ) : (
             <div className="bg-stone-100/70 border border-stone-200 rounded-xl p-3.5 font-serif">
               <p className="font-mono text-[8px] text-stone-500 uppercase tracking-widest mb-1.5 font-bold">
-                Quyết định giải phóng mặt bằng
+                Demolition & Land Clearance Decision
               </p>
               <p className="text-xs text-stone-700 leading-relaxed font-medium">
-                {clue.planningImpact || 'Địa điểm này nằm trong ranh giới dự án cải tạo hạ tầng kỹ thuật và nâng cấp đô thị năm 2026. Công trình và hiện trạng cũ sẽ bị phá dỡ hoàn toàn.'}
+                {clue.planningImpact || 'This location falls within the boundaries of the 2026 infrastructure renovation and urban upgrading project. The old structure and existing state will be fully demolished.'}
               </p>
             </div>
           )}
@@ -516,7 +516,7 @@ function CluePreviewModal({
         {/* Action Button */}
         <div className="flex-none pt-2 border-t border-muctim/5">
           {collected ? (
-            <p className="text-center font-serif text-xs text-emerald-700 font-bold">✓ Đã lưu trữ thành công</p>
+            <p className="text-center font-serif text-xs text-emerald-700 font-bold">✓ Successfully archived</p>
           ) : (
             <button
               onClick={() => {
@@ -525,7 +525,7 @@ function CluePreviewModal({
               }}
               className="w-full py-2.5 bg-muctim text-white font-serif text-sm font-semibold rounded-xl hover:bg-muctim/80 transition-all shadow-sm"
             >
-              Lưu trữ mảnh ký ức này
+              Archive this memory
             </button>
           )}
         </div>
@@ -1329,7 +1329,7 @@ export function PanoramaViewer({
               backdropFilter: 'blur(6px)',
             }}
           >
-            {drivePlaying ? '⏸' : '▶'} {drivePlaying ? 'tạm dừng' : 'tiếp tục'}
+            {drivePlaying ? '⏸' : '▶'} {drivePlaying ? 'pause' : 'resume'}
           </button>
 
           {/* "Đang đi" badge — top centre label */}
@@ -1344,7 +1344,7 @@ export function PanoramaViewer({
               }}
             >
               <span style={{ fontSize: 9 }}>🚶</span>
-              {drivePlaying ? 'Đang đi...' : 'Đã dừng'}
+              {drivePlaying ? 'Navigating...' : 'Paused'}
             </div>
           </div>
         </>
@@ -1354,7 +1354,7 @@ export function PanoramaViewer({
       {dragHintVisible && (
         <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-20 pointer-events-none transition-opacity duration-700">
           <p className="font-handwritten text-white/70 text-xs text-center drop-shadow">
-            Kéo để nhìn xung quanh
+            Drag to look around
           </p>
         </div>
       )}
@@ -1363,7 +1363,7 @@ export function PanoramaViewer({
       {localNodes.length > 1 && (
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-1.5 pointer-events-auto">
           <div className="bg-black/55 backdrop-blur-sm px-3 py-1 rounded-full text-white text-[11px] font-serif tracking-wide select-none border border-white/10 shadow-lg">
-            Điểm {nodeIndex + 1} / {localNodes.length}
+            Point {nodeIndex + 1} / {localNodes.length}
           </div>
           <div className="flex gap-1.5 justify-center">
             {localNodes.map((n, i) => (
@@ -1373,7 +1373,7 @@ export function PanoramaViewer({
                 className={`h-2 rounded-full transition-all duration-300 ${
                   n.id === nodeId ? 'w-5 bg-amber-400' : 'w-2 bg-white/40 hover:bg-white/70'
                 }`}
-                title={`Đi tới điểm ${i + 1}`}
+                title={`Go to point ${i + 1}`}
               />
             ))}
           </div>
@@ -1392,7 +1392,7 @@ export function PanoramaViewer({
             backdropFilter: 'blur(6px)',
           }}
         >
-          <span style={{ fontSize: 10 }}>📷</span> Trước đây
+          <span style={{ fontSize: 10 }}>📷</span> Past Comparison
         </button>
       )}
 
@@ -1405,15 +1405,15 @@ export function PanoramaViewer({
             allowFullScreen
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
-            title="Ảnh lịch sử"
+            title="Past Google Street View"
           />
           <div className="flex-none flex items-center justify-between px-4 py-2 bg-black/70">
-            <p className="font-mono text-[10px] text-white/50 uppercase tracking-widest">Google Street View — trước đây</p>
+            <p className="font-mono text-[10px] text-white/50 uppercase tracking-widest">Google Street View — Past</p>
             <button
               onClick={() => setShowHistoric(false)}
               className="flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white rounded-xl px-3 py-1.5 text-xs font-mono transition-all"
             >
-              <X className="w-3.5 h-3.5" /> Quay lại
+              <X className="w-3.5 h-3.5" /> Go Back
             </button>
           </div>
         </div>
@@ -1428,13 +1428,13 @@ export function PanoramaViewer({
           {/* Close bar sits outside the Canvas so clicks always land */}
           <div className="flex-none flex items-center justify-between px-4 py-3 bg-black/80">
             <p className="text-white/40 font-mono text-xs">
-              Kéo để xoay · cuộn để zoom · hai ngón để di chuyển
+              Drag to rotate · Scroll to zoom
             </p>
             <button
               onClick={() => setActiveScan(null)}
               className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white rounded-xl px-4 py-2 text-sm font-mono transition-all"
             >
-              <X className="w-4 h-4" /> Quay lại
+              <X className="w-4 h-4" /> Go Back
             </button>
           </div>
         </div>

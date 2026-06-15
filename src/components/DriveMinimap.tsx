@@ -117,8 +117,8 @@ export function DriveMinimap({ nodes, currentIndex }: DriveMinimapProps) {
       <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
       {/* Label */}
       <div className="absolute bottom-0 left-0 right-0 px-2 py-1 bg-black/60 backdrop-blur-sm flex items-center justify-between">
-        <span className="font-mono text-[8px] text-white/50 uppercase tracking-wider">vị trí</span>
-        <span className="font-mono text-[8px] text-blue-300/80">Thành Công</span>
+        <span className="font-mono text-[8px] text-white/50 uppercase tracking-wider">location</span>
+        <span className="font-mono text-[8px] text-blue-300/80">Thanh Cong</span>
       </div>
     </div>
   );

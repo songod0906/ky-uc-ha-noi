@@ -52,7 +52,7 @@ export function MemorySpace({ space, story, collectedIds, onCollect, onClueModal
       {hasTour ? (
         <Suspense fallback={
           <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-            <p className="font-serif text-white/60 text-sm">Đang tải không gian 360°...</p>
+            <p className="font-serif text-white/60 text-sm">Loading 360° space...</p>
           </div>
         }>
           <PanoramaViewer
@@ -144,7 +144,7 @@ export function MemorySpace({ space, story, collectedIds, onCollect, onClueModal
               exit={{ opacity: 0, scale: 0.8, y: 10 }}
               whileHover={{ scale: 1.05, borderColor: 'rgba(212, 175, 55, 0.75)' }}
               transition={{ delay: 0.8, duration: 0.4 }}
-              title={space.isPanoramicVideo ? "Xem phim toàn cảnh 360°" : "Xem đoạn phim"}
+              title={space.isPanoramicVideo ? "Watch 360° VR film" : "Watch video clip"}
             >
               {/* Play Icon with pulsing glow */}
               <div className="relative w-8 h-8 rounded-full bg-amber-400 hover:bg-amber-300 text-black flex items-center justify-center shadow-lg transition-all flex-shrink-0">
@@ -157,10 +157,10 @@ export function MemorySpace({ space, story, collectedIds, onCollect, onClueModal
               {/* Text Label */}
               <div className="text-left pr-1">
                 <p className="font-mono text-[8px] text-amber-400/80 uppercase tracking-widest leading-none mb-1">
-                  {space.isPanoramicVideo ? "360° VR phim" : "rec"}
+                  {space.isPanoramicVideo ? "360° VR film" : "rec"}
                 </p>
                 <p className="font-serif text-[11px] font-bold text-amber-50 leading-none">
-                  {space.isPanoramicVideo ? "XEM PHIM 360°" : "XEM ĐOẠN PHIM"}
+                  {space.isPanoramicVideo ? "WATCH 360° FILM" : "WATCH VIDEO CLIP"}
                 </p>
               </div>
             </motion.button>
@@ -175,12 +175,12 @@ export function MemorySpace({ space, story, collectedIds, onCollect, onClueModal
               {/* Top Close Bar */}
               <div className="flex-none flex items-center justify-between px-6 py-4 border-b border-white/10 bg-black/40">
                 <span className="font-serif text-sm md:text-base text-amber-50/90 font-medium tracking-wide">
-                  Phim Toàn cảnh 360° · {space.label}
+                  360° Panoramic Video · {space.label}
                 </span>
                 <button
                   onClick={handleCloseVideo}
                   className="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 text-white/95 flex items-center justify-center transition-all active:scale-95 shadow-md border border-white/10"
-                  title="Đóng"
+                  title="Close"
                 >
                   <span className="font-mono text-sm">✕</span>
                 </button>
@@ -245,7 +245,7 @@ export function MemorySpace({ space, story, collectedIds, onCollect, onClueModal
             textDecoration: 'none',
           }}
         >
-          <span style={{ fontSize: 10 }}>📋</span> Quy hoạch
+          <span style={{ fontSize: 10 }}>📋</span> Master Plan
         </a>
       )}
 

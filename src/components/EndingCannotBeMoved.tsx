@@ -13,61 +13,61 @@ interface EndingCannotBeMovedProps {
 
 const DIGITAL_ARTIFACTS: Record<string, { name: string; desc: string; icon: string }> = {
   'trang': {
-    name: 'Hộp Sắt Thẻ Sưu Tầm & Màn Hình CRT',
-    desc: 'Lưu giữ những chiếc thẻ Vinamilk/thẻ bóng đá và âm thanh Audition lách cách trong căn phòng quán net có điều hòa.',
+    name: 'Collectible Tin Box & CRT Monitor',
+    desc: 'Preserving soccer/Vinamilk cards and the clacking Audition keyboard sounds in the family net café with air conditioning.',
     icon: '📦',
   },
   'thai-thinh': {
-    name: 'Cây Vĩ Cầm Gỗ & Bát Ốc Luộc Vỉa Hè',
-    desc: 'Lưu giữ âm thanh violin mộc mạc bên bàn ốc luộc và cảm giác khao khát được dừng lại chơi đùa ở sân tập thể.',
+    name: 'Wooden Violin & Sidewalk Boiled Snails',
+    desc: 'Preserving rustic violin tones by the sidewalk snail stall and the childhood urge to stop and play at the playground.',
     icon: '🎻',
   },
   'essy': {
-    name: 'Mảnh Gạch Sân Chung & Gáo Nước Giếng Cổ',
-    desc: 'Lưu giữ mùi hương chanh sả, hoa nhài của khoảng sân chung biệt lập và tri thức địa phương về ngõ ngách mê cung.',
+    name: 'Shared Courtyard Brick & Ancient Well Scoop',
+    desc: 'Preserving the lemon-jasmine scent of the secluded courtyard and local knowledge of labyrinthine alleys.',
     icon: '🧱',
   },
 };
 
 const PRESET_MESSAGES: Record<string, Array<{ author: string; text: string; time: string }>> = {
   'trang': [
-    { author: 'Hoàng Nam, 28 tuổi', text: 'Hồi bé cứ chiều tan học là trốn mẹ ra quán net cổng trường chơi Half-Life. Bây giờ khu tập thể đó giải tỏa hết rồi, đi qua thấy lòng thắt lại.', time: '1 ngày trước' },
-    { author: 'Minh Trang, 24 tuổi', text: 'Hồ Thành Công ngày xưa gập ghềnh lắm, nhớ bố dắt đi tập xe ngã trầy cả đầu gối. Giờ hồ sạch đẹp hơn nhưng không còn bóng dáng bố nữa.', time: '3 ngày trước' },
+    { author: 'Hoang Nam, 28 years old', text: 'As a kid, after school I would sneak out to the school gate net café to play Half-Life. Now that complex has been demolished, walking past it hurts my heart.', time: '1 day ago' },
+    { author: 'Minh Trang, 24 years old', text: 'Thanh Cong Lake used to be so uneven, I remember dad helping me learn to cycle and scraping my knees. The lake is nicer now, but dad is no longer here.', time: '3 days ago' },
   ],
   'thai-thinh': [
-    { author: 'Ngọc Anh, 26 tuổi', text: 'Hồi lớp 1 đi học thêm ngõ Trung Liệt cũng thèm vào cái sân chơi tập thể đó kinh khủng, mà mẹ cứ lôi xềnh xệch đi. Đọc câu chuyện của Trang thấy giống mình quá.', time: '2 ngày trước' },
-    { author: 'Tuấn Hải, 30 tuổi', text: 'Nhớ mãi tiếng đàn violin ở quán ốc. Bác chủ quán ngày xưa vui tính cực kỳ, giờ phố ẩm thực ồn ào quá chả còn những khoảnh khắc nghệ sĩ như thế.', time: '5 ngày trước' },
+    { author: 'Ngoc Anh, 26 years old', text: 'In 1st grade, going to tutoring class in Trung Liet alley, I also desperately wanted to enter that playground, but mom kept dragging me along. Reading Trang\'s story hits so close to home.', time: '2 days ago' },
+    { author: 'Tuan Hai, 30 years old', text: 'I\'ll always remember the violin at the snail stall. The owner was so cheerful. Now the food street is too noisy for such artistic moments.', time: '5 days ago' },
   ],
   'essy': [
-    { author: 'Thùy Linh, 25 tuổi', text: 'Ngõ Hoàng Hoa Thám đúng là mê cung thật, Grab toàn chịu chết phải ra đầu ngõ đón. Nhưng ngõ mát lắm, hàng xóm thì quen hết mặt nhau, giờ thông đường lớn thấy cứ xa cách thế nào.', time: '1 ngày trước' },
-    { author: 'Thanh Sơn, 29 tuổi', text: 'Nhớ cái giếng cổ và mùi hoa nhài tối tối đi dạo cùng bà ngoại. Hà Nội đô thị hóa nhanh quá, những khoảng xanh yên bình cứ mất dần.', time: '4 ngày trước' },
+    { author: 'Thuy Linh, 25 years old', text: 'Hoang Hoa Tham alley is truly a maze, ride-hailing drivers always give up. But it was so breezy, neighbors knew everyone. Now with the main road, it feels distant.', time: '1 day ago' },
+    { author: 'Thanh Son, 29 years old', text: 'Remembering the ancient well and the scent of jasmine when walking with grandma at night. Hanoi is urbanizing so fast, quiet green spots are disappearing.', time: '4 days ago' },
   ],
 };
 
 const SWEEP_TEXTS: Record<string, string[]> = {
   'trang': [
-    'Hà Nội, năm 2026.',
-    'Dự án quy hoạch cải tạo lòng đường và xây dựng đô thị mới khu Thành Công chính thức khởi động.',
-    'Tiếng máy xúc và búa đập vang lên bên hồ. Các dãy nhà tập thể cũ bắt đầu đổ xuống...',
-    'Sân trường mở rộng, tiệm thuê truyện, quán net cỏ xưa kia vĩnh viễn tan biến dưới lớp cát bụi công trình.',
-    'Nhưng những mảnh vụn ký ức của Lê Trung Kiên đã được bạn tìm thấy và bảo tồn thành công.',
-    'Hồ sơ ký ức đã được niêm phong vào Kho Lưu Trữ Kỹ Thuật Số.',
+    'Hanoi, 2026.',
+    'The land clearance and urban redevelopment project in Thanh Cong officially begins.',
+    'Excavators and hammers echo by the lake. The old collective apartments begin to crumble...',
+    'The expanded school yard, the manga shop, and the net café disappear forever under construction dust.',
+    'But you have successfully found and preserved Kien\'s fragments of memory.',
+    'The memory file has been sealed inside the Digital Archive.',
   ],
   'thai-thinh': [
-    'Hà Nội, năm 2026.',
-    'Dự án mở rộng đường Nguyễn Văn Tuyết hoàn tất giải phóng mặt bằng.',
-    'Lớp học ngõ nhỏ bị phá dỡ. Sân chơi tập thể cũ rào kín tháo dỡ hoàn toàn...',
-    'Tiếng đàn violin của quán ốc nhỏ vỉa hè tắt lịm dưới tiếng còi xe và dòng người tấp nập ngược xuôi.',
-    'Nhưng những mảnh vụn ký ức của Trang đã được bạn tìm thấy và bảo tồn thành công.',
-    'Hồ sơ ký ức đã được niêm phong vào Kho Lưu Trữ Kỹ Thuật Số.',
+    'Hanoi, 2026.',
+    'The Nguyen Van Tuyet street expansion project completes land clearance.',
+    'The small tutoring alley is demolished. The playground is fenced and dismantled...',
+    'The rustic violin notes at the sidewalk snail stall are silenced under honking traffic.',
+    'But you have successfully found and preserved Trang\'s fragments of memory.',
+    'The memory file has been sealed inside the Digital Archive.',
   ],
   'essy': [
-    'Hà Nội, năm 2026.',
-    'Tuyến đường dốc Tam Đa cắt ngang lòng ngõ 267 Hoàng Hoa Thám chính thức thông xe.',
-    'Dãy nhà biệt lập bị thu hồi, bức tường đổ xuống, cây chanh và hoa nhài bị chặt hạ...',
-    'Giếng cổ bị lấp hoàn toàn, những con ngõ mê cung sâu hun hút biến mất vĩnh viễn dưới lớp nhựa đường phẳng lì.',
-    'Nhưng những mảnh vụn ký ức của Essy đã được bạn tìm thấy và bảo tồn thành công.',
-    'Hồ sơ ký ức đã được niêm phong vào Kho Lưu Trữ Kỹ Thuật Số.',
+    'Hanoi, 2026.',
+    'The Tam Da slope connecting to alley 267 Hoang Hoa Tham officially opens to traffic.',
+    'Secluded rows of houses are reclaimed, walls fall, lemon trees and jasmine are chopped down...',
+    'The ancient well is filled, the maze of alleys disappears forever under smooth black asphalt.',
+    'But you have successfully found and preserved Essy\'s fragments of memory.',
+    'The memory file has been sealed inside the Digital Archive.',
   ],
 };
 
@@ -79,10 +79,10 @@ export function EndingCannotBeMoved({ story, onRestart, onChooseOther }: EndingC
   const [newName, setNewName] = useState('');
 
   const lines = SWEEP_TEXTS[story.id] ?? [
-    'Hà Nội, năm 2026.',
-    'Quy hoạch giải tỏa mặt bằng khu phố.',
-    'Những không gian cũ đã biến mất dưới lớp nhựa đường.',
-    'Nhưng ký ức đã được lưu trữ thành công.',
+    'Hanoi, 2026.',
+    'Neighborhood land clearance and urban planning.',
+    'The old spaces have vanished under asphalt.',
+    'But the memories have been successfully archived.',
   ];
 
   useEffect(() => {
@@ -121,11 +121,11 @@ export function EndingCannotBeMoved({ story, onRestart, onChooseOther }: EndingC
     e.preventDefault();
     if (!newMsg.trim()) return;
 
-    const author = newName.trim() || 'Người gửi giấu tên';
+    const author = newName.trim() || 'Anonymous';
     const entry = {
       author,
       text: newMsg.trim(),
-      time: 'Vừa xong',
+      time: 'Just now',
     };
 
     const updated = [entry, ...guestbook];
@@ -170,7 +170,7 @@ export function EndingCannotBeMoved({ story, onRestart, onChooseOther }: EndingC
               onClick={() => setSweepPhase('showCase')}
               className="mt-8 self-center px-6 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 font-bold transition-all active:scale-95 cursor-pointer"
             >
-              Mở xem Hồ Sơ Lưu Trữ
+              Open Memory File
             </motion.button>
           )}
         </div>
@@ -195,7 +195,7 @@ export function EndingCannotBeMoved({ story, onRestart, onChooseOther }: EndingC
         <div className="bg-white/80 backdrop-blur-sm border border-muctim/15 rounded-2xl p-5 mb-6 shadow-xs font-mono text-[10px] text-muctim-faded">
           <div className="grid grid-cols-2 gap-y-1.5 gap-x-4">
             <div>
-              <span className="opacity-50">SỐ HỒ SƠ</span>
+              <span className="opacity-50">CASE NO.</span>
               <br />
               <span className="text-muctim font-bold">
                 {story.id === 'trang'
@@ -208,19 +208,19 @@ export function EndingCannotBeMoved({ story, onRestart, onChooseOther }: EndingC
               </span>
             </div>
             <div>
-              <span className="opacity-50">QUẬN</span>
+              <span className="opacity-50">DISTRICT</span>
               <br />
-              <span className="text-muctim">
-                {story.id === 'thai-thinh' ? 'Đống Đa' : 'Ba Đình'}
+              <span className="text-muctim font-bold">
+                {story.id === 'thai-thinh' ? 'Dong Da' : 'Ba Dinh'}
               </span>
             </div>
-            <div><span className="opacity-50">TRẠNG THÁI</span><br /><span className="text-emerald-700 font-bold">ĐÃ NIÊM PHONG LƯU TRỮ</span></div>
+            <div><span className="opacity-50">STATUS</span><br /><span className="text-emerald-700 font-bold">SEALED & ARCHIVED</span></div>
             <div>
-              <span className="opacity-50">THỜI GIAN SINH SỐNG</span>
+              <span className="opacity-50">RESIDENCY</span>
               <br />
-              <span className="text-muctim">Toàn bộ tuổi thơ</span>
+              <span className="text-muctim font-bold">Entire Childhood</span>
             </div>
-            <div><span className="opacity-50">DỰ ÁN QUY HOẠCH</span><br /><span className="text-terracotta">Nâng cấp & Mở rộng đường 2026</span></div>
+            <div><span className="opacity-50">URBAN PROJECT</span><br /><span className="text-terracotta font-bold">Road Upgrades & Expansion 2026</span></div>
             <div><span className="opacity-50">NARRATOR</span><br /><span className="text-muctim font-bold">{story.narrator}</span></div>
           </div>
         </div>
@@ -238,7 +238,7 @@ export function EndingCannotBeMoved({ story, onRestart, onChooseOther }: EndingC
             </div>
             <div>
               <h4 className="text-xs font-bold text-amber-900 flex items-center gap-1.5 uppercase tracking-wide font-mono">
-                <Sparkles className="w-3.5 h-3.5 text-amber-600" /> Hiện vật đã bảo tồn
+                <Sparkles className="w-3.5 h-3.5 text-amber-600" /> Preserved Artifact
               </h4>
               <p className="text-sm font-bold text-stone-850 mt-1 mb-0.5">{artifact.name}</p>
               <p className="text-[11px] text-stone-600 leading-snug">{artifact.desc}</p>
@@ -249,7 +249,7 @@ export function EndingCannotBeMoved({ story, onRestart, onChooseOther }: EndingC
         {/* Section title */}
         <div className="flex items-center gap-3 mb-4">
           <FileText className="w-4 h-4 text-muctim-faded" />
-          <h2 className="font-serif text-lg font-bold text-muctim">Những điều không thể mang đi</h2>
+          <h2 className="font-serif text-lg font-bold text-muctim">Things That Cannot Be Moved</h2>
         </div>
 
         {/* The list */}
@@ -269,15 +269,15 @@ export function EndingCannotBeMoved({ story, onRestart, onChooseOther }: EndingC
 
         {/* Guestbook message board */}
         <div className="border-t border-muctim/10 pt-6 mb-10 font-serif">
-          <h3 className="text-sm font-bold text-muctim mb-1">Hà Nội trong tôi là...</h3>
+          <h3 className="text-sm font-bold text-muctim mb-1">My Hanoi is...</h3>
           <p className="text-[11px] text-muctim-faded leading-relaxed mb-4">
-            Hãy chia sẻ một dòng hồi ức của chính bạn về những khoảng không gian thơ ấu đã biến đổi tại Hà Nội để cùng ghi lại trong cuốn sổ tay này.
+            Share your own childhood memories of transforming spaces in Hanoi to write them down in this notebook.
           </p>
 
           <form onSubmit={handleSend} className="flex flex-col gap-2.5 mb-6">
             <input
               type="text"
-              placeholder="Tên của bạn hoặc biệt danh..."
+              placeholder="Your name or nickname..."
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
               className="w-full px-3.5 py-1.5 rounded-xl border border-muctim/15 bg-white/50 focus:bg-white text-xs text-muctim outline-none placeholder:text-muctim/30 transition-all font-serif"
@@ -285,7 +285,7 @@ export function EndingCannotBeMoved({ story, onRestart, onChooseOther }: EndingC
             <div className="flex gap-2">
               <input
                 type="text"
-                placeholder="Ví dụ: Lối ngõ đầy lá rụng ngày mùa thu..."
+                placeholder="e.g. An alley filled with fallen leaves in autumn..."
                 value={newMsg}
                 onChange={(e) => setNewMsg(e.target.value)}
                 className="flex-1 px-3.5 py-2 rounded-xl border border-muctim/15 bg-white/50 focus:bg-white text-xs text-muctim outline-none placeholder:text-muctim/30 transition-all font-serif"
@@ -323,18 +323,18 @@ export function EndingCannotBeMoved({ story, onRestart, onChooseOther }: EndingC
               className="flex items-center gap-2 px-5 py-2 rounded-xl border border-muctim/15 bg-white/75 font-serif text-xs font-semibold text-muctim hover:bg-white transition-all shadow-xs cursor-pointer"
             >
               <RotateCcw className="w-3.5 h-3.5" />
-              Lưu trữ lại từ đầu
+              Archive From Start
             </button>
             <button
               onClick={onChooseOther}
               className="flex items-center gap-2 px-5 py-2 rounded-xl bg-muctim text-white font-serif text-xs font-semibold hover:bg-muctim/85 transition-all shadow-sm cursor-pointer"
             >
-              Quay về bản đồ
+              Back to Map
             </button>
           </div>
 
           <p className="font-mono text-[8px] text-muctim-faded uppercase tracking-widest text-center mt-2 pb-6">
-            Dự án Ký ức Sổ Tay · CAS3020 · VinUniversity · 2026
+            Memory Ledger Project · CAS3020 · VinUniversity · 2026
           </p>
         </div>
       </motion.div>

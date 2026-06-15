@@ -80,6 +80,7 @@ export interface MemorySpace {
   quyhoachUrl?: string;      // quyhoach.hanoi.vn embed URL — urban planning overlay
   audioSegment?: AudioSegment; // oral history segment for this space
   narratorBio?: string[];    // 2-3 bullet lines for the dossier card
+  memoryEchoes?: string[];   // Floating nostalgic lines shown randomly in explore mode
   clues: Clue[];
 }
 

@@ -98,14 +98,14 @@ export function RouteAssembly({ story, collectedIds, onSuccess, onBackToExplore 
             className="flex items-center gap-1.5 text-muctim-faded hover:text-muctim font-serif text-sm transition-colors mx-auto mb-4"
           >
             <ChevronLeft className="w-4 h-4" />
-            Quay lại khám phá
+            Back to exploration
           </button>
           <p className="font-mono text-[10px] text-muctim-faded uppercase tracking-widest mb-1">
-            Ghép lại một ngày của {story.narrator}
+            Reconstruct a day of {story.narrator}
           </p>
-          <h2 className="font-serif text-3xl font-bold text-muctim">Lắp Ráp Ký Ức</h2>
+          <h2 className="font-serif text-3xl font-bold text-muctim">Memory Assembly</h2>
           <p className="font-serif text-muctim-faded text-sm mt-2 max-w-sm mx-auto">
-            Sắp xếp các mảnh ký ức theo đúng thứ tự trong ngày bình thường của {story.narrator}.
+            Arrange memory fragments in the correct order of an ordinary day of {story.narrator}.
           </p>
         </div>
 
@@ -143,11 +143,11 @@ export function RouteAssembly({ story, collectedIds, onSuccess, onBackToExplore 
                         className="mt-2 font-mono text-[9px] text-muctim-faded underline"
                         onClick={() => removeFromSlot(i)}
                       >
-                        xóa
+                        delete
                       </button>
                     </div>
                   ) : (
-                    <p className="font-serif text-xs text-muctim-faded italic">Kéo mảnh vào đây</p>
+                    <p className="font-serif text-xs text-muctim-faded italic">Place fragment here</p>
                   )}
                 </motion.div>
               </div>
@@ -164,7 +164,7 @@ export function RouteAssembly({ story, collectedIds, onSuccess, onBackToExplore 
         {/* Available clues */}
         <div className="mb-6">
           <p className="font-mono text-[10px] text-muctim-faded uppercase tracking-widest mb-3 text-center">
-            Các mảnh ký ức đã thu thập — nhấn để đặt vào ô trống tiếp theo
+            Collected memory fragments — click to place in the next empty slot
           </p>
           <div className="flex flex-wrap gap-2 justify-center" data-tutorial="chips">
             {collectedClues.map((clue) => {
@@ -207,7 +207,7 @@ export function RouteAssembly({ story, collectedIds, onSuccess, onBackToExplore 
                 animate={{ opacity: 1, scale: 1 }}
               >
                 <CheckCircle className="w-5 h-5" />
-                Đúng rồi! Đang mở câu chuyện...
+                Correct! Unlocking the story...
               </motion.div>
             )}
             {feedback === 'wrong' && (
@@ -221,14 +221,14 @@ export function RouteAssembly({ story, collectedIds, onSuccess, onBackToExplore 
                 <div className="flex items-center gap-2 text-terracotta font-serif text-sm">
                   <XCircle className="w-4 h-4" />
                   {wrongCount === 1
-                    ? `Chưa đúng — thứ tự này không khớp với một ngày của ${story.narrator}.`
+                    ? `Incorrect — this order does not match a day of ${story.narrator}.`
                     : wrongCount === 2
-                    ? 'Bạn đã rất gần rồi. Thử nghĩ theo trình tự thời gian trong ngày.'
-                    : 'Ký ức đôi khi cần thêm một chút trợ giúp.'}
+                    ? 'You are very close. Think of the chronological order of the day.'
+                    : 'Memories sometimes need a little help.'}
                 </div>
                 {wrongCount >= 2 && (
                   <p className="font-serif text-xs text-muctim-faded italic">
-                    Gợi ý: mỗi ô tương ứng với một địa điểm khác nhau.
+                    Hint: each slot corresponds to a different location.
                   </p>
                 )}
               </motion.div>
@@ -247,14 +247,14 @@ export function RouteAssembly({ story, collectedIds, onSuccess, onBackToExplore 
               >
                 <div className="flex items-center gap-2 text-muctim">
                   <Lightbulb className="w-4 h-4 text-nangthu flex-shrink-0" />
-                  <p className="font-serif text-sm font-semibold">Gợi ý theo địa điểm</p>
+                  <p className="font-serif text-sm font-semibold">Location Hints</p>
                 </div>
 
                 <button
                   className="font-serif text-xs text-muctim-faded underline text-left"
                   onClick={() => setShowLocationHint((v) => !v)}
                 >
-                  {showLocationHint ? 'Ẩn gợi ý' : '🔍 Xem gợi ý — địa điểm cho mỗi ô'}
+                  {showLocationHint ? 'Hide hints' : '🔍 View hints — locations for each slot'}
                 </button>
 
                 {showLocationHint && (
@@ -278,7 +278,7 @@ export function RouteAssembly({ story, collectedIds, onSuccess, onBackToExplore 
 
                 <div className="border-t border-muctim/10 pt-2">
                   <p className="font-serif text-[11px] text-muctim-faded mb-2 text-center">
-                    "Có lẽ ký ức không phải lúc nào cũng được sắp xếp đúng thứ tự."
+                    "Perhaps memories are not always arranged in the correct order."
                   </p>
                   <button
                     className="w-full py-2 rounded-xl font-serif text-xs text-muctim-faded border border-muctim/20 hover:bg-muctim/5 transition-colors"
@@ -287,7 +287,7 @@ export function RouteAssembly({ story, collectedIds, onSuccess, onBackToExplore 
                       setTimeout(() => onSuccess(), 600);
                     }}
                   >
-                    📖 Tiếp tục theo cách của riêng mình →
+                    📖 Continue on your own path →
                   </button>
                 </div>
               </motion.div>
@@ -303,7 +303,7 @@ export function RouteAssembly({ story, collectedIds, onSuccess, onBackToExplore 
                 : 'bg-muctim/20 text-muctim-faded cursor-not-allowed'
             }`}
           >
-            Kiểm tra thứ tự
+            Check Order
           </button>
 
           <button
@@ -314,7 +314,7 @@ export function RouteAssembly({ story, collectedIds, onSuccess, onBackToExplore 
             }}
           >
             <RotateCcw className="w-3 h-3" />
-            Xóa và làm lại
+            Reset and Retry
           </button>
         </div>
       </motion.div>

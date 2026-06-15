@@ -258,7 +258,7 @@ export function TutorialOverlay({ steps, onDone }: TutorialOverlayProps) {
               <button
                 onClick={onDone}
                 className="text-muctim-faded hover:text-muctim transition-colors"
-                title="Bỏ qua hướng dẫn"
+                title="Skip tutorial"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -271,7 +271,7 @@ export function TutorialOverlay({ steps, onDone }: TutorialOverlayProps) {
               onClick={advance}
               className="w-full py-2.5 bg-muctim text-white font-serif text-sm font-semibold rounded-xl hover:bg-muctim/80 transition-all"
             >
-              {step.cta ?? (stepIdx < steps.length - 1 ? 'Tiếp theo →' : 'Bắt đầu khám phá!')}
+              {step.cta ?? (stepIdx < steps.length - 1 ? 'Next →' : 'Begin Exploration!')}
             </button>
           </div>
         </motion.div>

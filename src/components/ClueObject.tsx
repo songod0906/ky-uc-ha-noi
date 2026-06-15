@@ -142,9 +142,9 @@ export function ClueObject({ clue, collected, onCollect, onModalChange }: ClueOb
                     <Volume2 className="w-4 h-4" />
                   </button>
                   <div>
-                    <p className="font-serif text-xs font-semibold text-muctim">Nghe giai điệu ký ức</p>
+                    <p className="font-serif text-xs font-semibold text-muctim">Listen to memory audio</p>
                     <p className="font-mono text-[9px] text-muctim-faded">
-                      {audioPlaying ? 'Đang phát...' : 'Audio thật sẽ được thêm sau'}
+                      {audioPlaying ? 'Playing...' : 'Real audio will be added later'}
                     </p>
                   </div>
                 </div>
@@ -153,7 +153,7 @@ export function ClueObject({ clue, collected, onCollect, onModalChange }: ClueOb
                 {collected ? (
                   <div className="flex items-center gap-2 justify-center py-2 text-sage font-serif text-sm">
                     <Sparkles className="w-4 h-4" />
-                    Đã lưu vào sổ tay
+                    Saved in notebook
                   </div>
                 ) : (
                   <button
@@ -161,7 +161,7 @@ export function ClueObject({ clue, collected, onCollect, onModalChange }: ClueOb
                     className="w-full py-3 bg-muctim text-white font-serif font-semibold rounded-2xl hover:bg-muctim/80 transition-all flex items-center justify-center gap-2"
                   >
                     <BookOpen className="w-4 h-4" />
-                    Lưu vào sổ tay
+                    Save to notebook
                   </button>
                 )}
               </div>
