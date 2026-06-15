@@ -111,7 +111,11 @@ export function MapIntroView({ onSelect }: MapIntroViewProps) {
 
     // Fit bounds to all pins after a tick so the container is sized
     const bounds = L.latLngBounds(pins.map((p) => [p.space.lat!, p.space.lng!]));
-    setTimeout(() => map.fitBounds(bounds, { padding: [60, 60] }), 100);
+    const fitTimeout = setTimeout(() => {
+      if (mapRef.current) {
+        map.fitBounds(bounds, { padding: [60, 60] });
+      }
+    }, 100);
 
     pins.forEach((pin) => {
       const color = NARRATOR_COLOR[pin.story.narrator] ?? '#ffffff';
@@ -122,7 +126,11 @@ export function MapIntroView({ onSelect }: MapIntroViewProps) {
     });
 
     mapRef.current = map;
-    return () => { map.remove(); mapRef.current = null; };
+    return () => {
+      clearTimeout(fitTimeout);
+      map.remove();
+      mapRef.current = null;
+    };
   }, []);
 
   const color = selected ? (NARRATOR_COLOR[selected.story.narrator] ?? '#fff') : '#fff';

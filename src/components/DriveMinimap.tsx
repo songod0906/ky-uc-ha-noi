@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import type L from 'leaflet';
 import type { TourNode } from '../types';
+import 'leaflet/dist/leaflet.css';
 
 interface DriveMinimapProps {
   nodes: TourNode[];
@@ -31,6 +32,13 @@ function interpolateCoords(nodes: TourNode[]): [number, number][] {
 }
 
 export function DriveMinimap({ nodes, currentIndex }: DriveMinimapProps) {
+  const seqKey = nodes[0]?.id.split('-')[0] ?? '';
+  let labelText = 'Thanh Cong';
+  if (seqKey === 'hh') {
+    labelText = 'Hoang Hoa Tham';
+  } else if (seqKey === 'tt') {
+    labelText = 'Trung Liet';
+  }
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const markerRef = useRef<L.CircleMarker | null>(null);
@@ -86,8 +94,8 @@ export function DriveMinimap({ nodes, currentIndex }: DriveMinimapProps) {
         className: 'drive-pos-dot',
       }).addTo(map);
 
-      // Fit route with padding
-      map.fitBounds(Lf.latLngBounds(coords), { padding: [18, 18] });
+      // Fit route with padding (restrict maxZoom to 16 to avoid blank tiles on single-coord paths)
+      map.fitBounds(Lf.latLngBounds(coords), { padding: [18, 18], maxZoom: 16 });
       mapRef.current = map;
     });
 
@@ -118,7 +126,7 @@ export function DriveMinimap({ nodes, currentIndex }: DriveMinimapProps) {
       {/* Label */}
       <div className="absolute bottom-0 left-0 right-0 px-2 py-1 bg-black/60 backdrop-blur-sm flex items-center justify-between">
         <span className="font-mono text-[8px] text-white/50 uppercase tracking-wider">location</span>
-        <span className="font-mono text-[8px] text-blue-300/80">Thanh Cong</span>
+        <span className="font-mono text-[8px] text-blue-300/80">{labelText}</span>
       </div>
     </div>
   );
