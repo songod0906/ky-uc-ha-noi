@@ -236,13 +236,13 @@ export const AudioSynth = {
       gainNode.connect(ctx.destination);
       bgMusicGain = gainNode;
 
-      // Soft ambient pad: three detuned sine oscillators at low frequencies
-      const tones = [130.8, 164.8, 196.0]; // C3, E3, G3 — gentle major chord
+      // Soft ambient pad: three detuned triangle oscillators — warm, mid-register
+      const tones = [261.6, 329.6, 392.0]; // C4, E4, G4 — one octave up, less droney
       tones.forEach((freq, i) => {
         const osc = ctx.createOscillator();
         const oscGain = ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq + i * 0.3, now); // slight detune per voice
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq + i * 0.4, now); // slight detune per voice
         oscGain.gain.setValueAtTime(1 / tones.length, now);
         osc.connect(oscGain);
         oscGain.connect(gainNode);
