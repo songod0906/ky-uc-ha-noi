@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Story } from '../types';
 import { AudioSynth } from '../utils/AudioSynth';
-import { RotateCcw, FileText, Send, Sparkles } from 'lucide-react';
+import { RotateCcw, FileText, Sparkles } from 'lucide-react';
 import { CompassMotif } from './CompassMotif';
 
 interface EndingCannotBeMovedProps {
@@ -74,9 +74,6 @@ const SWEEP_TEXTS: Record<string, string[]> = {
 export function EndingCannotBeMoved({ story, onRestart, onChooseOther }: EndingCannotBeMovedProps) {
   const [sweepPhase, setSweepPhase] = useState<'intro' | 'showCase'>('intro');
   const [typewriterIndex, setTypewriterIndex] = useState(0);
-  const [guestbook, setGuestbook] = useState<Array<{ author: string; text: string; time: string }>>([]);
-  const [newMsg, setNewMsg] = useState('');
-  const [newName, setNewName] = useState('');
 
   const lines = SWEEP_TEXTS[story.id] ?? [
     'Hanoi, 2026.',
@@ -99,42 +96,6 @@ export function EndingCannotBeMoved({ story, onRestart, onChooseOther }: EndingC
       return () => clearTimeout(timer);
     }
   }, [typewriterIndex, sweepPhase, lines.length]);
-
-  // Load guestbook messages
-  useEffect(() => {
-    const key = `hanoi_guestbook_${story.id}`;
-    const stored = localStorage.getItem(key);
-    const defaults = PRESET_MESSAGES[story.id] ?? [];
-    if (stored) {
-      try {
-        setGuestbook(JSON.parse(stored));
-      } catch (e) {
-        setGuestbook(defaults);
-      }
-    } else {
-      setGuestbook(defaults);
-      localStorage.setItem(key, JSON.stringify(defaults));
-    }
-  }, [story.id]);
-
-  const handleSend = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newMsg.trim()) return;
-
-    const author = newName.trim() || 'Anonymous';
-    const entry = {
-      author,
-      text: newMsg.trim(),
-      time: 'Just now',
-    };
-
-    const updated = [entry, ...guestbook];
-    setGuestbook(updated);
-    localStorage.setItem(`hanoi_guestbook_${story.id}`, JSON.stringify(updated));
-    setNewMsg('');
-    setNewName('');
-    AudioSynth.playPluck(523, 1.5, 0.4); // successful chime sound
-  };
 
   const artifact = DIGITAL_ARTIFACTS[story.id];
 
@@ -267,74 +228,28 @@ export function EndingCannotBeMoved({ story, onRestart, onChooseOther }: EndingC
           ))}
         </ul>
 
-        {/* Guestbook message board */}
-        <div className="border-t border-muctim/10 pt-6 mb-10 font-serif">
-          <h3 className="text-sm font-bold text-muctim mb-1">My Hanoi is...</h3>
-          <p className="text-[11px] text-muctim-faded leading-relaxed mb-4">
-            Share your own childhood memories of transforming spaces in Hanoi to write them down in this notebook.
-          </p>
-
-          <form onSubmit={handleSend} className="flex flex-col gap-2.5 mb-6">
-            <input
-              type="text"
-              placeholder="Your name or nickname..."
-              value={newName}
-              onChange={(e) => setNewName(e.target.value)}
-              className="w-full px-3.5 py-1.5 rounded-xl border border-muctim/15 bg-white/50 focus:bg-white text-xs text-muctim outline-none placeholder:text-muctim/30 transition-all font-serif"
-            />
-            <div className="flex gap-2">
-              <input
-                type="text"
-                placeholder="e.g. An alley filled with fallen leaves in autumn..."
-                value={newMsg}
-                onChange={(e) => setNewMsg(e.target.value)}
-                className="flex-1 px-3.5 py-2 rounded-xl border border-muctim/15 bg-white/50 focus:bg-white text-xs text-muctim outline-none placeholder:text-muctim/30 transition-all font-serif"
-              />
-              <button
-                type="submit"
-                className="px-4 py-2 bg-muctim text-white hover:bg-muctim/90 rounded-xl flex items-center justify-center transition-all cursor-pointer flex-none"
-              >
-                <Send className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </form>
-
-          {/* Messages list */}
-          <div className="space-y-3 max-h-56 overflow-y-auto pr-1 scrollbar-thin">
-            {guestbook.map((msg, idx) => (
-              <div key={idx} className="bg-white/40 border border-muctim/8 rounded-xl p-3 text-xs leading-relaxed">
-                <p className="text-muctim-faded text-[11px]">{msg.text}</p>
-                <div className="flex items-center justify-between mt-1.5 font-mono text-[9px] text-muctim/40">
-                  <span>— {msg.author}</span>
-                  <span>{msg.time}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Buttons */}
-        <div className="flex flex-col items-center gap-5 border-t border-muctim/10 pt-6">
+        {/* Navigation buttons — prominent at bottom */}
+        <div className="flex flex-col items-center gap-4 border-t border-muctim/10 pt-6 pb-8">
           <CompassMotif size={44} />
 
           <div className="flex gap-3">
             <button
               onClick={onRestart}
-              className="flex items-center gap-2 px-5 py-2 rounded-xl border border-muctim/15 bg-white/75 font-serif text-xs font-semibold text-muctim hover:bg-white transition-all shadow-xs cursor-pointer"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-muctim/15 bg-white/75 font-serif text-sm font-semibold text-muctim hover:bg-white transition-all shadow-xs cursor-pointer"
             >
-              <RotateCcw className="w-3.5 h-3.5" />
-              Archive From Start
+              <RotateCcw className="w-4 h-4" />
+              Replay
             </button>
             <button
               onClick={onChooseOther}
-              className="flex items-center gap-2 px-5 py-2 rounded-xl bg-muctim text-white font-serif text-xs font-semibold hover:bg-muctim/85 transition-all shadow-sm cursor-pointer"
+              className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-muctim text-white font-serif text-sm font-semibold hover:bg-muctim/85 transition-all shadow-sm cursor-pointer"
             >
-              Back to Map
+              ← Back to Map
             </button>
           </div>
 
-          <p className="font-mono text-[8px] text-muctim-faded uppercase tracking-widest text-center mt-2 pb-6">
-            Memory Ledger Project · CAS3020 · VinUniversity · 2026
+          <p className="font-mono text-[8px] text-muctim-faded uppercase tracking-widest text-center mt-1">
+            CAS3020 · Digital Arts & Sciences · VinUniversity · 2026
           </p>
         </div>
       </motion.div>

@@ -64,7 +64,6 @@ function withHistoric(nodes: TourNode[], items: Array<{ idx: number; url: string
 const ltk_cong_truong = [
   'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/ltk/truoc-cong-truong/shot-01.jpg',
   'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/ltk/quan-an-vat/shot-01.jpg',
-  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/ltk/quan-an-vat/shot-02.jpg',
   'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/ltk/quan-an-vat/shot-03.jpg',
   'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/ltk/quan-an-vat/shot-04.jpg',
 ];
@@ -81,7 +80,6 @@ const ltk_ho_thanh_cong = [
   'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/ltk/ho-thanh-cong/shot-09.jpg',
   'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/ltk/ho-thanh-cong/shot-10.jpg',
   'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/ltk/ho-thanh-cong/shot-11.jpg',
-  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/ltk/ho-thanh-cong/shot-12.jpg',
   'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/ltk/ho-thanh-cong/shot-13.jpg',
 ];
 
@@ -93,8 +91,7 @@ const HTC_YAWS: Record<string, { fwd: number; back: number }> = {
   'htc-07': { fwd: -52,  back: 128  },
   'htc-08': { fwd: -25,  back: 155  },
   'htc-10': { fwd: -82,  back: 98   },
-  'htc-12': { fwd: -15,  back: 165  },
-  'htc-13': { fwd: -29,  back: 151  },
+  'htc-12': { fwd: -29,  back: 151  },
 };
 
 const ltk_quan_net = [
@@ -178,8 +175,8 @@ const TT_OC_YAWS: Record<string, { fwd: number; back: number }> = {
 const CT_YAWS: Record<string, { fwd: number; back: number }> = {
   'ct-01': { fwd: -93, back:   87 },
   'ct-02': { fwd:   7, back: -173 },
-  'ct-04': { fwd:   0, back: -110 },
-  'ct-05': { fwd:   0, back: -102 },
+  'ct-03': { fwd:   0, back: -110 },
+  'ct-04': { fwd:   0, back: -102 },
 };
 
 // ─── Essy panorama sequences ──────────────────────────────────────────────────
@@ -189,9 +186,8 @@ const ES_NG_YAWS: Record<string, { fwd: number; back: number }> = {
   'es-ng-07': { fwd: -80, back:  100 },
   'es-ng-08': { fwd:   0, back:  180 },
   'es-ng-09': { fwd: -65, back:  115 },
-  'es-ng-11': { fwd:  80, back: -100 },
-  'es-ng-12': { fwd:  90, back:  -90 },
-  'es-ng-14': { fwd:  80, back: -100 },
+  'es-ng-11': { fwd:  90, back:  -90 }, // was es-ng-12 (es-ng-11 deleted)
+  'es-ng-13': { fwd:  80, back: -100 }, // was es-ng-14
 };
 
 const essy_duong_vao_nha = [
@@ -205,7 +201,6 @@ const essy_duong_vao_nha = [
   'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/essy/duong-vao-nha/shot-08.jpg',
   'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/essy/duong-vao-nha/all/new-09.jpg',
   'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/essy/duong-vao-nha/all/new-10.jpg',
-  'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/essy/duong-vao-nha/shot-09.jpg',
   'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/essy/duong-vao-nha/all/new-11.jpg',
   'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/essy/duong-vao-nha/all/new-12.jpg',
   'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/essy/duong-vao-nha/shot-10.jpg',
@@ -265,13 +260,12 @@ const TRANG: Story = {
       bgTone: '#c8a96e',
       bgTourNodes: withHistoric(applyYaws(makeNodes(ltk_cong_truong, [
         { idx: 0, clueId: 'trang-tieng-trong', yaw: 9, pitch: -8 },
-        { idx: 3, clueId: 'trang-an-vat', yaw: -16, pitch: -8 },
+        { idx: 2, clueId: 'trang-an-vat', yaw: -16, pitch: -8 },
       ], 'ct', [
-        { idx: 4, scanUrl: '/scans/quan-an-vat.glb', label: 'View 3D Food Stall', yaw: 0, pitch: -10 },
+        { idx: 3, scanUrl: '/scans/quan-an-vat.glb', label: 'View 3D Food Stall', yaw: 0, pitch: -10 },
       ], [
         [21.023341657971606, 105.81264611592633],
         [21.0233557985251,   105.81270836766542],
-        null,
         [21.02333825323251,  105.81250965996118],
         [21.02333825323251,  105.81250965996118],
       ]), CT_YAWS), [
@@ -337,18 +331,18 @@ const TRANG: Story = {
       ], 'qn', [
         { idx: 16, scanUrl: '/scans/quan-net.glb', label: 'View 3D Net Café', yaw: 0, pitch: -10 },
       ], [
-        [21.020861, 105.813559], // GPS values mapped to minpath coordinates
-        [21.020861, 105.813559],
-        [21.020861, 105.813559],
-        [21.020861, 105.813559],
-        [21.020861, 105.813559],
-        [21.020861, 105.813559],
-        [21.020861, 105.813559],
-        [21.020861, 105.813559],
-        [21.020861, 105.813559],
-        [21.020861, 105.813559],
-        [21.020861, 105.813559],
-        null, null, null, null, null, null,
+        [21.023344, 105.812717], // qn-01
+        [21.023403, 105.813224], // qn-02
+        [21.023435, 105.813605], // qn-03
+        [21.023410, 105.813889], // qn-04
+        [21.023185, 105.813940], // qn-05
+        [21.022671, 105.814008], // qn-06
+        [21.022311, 105.814059], // qn-07
+        [21.021553, 105.814141], // qn-08
+        [21.021368, 105.814025], // qn-09
+        [21.021215, 105.814017], // qn-10
+        [21.021185, 105.813679], // qn-11
+        null, null, null, null, null, null, // qn-12..17: indoor café, no GPS
       ]), QN_YAWS), [
         { idx: 3,  url: 'https://www.google.com/maps/embed?pb=!4v1781407111689!6m8!1m7!1slPxhHBlAz66aKFd1Embsdw!2m2!1d21.02347691720712!2d105.8137573922583!3f103.09771536124487!4f-11.130644329606284!5f0.7820865974627469' },
         { idx: 4,  url: 'https://www.google.com/maps/embed?pb=!4v1781407214602!6m8!1m7!1sQgjDRoyS4wS42RVMqWJOng!2m2!1d21.02330514445645!2d105.8139358308204!3f119.53192455044567!4f-1.6804918275248895!5f0.7820865974627469' },
@@ -415,19 +409,18 @@ const TRANG: Story = {
         { idx: 6, clueId: 'trang-nhac-aerobic', yaw: 0, pitch: -8 },
         { idx: 10, clueId: 'trang-khu-tap-the', yaw: 0, pitch: -8 },
       ], 'htc', undefined, [
-        [21.020390, 105.813291],
-        [21.020390, 105.813291],
-        [21.020390, 105.813291],
-        [21.020390, 105.813291],
-        [21.020390, 105.813291],
-        [21.020390, 105.813291],
-        [21.020390, 105.813291],
-        [21.020390, 105.813291],
-        [21.020390, 105.813291],
-        [21.020390, 105.813291],
-        [21.020390, 105.813291],
-        null,
-        [21.020390, 105.813291],
+        [21.020390, 105.813167], // htc-01
+        [21.020328, 105.813291], // htc-02
+        [21.020333, 105.813458], // htc-03
+        [21.020349, 105.813621], // htc-04
+        [21.020346, 105.813711], // htc-05
+        [21.020295, 105.813714], // htc-06
+        [21.020278, 105.813669], // htc-07
+        [21.020258, 105.813606], // htc-08
+        [21.020229, 105.813552], // htc-09
+        [21.020156, 105.813370], // htc-10
+        [21.020121, 105.813241], // htc-11
+        [21.020177, 105.812859], // htc-12 (was htc-13)
       ]), HTC_YAWS), [
         { idx: 0, url: 'https://www.google.com/maps/embed?pb=!4v1781407926721!6m8!1m7!1sAnVN58QpnXISxwLh_W32yA!2m2!1d21.02048879554921!2d105.8132082827019!3f195.77940340158702!4f-7.682892952432283!5f0.7820865974627469' },
       ]),
@@ -524,30 +517,28 @@ const ESSY: Story = {
       bgTourNodes: withHistoric(applyYaws(makeNodes(essy_duong_vao_nha, [
         { idx: 0, clueId: 'essy-ngo-kho', yaw: 0, pitch: -8 },
         { idx: 7, clueId: 'essy-ngap-mua', yaw: 0, pitch: -8 },
-        { idx: 14, clueId: 'essy-cay-xanh-ngo', yaw: 0, pitch: -8 },
+        { idx: 13, clueId: 'essy-cay-xanh-ngo', yaw: 0, pitch: -8 },
       ], 'es-ng', [
-        { idx: 14, scanUrl: '/scans/nha-essy.glb', label: 'View 3D House', yaw: 0, pitch: -10 },
+        { idx: 13, scanUrl: '/scans/nha-essy.glb', label: 'View 3D House', yaw: 0, pitch: -10 },
       ], [
-        [21.041427, 105.817931],
-        [21.041427, 105.817931],
-        [21.041427, 105.817931],
-        [21.041427, 105.817931],
-        [21.041427, 105.817931],
-        [21.041427, 105.817931],
-        [21.041427, 105.817931],
-        [21.041427, 105.817931],
-        [21.041427, 105.817931],
-        [21.041427, 105.817931],
-        null,
-        [21.041427, 105.817931],
-        [21.041427, 105.817931],
-        [21.041427, 105.817931],
-        [21.041427, 105.817931],
+        [21.041167, 105.816469], // es-ng-01
+        [21.041059, 105.816739], // es-ng-02
+        [21.041176, 105.816851], // es-ng-03
+        [21.041228, 105.816917], // es-ng-04
+        [21.041178, 105.817171], // es-ng-05
+        [21.041080, 105.817355], // es-ng-06
+        [21.041063, 105.817496], // es-ng-07
+        [21.041038, 105.817636], // es-ng-08
+        [21.040941, 105.817831], // es-ng-09
+        [21.041038, 105.817946], // es-ng-10
+        [21.041057, 105.818141], // es-ng-11 (was es-ng-12; old es-ng-11 deleted)
+        [21.041025, 105.818295], // es-ng-12 (was es-ng-13)
+        [21.040962, 105.818295], // es-ng-13 (was es-ng-14)
+        [21.040736, 105.818230], // es-ng-14 (was es-ng-15)
       ]), ES_NG_YAWS), [
         { idx: 9,  url: 'https://www.google.com/maps/embed?pb=!4v1781412371328!6m8!1m7!1s2TWphYbHFgWWSOFqrtsw9A!2m2!1d21.04103909428119!2d105.8178888444568!3f40.074094664986106!4f-19.58369068018274!5f0.7820865974627469' },
-        { idx: 10, url: 'https://www.google.com/maps/embed?pb=!4v1781412386208!6m8!1m7!1s1lZSDXjhNTvxbQG-bxTBtQ!2m2!1d21.0410784735756!2d105.8179891735765!3f88.478552511718!4f-25.48781926972515!5f0.7820865974627469' },
-        { idx: 11, url: 'https://www.google.com/maps/embed?pb=!4v1781412199393!6m8!1m7!1s7d03mG0z6vi2eZtWE7TRFQ!2m2!1d21.04106422876278!2d105.8181299031744!3f107.38807014797955!4f0.4437072786251264!5f0.7820865974627469' },
-        { idx: 14, url: 'https://www.google.com/maps/embed?pb=!4v1781412069003!6m8!1m7!1sUAlJ_dGe8w88WdPKaRZJuw!2m2!1d21.04098537974627!2d105.818354031628!3f202.05707186222304!4f-13.064484507307242!5f0.7820865974627469' },
+        { idx: 10, url: 'https://www.google.com/maps/embed?pb=!4v1781412199393!6m8!1m7!1s7d03mG0z6vi2eZtWE7TRFQ!2m2!1d21.04106422876278!2d105.8181299031744!3f107.38807014797955!4f0.4437072786251264!5f0.7820865974627469' },
+        { idx: 13, url: 'https://www.google.com/maps/embed?pb=!4v1781412069003!6m8!1m7!1sUAlJ_dGe8w88WdPKaRZJuw!2m2!1d21.04098537974627!2d105.818354031628!3f202.05707186222304!4f-13.064484507307242!5f0.7820865974627469' },
       ]),
       memoryEchoes: [
         '"Five ways to enter from three main roads..."',
@@ -713,13 +704,13 @@ const TRANG_THAI_THINH: Story = {
         { idx: 0, clueId: 'thai-thinh-hoc-them', yaw: 0, pitch: -8 },
         { idx: 3, clueId: 'thai-thinh-pho-khong-xe', yaw: 0, pitch: -8 },
       ], 'tt-hoc', undefined, [
-        [21.009981, 105.820251],
-        [21.009981, 105.820251],
-        [21.009981, 105.820251],
-        [21.009981, 105.820251],
-        [21.009981, 105.820251],
-        [21.009981, 105.820251],
-        [21.009981, 105.820251],
+        [21.010379, 105.819129], // tt-hoc-01
+        [21.010477, 105.819357], // tt-hoc-02
+        [21.010486, 105.819515], // tt-hoc-03
+        [21.010738, 105.819687], // tt-hoc-04
+        [21.011042, 105.819416], // tt-hoc-05
+        [21.011199, 105.819608], // tt-hoc-06
+        [21.011296, 105.819560], // tt-hoc-07
       ]), TT_HOC_YAWS), [
         { idx: 0, url: 'https://www.google.com/maps/embed?pb=!4v1781408126695!6m8!1m7!1sTv5fNyWV5uUbRuPQSq2dIA!2m2!1d21.01024182268491!2d105.8189569940536!3f237.84655727624724!4f-6.8214980075420755!5f0.7820865974627469' },
         { idx: 1, url: 'https://www.google.com/maps/embed?pb=!4v1781408170669!6m8!1m7!1sVjpr5xP4uSQrqxEc5KCj0g!2m2!1d21.01017391394856!2d105.8187200549374!3f219.59939081504942!4f-28.616128720245776!5f0.7820865974627469' },
@@ -784,12 +775,12 @@ const TRANG_THAI_THINH: Story = {
         { idx: 1, clueId: 'thai-thinh-san-choi', yaw: -65, pitch: -8 },
         { idx: 3, clueId: 'thai-thinh-tieng-cuoi', yaw: -65, pitch: -8 },
       ], 'tt-pg', undefined, [
-        [21.010665, 105.818798],
-        [21.010665, 105.818798],
-        [21.010665, 105.818798],
-        [21.010665, 105.818798],
-        [21.010665, 105.818798],
-        [21.010665, 105.818798],
+        [21.010385, 105.819069], // tt-pg-01
+        [21.010467, 105.818988], // tt-pg-02
+        [21.010522, 105.818919], // tt-pg-03
+        [21.010562, 105.818888], // tt-pg-04
+        [21.010552, 105.818833], // tt-pg-05
+        [21.010552, 105.818833], // tt-pg-06
       ]), TT_PG_YAWS),
       memoryEchoes: [
         '"Watching other kids play from afar..."',
@@ -851,11 +842,11 @@ const TRANG_THAI_THINH: Story = {
         { idx: 0, clueId: 'thai-thinh-di-voi-me', yaw: 0, pitch: -8 },
         { idx: 4, clueId: 'thai-thinh-vio-oc', yaw: 0, pitch: -8 },
       ], 'tt-oc', undefined, [
-        [21.011001, 105.820834],
-        [21.011001, 105.820834],
-        [21.011001, 105.820834],
-        [21.011001, 105.820834],
-        [21.011001, 105.820834],
+        [21.010715, 105.819921], // tt-oc-01
+        [21.011138, 105.820287], // tt-oc-02
+        [21.011268, 105.820458], // tt-oc-03
+        [21.011089, 105.820710], // tt-oc-04
+        [21.011006, 105.820823], // tt-oc-05
       ]), TT_OC_YAWS), [
         { idx: 0, url: 'https://www.google.com/maps/embed?pb=!4v1781408630892!6m8!1m7!1sqqnx-p_V94aaSUetEHMvAg!2m2!1d21.01091163804722!2d105.8200952018351!3f42.95893351208221!4f-3.4922654802283972!5f0.7820865974627469' },
         { idx: 1, url: 'https://www.google.com/maps/embed?pb=!4v1781408663887!6m8!1m7!1spNB7WYfP2N6cX5e7_Yf62A!2m2!1d21.0111221435295!2d105.8202784838613!3f38.21358173713219!4f-6.256166983100783!5f0.7820865974627469' },

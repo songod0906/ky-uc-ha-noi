@@ -434,11 +434,13 @@ function CluePreviewModal({
   collected,
   onCollect,
   onClose,
+  nextHint,
 }: {
   clue: Clue;
   collected: boolean;
   onCollect: () => void;
   onClose: () => void;
+  nextHint?: string;
 }) {
   const [playing, setPlaying] = useState(false);
   const howlRef = useRef<Howl | null>(null);
@@ -455,14 +457,10 @@ function CluePreviewModal({
       onpause: () => setPlaying(false),
     });
     howlRef.current = snd;
-    
-    // Autoplay immediate since this is triggered by a user click
-    snd.play();
-    setPlaying(true);
-
-    return () => { 
-      snd.stop(); 
-      snd.unload(); 
+    // No autoplay — user presses ▶ when they're ready
+    return () => {
+      snd.stop();
+      snd.unload();
     };
   }, [clue.audioSrc]);
 
@@ -569,59 +567,40 @@ function CluePreviewModal({
           {/* Vertical divider on desktop */}
           <div className="hidden md:block w-px bg-muctim/10 self-stretch my-2" />
 
-          {/* Right Column: Cold Demolition (Master Plan) */}
+          {/* Right Column: What Will Be Lost */}
           <div className="flex-1 flex flex-col justify-between gap-5">
             <div className="flex flex-col gap-4">
               <div>
-                <span className="font-mono text-[9px] text-red-500 uppercase tracking-widest block mb-1 font-bold">
-                  ⚠️ 2026 Master Plan
+                <span className="font-mono text-[9px] text-red-500/80 uppercase tracking-widest block mb-1 font-bold">
+                  2026 Urban Redevelopment
                 </span>
                 <h3 className="font-serif text-base font-bold text-stone-700 leading-tight">
-                  Demolition & Site Clearance Order
+                  What will be demolished
                 </h3>
               </div>
 
-              {/* Administrative Blueprint Panel */}
-              <div 
-                className="bg-sky-950 text-sky-100/90 border border-sky-800 rounded-2xl p-4 font-mono text-xs leading-relaxed relative overflow-hidden shadow-md flex flex-col justify-between min-h-[140px]"
-                style={{
-                  backgroundImage: 'radial-gradient(circle at top right, rgba(14,165,233,0.15) 0%, transparent 80%)'
-                }}
-              >
-                {/* Blueprint grid background */}
-                <div className="absolute inset-0 opacity-10 pointer-events-none" 
-                  style={{
-                    backgroundImage: 'linear-gradient(to right, white 1px, transparent 1px), linear-gradient(to bottom, white 1px, transparent 1px)',
-                    backgroundSize: '15px 15px'
-                  }} 
-                />
-
-                <div className="relative z-10">
-                  <div className="flex justify-between items-center mb-3 border-b border-sky-850 pb-1.5 text-[8.5px] text-sky-400 font-bold uppercase tracking-widest">
-                    <span>STATE REGULATION NO. 2026-DP</span>
-                    <span className="text-amber-500 animate-pulse">⏳ EXPIRED</span>
-                  </div>
-                  <p className="text-[11px] font-sans text-sky-200">
-                    {clue.planningImpact || 'This location falls within the boundaries of the 2026 infrastructure renovation and urban upgrading project. The old structure and existing state will be fully demolished.'}
-                  </p>
+              {clue.planningImpact && (
+                <div className="bg-stone-100/60 border border-stone-200 rounded-2xl p-4 font-serif text-[11.5px] leading-relaxed text-stone-700">
+                  {clue.planningImpact}
                 </div>
-
-                <div className="flex justify-between items-center mt-4 text-[7px] text-sky-500 font-bold border-t border-sky-900 pt-2 relative z-10">
-                  <span>HANOI DEPARTMENT OF PLANNING</span>
-                  <span>APPROVED 2026</span>
-                </div>
-              </div>
-
-              <div className="bg-amber-500/5 border border-amber-500/10 rounded-xl p-3 text-[10.5px] leading-relaxed text-amber-800 font-serif">
-                💡 **Preservation Action**: Saving this fragment uploads its coordinates, audio files, and photo scans to the decentralized **Hanoi Memory Ledger**, securing it from permanent physical erasure.
-              </div>
+              )}
             </div>
 
             {/* Bottom Save Action */}
             <div className="pt-3 border-t border-muctim/5 flex-none">
               {collected ? (
-                <div className="w-full py-3 bg-emerald-700/10 border border-emerald-600/30 text-emerald-850 rounded-xl text-center font-serif text-xs font-bold flex items-center justify-center gap-2">
-                  <span>✓</span> Memory Successfully Archived & Safe
+                <div className="flex flex-col gap-2">
+                  <div className="w-full py-2.5 bg-emerald-700/10 border border-emerald-600/30 rounded-xl text-center font-serif text-xs font-bold text-emerald-800 flex items-center justify-center gap-2">
+                    <span>✓</span> Memory Archived
+                  </div>
+                  {nextHint && (
+                    <button
+                      onClick={onClose}
+                      className="w-full py-2.5 bg-stone-800 hover:bg-stone-700 text-amber-200 font-serif text-xs font-semibold rounded-xl transition-all flex items-center justify-center gap-2"
+                    >
+                      {nextHint} →
+                    </button>
+                  )}
                 </div>
               ) : (
                 <button
@@ -906,8 +885,8 @@ export function PanoramaViewer({
   const [dragHintVisible, setDragHintVisible] = useState(true);
   const [exportText, setExportText] = useState<string | null>(null);
   const [dwellSecs, setDwellSecs] = useState(0);
-  // In calib mode: bypass all dwell gates so clues appear immediately and playground isn't locked
-  const clueVisible = CALIB_MODE || dwellSecs >= 8;
+  // Clues visible from the start — no dwell gate needed
+  const clueVisible = true;
   const playgroundBlocked = !CALIB_MODE && !!nodeId?.startsWith('tt-pg') && dwellSecs < 15;
 
   // Drive mode — auto-advance through nodes like a moving car
@@ -1567,17 +1546,34 @@ export function PanoramaViewer({
       )}
 
       {/* Clue preview modal (rendered over the canvas, outside R3F) */}
-      {preview && (
-        <CluePreviewModal
-          clue={preview}
-          collected={collectedIds.includes(preview.id)}
-          onCollect={() => {
-            onCollect(preview.id);
-            setPreview(null);
-          }}
-          onClose={() => setPreview(null)}
-        />
-      )}
+      {preview && (() => {
+        // Find where the next uncollected clue lives so modal can direct the player
+        const currentNodeIdx = localNodes.findIndex(n =>
+          n.clueAnchors?.some(a => a.clueId === preview.id)
+        );
+        const nextNode = localNodes.find((n, i) =>
+          i !== currentNodeIdx &&
+          n.clueAnchors?.some(a => !collectedIds.includes(a.clueId) && a.clueId !== preview.id)
+        );
+        const nextIdx = nextNode ? localNodes.indexOf(nextNode) : -1;
+        const nextHint = nextNode
+          ? nextIdx > nodeIndex
+            ? `Go to Point ${nextIdx + 1}`
+            : `Go back to Point ${nextIdx + 1}`
+          : undefined;
+        return (
+          <CluePreviewModal
+            clue={preview}
+            collected={collectedIds.includes(preview.id)}
+            onCollect={() => {
+              onCollect(preview.id);
+              setPreview(null);
+            }}
+            onClose={() => setPreview(null)}
+            nextHint={nextHint}
+          />
+        );
+      })()}
     </div>
   );
 }

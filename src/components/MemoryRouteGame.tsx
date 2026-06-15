@@ -61,18 +61,7 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, onBack }: MemoryRo
     };
   }, []);
 
-  // Procedural ambient sound integration
-  useEffect(() => {
-    if (phase === 'explore') {
-      const ambientType = activeSpace.clues?.[0]?.ambient || 'wind';
-      AudioSynth.startAmbient(ambientType);
-    } else {
-      AudioSynth.stopAmbient();
-    }
-    return () => {
-      AudioSynth.stopAmbient();
-    };
-  }, [phase, activeSpace]);
+  // Ambient audio intentionally disabled — clue hotspots are the primary audio delivery.
 
   // Floating nostalgic text echoes logic
   useEffect(() => {
