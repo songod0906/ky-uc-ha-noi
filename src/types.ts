@@ -15,6 +15,7 @@ export interface Clue {
   label: string;
   quote: string;
   voiceNote: string;
+  planningImpact?: string;
   ambient: AmbientType;
   audioSrc?: string;  // '/audio/clue-id.mp3' — oral history clip
   x: number; // % from left in the scene panel

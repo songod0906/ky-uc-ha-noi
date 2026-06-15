@@ -58,6 +58,8 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, onBack }: MemoryRo
     setOralAudioActive(true);
   };
 
+  const [showLeaveWarning, setShowLeaveWarning] = useState(false);
+
   const handleCollect = (clueId: string) => {
     if (!collectedIds.includes(clueId)) {
       setCollectedIds((prev) => [...prev, clueId]);
@@ -65,20 +67,21 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, onBack }: MemoryRo
     }
   };
 
-  // Auto-collect all clues when entering a space — anchors removed, audio plays automatically
-  useEffect(() => {
-    const ids = activeSpace.clues.map(c => c.id);
-    setCollectedIds(prev => {
-      const newIds = ids.filter(id => !prev.includes(id));
-      return newIds.length ? [...prev, ...newIds] : prev;
-    });
-  }, [activeSpace.id]);
-
   const handleFinish = () => {
     AudioManager.stop();
     oralAudioRef.current = null;
     setOralAudioActive(false);
     setPhase('ending');
+  };
+
+  const handleLeaveClick = () => {
+    const collectedInSpace = activeSpace.clues.filter(c => collectedIds.includes(c.id)).length;
+    const totalInSpace = activeSpace.clues.length;
+    if (collectedInSpace < totalInSpace) {
+      setShowLeaveWarning(true);
+    } else {
+      handleFinish();
+    }
   };
 
   // Restart = back to cassette tape so oral history replays from the start
@@ -155,15 +158,18 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, onBack }: MemoryRo
         </div>
 
         <button
-          onClick={handleFinish}
-          className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl font-serif text-sm transition-all text-[#0a0806]"
+          onClick={handleLeaveClick}
+          className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl font-serif text-sm transition-all text-[#0a0806] ${
+            allFound ? 'shadow-[0_0_12px_rgba(200,168,130,0.45)]' : 'opacity-85'
+          }`}
           style={{
-            background: narratorColor,
-            border: `1px solid ${narratorColor}`,
+            background: allFound ? narratorColor : 'rgba(255, 255, 255, 0.45)',
+            border: `1px solid ${allFound ? narratorColor : 'rgba(0,0,0,0.15)'}`,
+            color: allFound ? '#0a0806' : '#5a4a3a',
           }}
         >
           <CheckSquare className="w-3.5 h-3.5" />
-          Rời khỏi
+          {allFound ? 'Hoàn thành hồ sơ' : 'Rời đi sớm'}
         </button>
       </header>
 
@@ -180,6 +186,34 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, onBack }: MemoryRo
           />
         </AnimatePresence>
 
+        {/* Floating memory tracker checklist */}
+        <div className="absolute top-20 left-4 z-20 max-w-[240px] bg-[#FCFAF2]/85 backdrop-blur-md border border-muctim/15 rounded-2xl p-4 shadow-lg font-serif">
+          <p className="font-mono text-[8px] text-muctim-faded uppercase tracking-widest mb-1.5">
+            Nhiệm vụ lưu trữ
+          </p>
+          <div className="flex items-center justify-between mb-2 pb-1.5 border-b border-muctim/10">
+            <span className="text-xs font-bold text-muctim">Tiến độ lưu trữ</span>
+            <span className="font-mono text-xs text-muctim font-bold">
+              {collected} / {total}
+            </span>
+          </div>
+          <div className="space-y-2">
+            {activeSpace.clues.map(clue => {
+              const found = collectedIds.includes(clue.id);
+              return (
+                <div key={clue.id} className="flex items-start gap-2 text-[11px] leading-tight">
+                  <span className={`mt-0.5 flex-none font-bold ${found ? 'text-emerald-700' : 'text-muctim/30'}`}>
+                    {found ? '✓' : '○'}
+                  </span>
+                  <span className={found ? 'text-muctim-faded line-through' : 'text-muctim font-medium'}>
+                    {clue.label}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
         {/* Floating oral history player */}
         {oralAudioActive && oralAudioRef.current && (
           <OralHistoryPlayer
@@ -193,7 +227,34 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, onBack }: MemoryRo
         )}
       </main>
 
-      {/* Tutorial disabled since clues are disabled */}
+      {/* Warning confirmation modal */}
+      {showLeaveWarning && (
+        <div className="absolute inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+          <div className="w-full max-w-sm bg-[#FCFAF2] border border-muctim/15 rounded-3xl p-6 shadow-2xl">
+            <h3 className="font-serif text-lg font-bold text-muctim mb-2">Hồ sơ chưa hoàn tất</h3>
+            <p className="font-serif text-xs text-muctim-faded leading-relaxed mb-6">
+              Một số mảnh ký ức về <span className="font-bold text-muctim">{activeSpace.label}</span> chưa được lưu trữ. Nếu rời đi bây giờ, những ký ức này sẽ bị san phẳng vào năm 2026 và biến mất vĩnh viễn. Bạn có chắc chắn muốn rời đi?
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowLeaveWarning(false)}
+                className="flex-1 py-2 rounded-xl border border-muctim/20 text-muctim font-serif text-xs font-semibold hover:bg-muctim/5 transition-all"
+              >
+                Quay lại tìm kiếm
+              </button>
+              <button
+                onClick={() => {
+                  setShowLeaveWarning(false);
+                  handleFinish();
+                }}
+                className="flex-1 py-2 bg-amber-700 text-white font-serif text-xs font-semibold rounded-xl hover:bg-amber-800 transition-all shadow-sm"
+              >
+                Chấp nhận rời đi
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

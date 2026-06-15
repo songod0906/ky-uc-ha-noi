@@ -63,6 +63,7 @@ export function MemorySpace({ space, story, collectedIds, onCollect, onClueModal
             allClues={space.clues}
             minimapFlipX={space.minimapFlipX}
             onNodeIndexChange={setCurrentNodeIndex}
+            driveMode={space.id === 'quan-net'}
           />
         </Suspense>
       ) : null}

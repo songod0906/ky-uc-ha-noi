@@ -91,10 +91,10 @@ const HTC_YAWS: Record<string, { fwd: number; back: number }> = {
   'htc-02': { fwd:  36,  back: -144 },
   'htc-03': { fwd:   0,  back: 130  },
   'htc-06': { fwd: -78,  back: -130 },
-  'htc-07': { fwd: -55,  back: 125  },
-  'htc-08': { fwd: -32,  back: 148  },
+  'htc-07': { fwd: -52,  back: 128  },
+  'htc-08': { fwd: -25,  back: 155  },
   'htc-10': { fwd: -82,  back: 98   },
-  'htc-12': { fwd: -14,  back: 166  },
+  'htc-12': { fwd: -15,  back: 165  },
   'htc-13': { fwd: -29,  back: 151  },
 };
 
@@ -122,7 +122,7 @@ const QN_YAWS: Record<string, { fwd: number; back: number }> = {
   'qn-03': { fwd: -13,  back: 167  },
   'qn-04': { fwd: -14,  back: 166  },  // added shot (all/shot-009)
   'qn-05': { fwd:   9,  back: -171 },
-  'qn-12': { fwd: 119,  back: -61  },
+  'qn-12': { fwd: 121,  back: -59  },
   'qn-14': { fwd:  -7,  back: 173  },  // added shot (all/shot-033)
   'qn-15': { fwd: -77,  back: 103  },
 };
@@ -175,6 +175,13 @@ const TT_OC_YAWS: Record<string, { fwd: number; back: number }> = {
   'tt-oc-03': { fwd: 14, back: -166 }, // all/shot-005 added
   'tt-oc-04': { fwd: 15, back: -165 },
   'tt-oc-05': { fwd: 18, back: -162 },
+};
+
+const CT_YAWS: Record<string, { fwd: number; back: number }> = {
+  'ct-01': { fwd: -93, back:   87 },
+  'ct-02': { fwd:   7, back: -173 },
+  'ct-04': { fwd:   0, back: -110 },
+  'ct-05': { fwd:   0, back: -102 },
 };
 
 // ─── Essy panorama sequences ──────────────────────────────────────────────────
@@ -266,12 +273,18 @@ const TRANG: Story = {
       ],
       bgGradient: 'linear-gradient(160deg, #f5e6c8 0%, #e8d5a3 40%, #d4b896 100%)',
       bgTone: '#c8a96e',
-      bgTourNodes: withHistoric(makeNodes(ltk_cong_truong, [
-        { idx: 0, clueId: 'trang-tieng-trong', yaw: 0, pitch: -8 },
-        { idx: 3, clueId: 'trang-an-vat', yaw: 0, pitch: -8 },
+      bgTourNodes: withHistoric(applyYaws(makeNodes(ltk_cong_truong, [
+        { idx: 0, clueId: 'trang-tieng-trong', yaw: 9, pitch: -8 },
+        { idx: 3, clueId: 'trang-an-vat', yaw: -16, pitch: -8 },
       ], 'ct', [
         { idx: 4, scanUrl: '/scans/quan-an-vat.glb', label: 'Xem quán ăn vặt 3D', yaw: 0, pitch: -10 },
-      ]), [
+      ], [
+        [21.023341657971606, 105.81264611592633], // ct-01
+        [21.0233557985251,   105.81270836766542], // ct-02
+        null,                                     // ct-03
+        [21.02333825323251,  105.81250965996118], // ct-04
+        [21.02333825323251,  105.81250965996118], // ct-05
+      ]), CT_YAWS), [
         // Thanh Cong A school area, Google Street View 2018
         { idx: 0, url: 'https://www.google.com/maps/embed?pb=!4v1781406756612!6m8!1m7!1sgw5FtU3SO2EZh6Fw6DHM1Q!2m2!1d21.02335819365613!2d105.812700469784!3f177.3934717023654!4f-8.877060164979412!5f0.7820865974627469' },
       ]),
@@ -284,6 +297,8 @@ const TRANG: Story = {
             '"Ngày xưa tiếng trống vang lên mà đang đứng ăn kem chanh ở cổng thì thấy vội và sợ lắm."',
           voiceNote:
             'LTK nhớ rõ ba thứ ở cổng trường Thành Công A: một là tiệm thuê truyện Doraemon và thần thoại Hy Lạp, hai đến ba nghìn một ngày — "sharing economy, the first sharing economy model I know before Grab"; hai là mua thẻ bóng đá và thẻ Vinamilk để sưu tầm — "quyền lực của trẻ con nằm ở việc có nhiều đồ hơn bạn"; ba là kem chanh vì lớp không có điều hòa, và kem son — thỏi kem nhìn như son môi, vặn lên rồi liếm. Tiệm thuê truyện biến mất khi LTK lên lớp 4-5. Kem chanh biến mất khi lớp có điều hòa.',
+          planningImpact:
+            'Khu vực cổng trường Thành Công A sẽ bị dọn dẹp triệt để. Các gánh hàng rong bán kem chanh vỉa hè và tiệm truyện tranh tự phát bị giải tỏa để nhường chỗ cho vỉa hè thông thoáng và bãi đỗ xe phụ huynh.',
           ambient: 'wind',
           audioSrc: '/audio/trang-an-vat.mp3',
           x: 28,
@@ -297,6 +312,8 @@ const TRANG: Story = {
             '"Không có điều hòa thì cửa phải mở — nên nghe được tất cả: tiếng chim, tiếng lớp bên, tiếng thầy cô sang mắng nhau."',
           voiceNote:
             'Lớp tiểu học Thành Công A không có điều hòa đến tận lớp ba lớp bốn. Cửa sổ luôn mở — tiếng từ bên ngoài tràn vào. LTK nhớ các thầy cô hay có drama: lớp này ồn ảnh hưởng lớp bên, thầy bên đó sang mắng. Tiếng trống trường đặc biệt nhiều cảm xúc — "đặc biệt là thấy vội, thấy sợ vì đến muộn, đặc biệt là khi đang ở cổng trường ăn vặt." Bây giờ đóng cửa bật máy lạnh, tiếng đó không còn.',
+          planningImpact:
+            'Quy hoạch cải tạo trường Tiểu học Thành Công A năm 2026 sẽ xây dựng các khối nhà 5 tầng khép kín, lắp đặt điều hòa trung tâm và cửa kính chống ồn. Tiếng giảng bài lan sang các lớp hay tiếng trống trường tự nhiên vọng ra ngõ rộng sẽ bị chặn lại hoàn toàn.',
           ambient: 'wind',
           audioSrc: '/audio/trang-tieng-trong.mp3',
           x: 68,
@@ -320,16 +337,23 @@ const TRANG: Story = {
       bgTone: '#1a1228',
       bgTourNodes: withHistoric(applyYaws(makeNodes(ltk_quan_net, [
         { idx: 5, clueId: 'trang-choi-net', yaw: 0, pitch: -8 },
-        { idx: 14, clueId: 'trang-tieng-chui', yaw: 0, pitch: -8 },
+        { idx: 16, clueId: 'trang-tieng-chui', yaw: 103, pitch: -8 },
       ], 'qn', [
         { idx: 16, scanUrl: '/scans/quan-net.glb', label: 'Xem quán net 3D', yaw: 0, pitch: -10 },
       ], [
-        // GPS: school → north on Nguyễn Hồng → east at top → south on Thành Công → quán net
-        [21.023324, 105.812746], null, null,      // 0-2: school → going north
-        [21.025000, 105.812800], null, null, null, // 3-6: top corner → going east
-        [21.025000, 105.814100], null,             // 7-8: east end → turning south
-        [21.022500, 105.814100], null,             // 9-10: south on east side
-        [21.020861, 105.813559], null, null, null, null, null, // 11-16: at café
+        // GPS: actual DJI shot positions along route to quán net
+        [21.023344, 105.812717], // 0: pic 1
+        [21.023403, 105.813224], // 1: pic 2
+        [21.023435, 105.813605], // 2: pic 3
+        [21.023410, 105.813889], // 3: pic 4
+        [21.023185, 105.813940], // 4: pic 5
+        [21.022671, 105.814008], // 5: pic 6
+        [21.022311, 105.814059], // 6: pic 7
+        [21.021553, 105.814141], // 7: pic 8
+        [21.021368, 105.814025], // 8: pic 9
+        [21.021215, 105.814017], // 9: pic 10
+        [21.021185, 105.813679], // 10: pic 11
+        null, null, null, null, null, null, // 11-16: inside café (clamped to pic 11)
       ]), QN_YAWS), [
         // Historical Google Street View matched to DJI shots — shows same streets before demolition
         { idx: 3,  url: 'https://www.google.com/maps/embed?pb=!4v1781407111689!6m8!1m7!1slPxhHBlAz66aKFd1Embsdw!2m2!1d21.02347691720712!2d105.8137573922583!3f103.09771536124487!4f-11.130644329606284!5f0.7820865974627469' },
@@ -349,6 +373,8 @@ const TRANG: Story = {
             '"Tiếng ở trong quán net chỉ có hai thứ: tiếng hi hi ha ha chửi nhau — và tiếng gõ phím của mấy chị chơi Audition, cọc cọc cọc cọc."',
           voiceNote:
             'Quán net nhà LTK: full suit gồm màn hình CRT rất lồi và cục máy to đùng phía sau — "cái cây càng to thì cái màn hình càng bé." Con chuột, bàn phím, tai nghe, webcam. Hai âm thanh duy nhất: tiếng chửi khi thua game và tiếng gõ Audition "cọc cọc cọc cọc" — "rất là chất nghệ." Bố chỉ cho chơi một tiếng rồi căn giờ đón về ăn cơm.',
+          planningImpact:
+            'Các quán net cỏ dùng màn hình CRT lồi và không gian tự do thoải mái thời niên thiếu sẽ hoàn toàn biến mất. Chúng được thay thế bởi các cyber game hiện đại, máy lạnh khép kín, nơi người chơi đeo tai nghe cách âm và không còn những tiếng hò hét giao lưu dân dã.',
           ambient: 'keyboard',
           audioSrc: '/audio/trang-tieng-chui.mp3',
           x: 35,
@@ -362,6 +388,8 @@ const TRANG: Story = {
             '"Come out luôn là nhà mình mở quán net. Đấy là một tuổi thơ tuyệt vời. Quán net còn có điều hòa."',
           voiceNote:
             'Điều LTK không nói thẳng từ đầu: tan học không phải đến quán net — là về nhà. Nhà mở quán net. Đó là lý do mỗi ngày tan học đều muốn về ngay — "anh rất hào hứng về nhà chơi điện tử." Và câu kết luận cho cả ngày: trường không có điều hòa, hồ bê tông gập ghềnh nhiều chó mùi tanh — nhưng nhà thì có điều hòa. "Quán net còn có điều hòa."',
+          planningImpact:
+            'Căn nhà mở quán net của gia đình Kiên sẽ bị dỡ bỏ một phần mặt tiền để mở rộng đường nội bộ khu tập thể Thành Công. Tuổi thơ đi học về chạy thẳng vào phòng máy lạnh chơi game sẽ chỉ còn trong ký ức.',
           ambient: 'keyboard',
           audioSrc: '/audio/trang-choi-net.mp3',
           x: 62,
@@ -387,15 +415,24 @@ const TRANG: Story = {
       bgGradient: 'linear-gradient(160deg, #c8dde8 0%, #a3c4d5 40%, #7eaabf 100%)',
       bgTone: '#5a7a8a',
       bgTourNodes: withHistoric(applyYaws(makeNodes(ltk_ho_thanh_cong, [
-        { idx: 0, clueId: 'trang-xe-dap', yaw: 0, pitch: -8 },
+        { idx: 0, clueId: 'trang-xe-dap', yaw: 143, pitch: -8 },
         { idx: 6, clueId: 'trang-nhac-aerobic', yaw: 0, pitch: -8 },
         { idx: 10, clueId: 'trang-khu-tap-the', yaw: 0, pitch: -8 },
       ], 'htc', undefined, [
-        // GPS: cổng hồ → thẳng → rẽ trái → cầu thang → vòng quanh hồ
-        [21.020445, 105.813269], null, null, null,
-        [21.020333, 105.813667], null, null, null,
-        null, null, null, null,
-        [21.020203, 105.813215],
+        // GPS: actual DJI shot positions (hồ Thành Công)
+        [21.020390, 105.813167], // 0: htc-01
+        [21.020328, 105.813291], // 1: htc-02
+        [21.020333, 105.813458], // 2: htc-03
+        [21.020349, 105.813621], // 3: htc-04
+        [21.020346, 105.813711], // 4: htc-05
+        [21.020295, 105.813714], // 5: htc-06
+        [21.020278, 105.813669], // 6: htc-07
+        [21.020258, 105.813606], // 7: htc-08
+        [21.020229, 105.813552], // 8: htc-09
+        [21.020156, 105.813370], // 9: htc-10
+        [21.020121, 105.813241], // 10: htc-11
+        null,                    // 11: htc-12 (no GPS)
+        [21.020177, 105.812859], // 12: htc-13
       ]), HTC_YAWS), [
         // Hồ Thành Công 2017
         { idx: 0, url: 'https://www.google.com/maps/embed?pb=!4v1781407926721!6m8!1m7!1sAnVN58QpnXISxwLh_W32yA!2m2!1d21.02048879554921!2d105.8132082827019!3f195.77940340158702!4f-7.682892952432283!5f0.7820865974627469' },
@@ -409,6 +446,8 @@ const TRANG: Story = {
             '"Anh chả quan tâm đến hồ Thành Công. Ngày xưa bị ép tập đi xe đạp là không thấy thích rồi."',
           voiceNote:
             'Cuối tuần ông bà dẫn LTK ra hồ tập xe đạp. Hồi đó hồ bê tông gập ghềnh, không phải lát đá như bây giờ. Nhiều chó, mùi tanh vì cá chết nổi lềnh bềnh. LTK không thích vì sợ ngã trước mặt người — "không thích tập ở cái nơi mà người ta nhìn thấy mình ngã." Thích tập ở sân sau nhà bà ngoại hơn. Và vào trong hồ không phải qua cửa chính — "con người Thành Công chả bao giờ đi cửa chính." Họ đi cửa sau, một cái cửa không bao giờ mở ra hết, phải lách xe vào. Cái cửa đó đã bị tháo theo chính sách dỡ hàng rào công viên.',
+          planningImpact:
+            'Đường ven hồ Thành Công sẽ được lát đá granit đồng bộ, tháo dỡ toàn bộ hàng rào sắt cũ để làm không gian mở. Lối đi bê tông gập ghềnh nơi tập xe đạp và chiếc cổng sắt hé mở thủa bé vĩnh viễn biến mất.',
           ambient: 'cicadas',
           audioSrc: '/audio/trang-xe-dap.mp3',
           x: 45,
@@ -422,6 +461,8 @@ const TRANG: Story = {
             '"Buổi chiều nào cũng có nhạc aerobic vang ra từ cái loa sắt cũ ở sân — đó là dấu hiệu chiều đã về."',
           voiceNote:
             'Mỗi chiều ở hồ Thành Công, loa cộng đồng bật nhạc aerobic. Các cô các bà tập đều đặn, bọn trẻ đứng nhìn. Tiếng nhạc vang khắp khu — ai ở đây cũng nhớ. Bây giờ không còn.',
+          planningImpact:
+            'Chiếc loa sắt phát nhạc aerobic mỗi chiều sẽ bị tháo dỡ để thay thế bằng hệ thống âm thanh thông minh của dự án cải tạo cảnh quan công viên mới.',
           ambient: 'aerobic',
           audioSrc: '/audio/trang-nhac-aerobic.mp3',
           x: 72,
@@ -435,6 +476,8 @@ const TRANG: Story = {
             '"Một môi trường sống nguyên cả một khu phố là khu tập thể, tất cả biết nhau và sinh hoạt chỉ trong một phố — rất hiếm."',
           voiceNote:
             'LTK tiếc không chỉ vì những âm thanh hồi bé. Khu Thành Công là một mô hình sống riêng: cả phố là khu tập thể, mọi người biết tên nhau, sinh hoạt chỉ quanh vài con phố nhỏ. Khi giải tỏa, không chỉ nhà mất đi — cái cách người ta sống cùng nhau cũng mất theo. Bây giờ sống chung cư, không ai biết tên hàng xóm.',
+          planningImpact:
+            'Khu tập thể Thành Công cũ sẽ bị san phẳng để triển khai dự án khu đô thị thương mại mới. Cả một cộng đồng dân cư sinh sống quen thuộc và gắn bó lâu đời sẽ bị phân tán về các khu tái định cư khác nhau.',
           ambient: 'wind',
           audioSrc: '/audio/trang-khu-tap-the.mp3',
           x: 30,
@@ -484,22 +527,22 @@ const ESSY: Story = {
       ], 'es-ng', [
         { idx: 14, scanUrl: '/scans/nha-essy.glb', label: 'Xem nhà Essy 3D', yaw: 0, pitch: -10 },
       ], [
-        // GPS from user's turn-by-turn descriptions
-        [21.041177, 105.816422], // es-ng-01 start
-        [21.041030, 105.816774], // es-ng-02 turn left
-        [21.041062, 105.816813], // es-ng-03
-        [21.041209, 105.816872], // es-ng-04 curve right
-        [21.041178, 105.817136], // es-ng-05
-        null,                    // es-ng-06
-        [21.041047, 105.817556], // es-ng-07 turn left
-        [21.041013, 105.817661], // es-ng-08
-        [21.041006, 105.817918], // es-ng-09 (0262) turn left
-        [21.041089, 105.817963], // es-ng-10 (0263)
-        null,                    // es-ng-11 straight
-        [21.041601, 105.817944], // es-ng-12 (0267) turn right
-        [21.041330, 105.817918], // es-ng-13 (0268)
-        null,                    // es-ng-14 turn right into hẻm
-        [21.041427, 105.817931], // es-ng-15 Essy house
+        // GPS: actual DJI shot positions (đường vào nhà Essy)
+        [21.041167, 105.816469], // 0: es-ng-01
+        [21.041059, 105.816739], // 1: es-ng-02
+        [21.041176, 105.816851], // 2: es-ng-03
+        [21.041228, 105.816917], // 3: es-ng-04
+        [21.041178, 105.817171], // 4: es-ng-05
+        [21.041080, 105.817355], // 5: es-ng-06
+        [21.041063, 105.817496], // 6: es-ng-07
+        [21.041038, 105.817636], // 7: es-ng-08
+        [21.040941, 105.817831], // 8: es-ng-09
+        [21.041038, 105.817946], // 9: es-ng-10
+        null,                    // 10: es-ng-11 (pic 11 deleted)
+        [21.041057, 105.818141], // 11: es-ng-12
+        [21.041025, 105.818295], // 12: es-ng-13
+        [21.040962, 105.818295], // 13: es-ng-14
+        [21.040736, 105.818230], // 14: es-ng-15 Essy house
       ]), ES_NG_YAWS), [
         { idx: 9,  url: 'https://www.google.com/maps/embed?pb=!4v1781412371328!6m8!1m7!1s2TWphYbHFgWWSOFqrtsw9A!2m2!1d21.04103909428119!2d105.8178888444568!3f40.074094664986106!4f-19.58369068018274!5f0.7820865974627469' },
         { idx: 10, url: 'https://www.google.com/maps/embed?pb=!4v1781412386208!6m8!1m7!1s1lZSDXjhNTvxbQG-bxTBtQ!2m2!1d21.0410784735756!2d105.8179891735765!3f88.478552511718!4f-25.48781926972515!5f0.7820865974627469' },
@@ -515,6 +558,8 @@ const ESSY: Story = {
             '"Essy biết tầm năm cách để đi vào nhà từ ba con đường khác nhau. Đây là ký ức chỉ những người sống ở đây mới có."',
           voiceNote:
             'Nhà Essy ở số 17, 267/33 Hoàng Hoa Thám — phải rẽ ba bốn lần từ đường chính mới vào được. Giữa Hoàng Hoa Thám, Văn Cao và Đội Cấn, Essy biết hơn năm đường vào nhà. Map không chỉ được chính xác — "phải phụ thuộc vào tri thức địa phương của những người sống ở đây lâu năm." Grab, Be, Xanh SM gần như không ai tự tìm được — Essy luôn phải ra đón hoặc chỉ đường qua điện thoại. Khi con đường mới mở, sẽ không ai cần navigate nữa. "Những cái ký ức của mình và những cái hiểu biết của mình về cái khu này sẽ không có cái tác dụng gì nữa."',
+          planningImpact:
+            'Dự án mở rộng đường dốc Tam Đa sẽ cắt thẳng qua ngõ 267 Hoàng Hoa Thám. Mê cung ngõ ngách chằng chịt vốn giúp "vô hiệu hóa các ứng dụng chỉ đường" sẽ bị phá vỡ hoàn toàn để nhường chỗ cho lòng đường lớn.',
           ambient: 'wind',
           audioSrc: '/audio/essy-ngo-kho.mp3',
           x: 40,
@@ -528,6 +573,8 @@ const ESSY: Story = {
             '"Mỗi lần đi vào cái khu biệt lập đó — ôi, một cái sự trong lành và mát mẻ mà có thể được ở đâu khác trên cái thành phố Hà Nội này nữa."',
           voiceNote:
             'Sáu bảy nhà trong một dãy biệt lập, gạch riêng, chia nhau một khoảng sân trồng cây chanh và hoa nhài. Essy gọi đây là một trong hai thứ sẽ mất nhất: không gian xanh giảm nhiệt, những "third place" mà cả khu đang có nhờ ngõ nhiều cây và cà phê sân vườn. Khi mở đường, cây sẽ bị xuống. "Những cái không gian đó ở trong thành phố Hà Nội hiếm rồi. Bây giờ khi giải tỏa hết thì mình còn mất nhiều hơn nữa."',
+          planningImpact:
+            'Hơn 80% diện tích các căn nhà biệt lập trong ngõ 267 sẽ bị thu hồi và phá dỡ để làm đường. Khoảng sân chung mát mẻ lát gạch riêng cùng giàn hoa nhài, cây chanh vốn gắn kết chục gia đình sẽ vĩnh viễn biến mất.',
           ambient: 'wind',
           audioSrc: '/audio/essy-cay-xanh-ngo.mp3',
           x: 25,
@@ -540,6 +587,8 @@ const ESSY: Story = {
           quote: '"Vào mùa mưa, ngõ sâu hay bị ngập — nhưng đó là một phần của nhà."',
           voiceNote:
             'Mùa mưa ở Hà Nội, những ngõ sâu như ngõ nhà Essy hay bị ngập. Nhưng điều Essy nhớ hơn là cộng đồng trong đó: người đi những cung đường quen sẽ quen biết nhau — biết tên người bán cá, bán gà, và sẵn sàng nợ tiền nhau. "Like cả một cái gia đình và mọi người sẵn sàng nợ tiền nhau."',
+          planningImpact:
+            'Hệ sinh thái tự cấp và "tín dụng niềm tin" tại khu chợ tự phát ngõ 267 sẽ bị giải phóng hoàn toàn để phục vụ dự án hạ tầng đô thị. Lối sống cộng đồng nợ rau, nợ thịt dựa trên sự tin tưởng tuyệt đối sẽ chìm vào dĩ vãng.',
           ambient: 'kids-laughter',
           x: 65,
           y: 45,
@@ -578,6 +627,8 @@ const ESSY: Story = {
             '"Nó dẫn ra một cái giếng. Mình chưa thấy một ai mà không phải là người khu này mà biết cái đường đấy cả."',
           voiceNote:
             'Từ hướng Văn Cao, có một con đường nhỏ mà chỉ người trong khu mới biết — dẫn ra cái giếng cũ, nay được sửa thành khu tập thể dục. Bên trong ngõ có rất nhiều cây, tòa nhà xung quanh che nắng — mát hơn ngoài đường rất nhiều. Xung quanh giếng cũng có một cái chợ tự phát nhỏ nữa cho dân ở gần Văn Cao. Không có ai ngoài khu biết đến chỗ này.',
+          planningImpact:
+            'Khu vực giếng cổ và sân sinh hoạt chung mát mẻ nằm sâu trong lòng ngõ 267 sẽ bị giải tỏa toàn bộ cây xanh xung quanh để phục vụ mở rộng lòng đường nối dốc Tam Đa, xóa bỏ vùng vi khí hậu tự nhiên mát mẻ của khu ngõ.',
           ambient: 'kids-laughter',
           audioSrc: '/audio/essy-tre-con-gieng.mp3',
           x: 42,
@@ -591,6 +642,8 @@ const ESSY: Story = {
             '"Ở trong ngõ 267 có một cái chùa. Khả năng cao là sẽ thành mặt đường. Mọi người có thể lên tra."',
           voiceNote:
             'Essy kể điều làm nhiều người ngạc nhiên: trong ngõ 267 Hoàng Hoa Thám có một ngôi chùa — di tích quốc gia. Rất ít người Hà Nội biết. Và trong kế hoạch giải tỏa, di tích đó "rất sát với mặt đường hoặc là thành mặt đường." Một di tích quốc gia nằm trong cái khu mà Grab không bao giờ tìm được.',
+          planningImpact:
+            'Theo thiết kế quy hoạch hạ tầng mới, ngôi chùa cổ (di tích cấp quốc gia nằm ẩn mình) sẽ bị thu hẹp đáng kể phần khoảng không đệm phía trước, từ vị trí yên tĩnh trong ngõ sâu biến thành nằm sát mép đường nhựa 4 làn xe chạy.',
           ambient: 'wind',
           audioSrc: '/audio/essy-gieng-mat.mp3',
           x: 68,
@@ -604,6 +657,8 @@ const ESSY: Story = {
             '"Trong khu này nổi tiếng nhất là cà phê sân vườn. Tại vì trong khu này nó có rất nhiều cây."',
           voiceNote:
             'Khu ngõ 267 gần đây trẻ hóa nhiều — ramen, cà phê học bài, cà phê sân vườn. Lý do nổi tiếng: rất nhiều cây, tòa nhà xung quanh che nắng — không gian xanh hiếm có giữa Hà Nội. Khi mở đường, những quán đó thành đường. Cây sẽ bị xuống. "Mình rất tiếc vì những cái không gian third place hoặc là những cái không gian giảm nhiệt như thế thực ra ở trong thành phố Hà Nội hiếm rồi."',
+          planningImpact:
+            'Các quán cà phê sân vườn và các không gian giảm nhiệt dưới bóng cây xanh lớn trong ngõ sẽ bị thu hồi đất để mở đường chính. Toàn bộ cây xanh cổ thụ sẽ bị hạ xuống để đồng bộ hóa hạ tầng giao thông.',
           ambient: 'plucks',
           audioSrc: '/audio/essy-di-tich.mp3',
           x: 25,
@@ -649,14 +704,14 @@ const TRANG_THAI_THINH: Story = {
         { idx: 0, clueId: 'thai-thinh-hoc-them', yaw: 0, pitch: -8 },
         { idx: 3, clueId: 'thai-thinh-pho-khong-xe', yaw: 0, pitch: -8 },
       ], 'tt-hoc', undefined, [
-        // GPS: 143 Trung Liệt → going east on Trung Liệt → lớp học thêm (no north drift)
-        [21.010361, 105.819077], // tt-hoc-01 start (143 Trung Liệt)
-        [21.010340, 105.819330], // tt-hoc-02 east
-        [21.010310, 105.819510], // tt-hoc-03 east
-        [21.010250, 105.819800], // tt-hoc-04 east
-        [21.010130, 105.820060], // tt-hoc-05 slight SE
-        [21.009981, 105.820251], // tt-hoc-06 study place
-        null,                    // tt-hoc-07
+        // GPS: actual DJI shot positions (lớp học thêm)
+        [21.010379, 105.819129], // 0: tt-hoc-01
+        [21.010477, 105.819357], // 1: tt-hoc-02
+        [21.010486, 105.819515], // 2: tt-hoc-03
+        [21.010738, 105.819687], // 3: tt-hoc-04
+        [21.011042, 105.819416], // 4: tt-hoc-05
+        [21.011199, 105.819608], // 5: tt-hoc-06
+        [21.011296, 105.819560], // 6: tt-hoc-07
       ]), TT_HOC_YAWS), [
         // Historical Street View matched to 143 Trung Liệt → ONG Store route
         { idx: 0, url: 'https://www.google.com/maps/embed?pb=!4v1781408126695!6m8!1m7!1sTv5fNyWV5uUbRuPQSq2dIA!2m2!1d21.01024182268491!2d105.8189569940536!3f237.84655727624724!4f-6.8214980075420755!5f0.7820865974627469' },
@@ -674,6 +729,8 @@ const TRANG_THAI_THINH: Story = {
             '"Ăn trưa xong, nhà mình nghỉ một chút. Sau đó tầm bốn năm giờ, mẹ mình bắt đầu dẫn mình đi bộ ra lớp học thêm."',
           voiceNote:
             'Nhà Trang làm cửa hàng ở khu Trung Liệt — không phải nhà ở. Mẹ hay đưa Trang sang đó ăn trưa rồi từ đó đi học thêm trước lớp một. Con phố hồi đó rất vắng — lần cuối Trang nhớ thấy phố đó, chưa bao giờ có ô tô. Đường Nguyễn Văn Tuyết hồi đó còn là cái mương — không có xe nào đi qua. Gần đây Trang đi làm về qua đó, thấy một chiếc ô tô đỗ — "đấy là một cái cảm xúc khá là lạ." Bây giờ đường mương đó thành phố ẩm thực, tối có tiếng bar sàn.',
+          planningImpact:
+            'Con ngõ nhỏ dẫn vào nhà học thêm sẽ bị giải phóng mặt bằng để mở rộng đường Nguyễn Văn Tuyết thành 4 làn xe. Không gian tĩnh lặng chiều muộn sẽ biến thành luồng giao thông tấp nập.',
           ambient: 'plucks',
           audioSrc: '/audio/thai-thinh-hoc-them.mp3',
           x: 38,
@@ -687,6 +744,8 @@ const TRANG_THAI_THINH: Story = {
             '"Tuổi thơ của mình đã ở trong một con phố đấy rất yên bình, không có xe cộ, không có ai đi qua — hầu hết là hàng xóm biết nhau thôi."',
           voiceNote:
             'Đường Nguyễn Văn Tuyết từng là mương thoát nước — không xe, không tiếng động. Sau khi lấp mương mở đường, nó thành phố ẩm thực đông đúc, "đến buổi tối thì nó sẽ có tiếng bar sàn xập xình." Trang gọi đây là cái cảm xúc lạ: cùng một chỗ, cách nhau mười mấy năm, xe máy đã được thay bằng ô tô.',
+          planningImpact:
+            'Đường Nguyễn Văn Tuyết (trước kia là mương) đã cống hóa hoàn toàn để làm khu phố ẩm thực nhộn nhịp. Âm thanh yên bình thời thơ ấu được thay bằng tiếng còi xe và tiếng nhạc xập xình từ các quán bar.',
           ambient: 'wind',
           audioSrc: '/audio/thai-thinh-pho-khong-xe.mp3',
           x: 65,
@@ -711,13 +770,13 @@ const TRANG_THAI_THINH: Story = {
         { idx: 1, clueId: 'thai-thinh-san-choi', yaw: -65, pitch: -8 },
         { idx: 3, clueId: 'thai-thinh-tieng-cuoi', yaw: -65, pitch: -8 },
       ], 'tt-pg', undefined, [
-        // GPS: straight from 143 Trung Liệt NW to playground (user: "look to the left")
-        [21.010361, 105.819077], // tt-pg-01 same start as hoc-them
-        [21.010437, 105.819007], // interpolated
-        [21.010513, 105.818937], // interpolated
-        [21.010589, 105.818867], // interpolated
-        [21.010665, 105.818798], // tt-pg-05 playground
-        null,                    // tt-pg-06
+        // GPS: actual DJI shot positions (sân chơi khu tập thể)
+        [21.010385, 105.819069], // 0: tt-pg-01
+        [21.010467, 105.818988], // 1: tt-pg-02
+        [21.010522, 105.818919], // 2: tt-pg-03
+        [21.010562, 105.818888], // 3: tt-pg-04
+        [21.010552, 105.818833], // 4: tt-pg-05
+        [21.010552, 105.818833], // 5: tt-pg-06 (same as pic 5)
       ]), TT_PG_YAWS),
       clues: [
         {
@@ -728,6 +787,8 @@ const TRANG_THAI_THINH: Story = {
             '"Đến tận ngày hôm nay mình vẫn chưa bao giờ được vào cái sân chơi đó để chơi, mặc dù mình đã đi qua nó vô số lần."',
           voiceNote:
             'Trên đường đi học thêm mỗi buổi chiều, Trang đi qua sân chơi khu tập thể. Thấy các bạn chơi, nhưng không được dừng lại — luôn phải đến cửa hàng, luôn phải đi học. "Chỉ đơn giản là một đứa trẻ đang rất là muốn đi chơi và nó bị bắt đi học thôi. Nó là cái cảm giác mình không bao giờ trải nghiệm lại được nữa vì mình đã lớn rồi." Nếu khu bị giải tỏa, Trang sẽ không còn cái trigger để đi qua và nhớ lại cảm giác đó nữa.',
+          planningImpact:
+            'Sân chơi dưới chân khu tập thể cũ sẽ bị dỡ bỏ. Hàng rào bao quanh tháo dỡ để nhường chỗ cho bãi đỗ xe và khối đế trung tâm thương mại cao tầng.',
           ambient: 'kids-laughter',
           audioSrc: '/audio/thai-thinh-san-choi.mp3',
           x: 50,
@@ -741,6 +802,8 @@ const TRANG_THAI_THINH: Story = {
             '"Nó là cái cảm giác mà chỉ có mình mình cảm nhận được thôi và cũng không diễn tả được thành lời."',
           voiceNote:
             'Trang không gọi đây là ghen tị. Chỉ là cái cảm giác của một đứa năm tuổi muốn được ở lại chơi, muốn lăn ra ăn vạ để ở lại. Cái cảm giác đó không biến mất — đến bây giờ khi đi qua phố đó, nó vẫn ùa về. Khi phố bị giải tỏa, cả cái trigger đó cũng mất theo.',
+          planningImpact:
+            'Trẻ em trong khu tập thể sẽ không còn một sân chơi tách biệt, khép kín an toàn. Mọi hoạt động vui chơi ngoài trời sẽ phải chuyển ra các khu công viên dịch vụ công cộng.',
           ambient: 'kids-laughter',
           audioSrc: '/audio/thai-thinh-tieng-cuoi.mp3',
           x: 72,
@@ -768,12 +831,12 @@ const TRANG_THAI_THINH: Story = {
         { idx: 0, clueId: 'thai-thinh-di-voi-me', yaw: 0, pitch: -8 },
         { idx: 4, clueId: 'thai-thinh-vio-oc', yaw: 0, pitch: -8 },
       ], 'tt-oc', undefined, [
-        // GPS: đường Trung Liệt → rẽ vào ngõ 69 → quán ốc oanh
-        [21.010911, 105.820092], // tt-oc-01
-        [21.011139, 105.820296], // tt-oc-02
-        [21.011281, 105.820453], // tt-oc-03 turn right into ngõ 69
-        null,                    // tt-oc-04 inside alley
-        [21.011001, 105.820834], // tt-oc-05 quán ốc oanh
+        // GPS: actual DJI shot positions (quán ốc oanh)
+        [21.010715, 105.819921], // 0: tt-oc-01
+        [21.011138, 105.820287], // 1: tt-oc-02
+        [21.011268, 105.820458], // 2: tt-oc-03
+        [21.011089, 105.820710], // 3: tt-oc-04
+        [21.011006, 105.820823], // 4: tt-oc-05
       ]), TT_OC_YAWS), [
         { idx: 0, url: 'https://www.google.com/maps/embed?pb=!4v1781408630892!6m8!1m7!1sqqnx-p_V94aaSUetEHMvAg!2m2!1d21.01091163804722!2d105.8200952018351!3f42.95893351208221!4f-3.4922654802283972!5f0.7820865974627469' },
         { idx: 1, url: 'https://www.google.com/maps/embed?pb=!4v1781408663887!6m8!1m7!1spNB7WYfP2N6cX5e7_Yf62A!2m2!1d21.0111221435295!2d105.8202784838613!3f38.21358173713219!4f-6.256166983100783!5f0.7820865974627469' },
@@ -788,6 +851,8 @@ const TRANG_THAI_THINH: Story = {
             '"Ở quán ốc đó thì bác ấy đánh violin. Đấy là lần đầu tiên mình biết violin là gì và chơi như thế nào."',
           voiceNote:
             'Hôm đó Trang dùng tẩy với bút máy — vi phạm nội quy, cô giáo có thước to đánh vào tay học sinh. Trang khóc cả đường về. Mẹ dẫn đi ăn ốc để an ủi — và ở quán đó ông chủ đánh violin. Trang nghĩ violin có thể chơi ở mọi nơi, kể cả quán ốc. Lớn lên mới biết violin là nhạc cụ của dàn giao hưởng. "Đối với mình bây giờ violin vẫn là cái gì đó khá là gần gũi — bởi vì lần đầu tiên mình thấy violin là khi mình nghe nó ở quán ốc."',
+          planningImpact:
+            'Tiếng đàn violin mộc mạc cất lên giữa bàn ốc luộc vỉa hè sẽ vĩnh viễn không còn. Không gian văn hóa bình dân này bị xóa sổ khi chủ quán phải di dời sang địa điểm kinh doanh mới do quy hoạch dẹp vỉa hè.',
           ambient: 'violin',
           audioSrc: '/audio/thai-thinh-vio-oc.mp3',
           x: 45,
@@ -801,6 +866,8 @@ const TRANG_THAI_THINH: Story = {
             '"Sẽ không có một đứa trẻ nào nhìn thấy violin lần đầu tiên ở trong một quán ốc nữa."',
           voiceNote:
             'Hồi bé quán ốc đó chỉ có cư dân trong khu biết. "Cái lối sống ngày xưa rất mang tính làng xóm — riêng một khu vực sống với nhau thì biết về nhau thôi." Bây giờ quán nổi trên TikTok. Trang không biết quán có nằm trong diện giải tỏa không, nhưng nếu có — "sẽ không còn ai cảm nhận được violin giống như mình đã cảm nhận violin nữa."',
+          planningImpact:
+            'Quán ốc luộc nhỏ vỉa hè của người dân địa phương bị dẹp bỏ trong chiến dịch lập lại trật tự đô thị. Những buổi chiều mẹ dẫn đi ăn ốc an ủi sau giờ học sẽ không còn quán cũ để tìm về.',
           ambient: 'violin',
           audioSrc: '/audio/thai-thinh-di-voi-me.mp3',
           x: 65,

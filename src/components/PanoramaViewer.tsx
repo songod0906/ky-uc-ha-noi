@@ -18,6 +18,7 @@ import { Howl } from 'howler';
 import { X, ArrowUp, ArrowDown } from 'lucide-react';
 import type { TourNode, TourClueAnchor, TourNavAnchor, TourScanAnchor, Clue } from '../types';
 import { ScanViewer } from './ScanViewer';
+import { DriveMinimap } from './DriveMinimap';
 
 // ---------- helpers ----------
 
@@ -139,39 +140,90 @@ function PanoSphere({ url }: { url: string }) {
   );
 }
 
-/** Clue hotspot: subtle icon puck that expands label on hover. No mesh orb. */
+/** Clue hotspot: map-pin shape (circle + tail). Pulsing ring when uncollected. */
 function ClueHotspot({
   anchor,
   clue,
   collected,
   onPreview,
+  onCalibDrag,
+  onCalibRemove,
+  onCalibDragStart,
+  onCalibDragEnd,
 }: {
   anchor: TourClueAnchor;
   clue: Clue;
   collected: boolean;
   onPreview: (clue: Clue) => void;
+  onCalibDrag?: (clueId: string, yaw: number, pitch: number) => void;
+  onCalibRemove?: (clueId: string) => void;
+  onCalibDragStart?: () => void;
+  onCalibDragEnd?: () => void;
 }) {
+  const dragRef = useRef<{ startX: number; startY: number; startYaw: number; startPitch: number } | null>(null);
+  const hasDragged = useRef(false);
   const pos = toPos(anchor.yaw, anchor.pitch);
+  const pinColor = collected ? '#f59e0b' : '#fbbf24';
   return (
     <Html position={pos} center distanceFactor={90} zIndexRange={[10, 15]}>
-      <button
-        className="flex flex-col items-center gap-0.5 select-none group"
-        onClick={() => !collected && onPreview(clue)}
-      >
-        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-base
-          shadow-lg transition-all duration-200 group-hover:scale-110
-          ${collected
-            ? 'bg-white/30 border border-white/30 text-white/60'
-            : 'bg-white/20 border border-white/50 text-white backdrop-blur-sm group-hover:bg-white/35'
-          }`}>
-          {collected ? '✓' : CLUE_ICONS[clue.type]}
-        </div>
-        <span className={`max-w-[120px] text-center text-[9px] font-serif leading-tight
-          drop-shadow-md transition-opacity duration-200 px-1
-          ${collected ? 'text-white/40' : 'text-white/0 group-hover:text-white/90'}`}>
-          {clue.label}
-        </span>
-      </button>
+      <div className="flex flex-col items-center" style={{ filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.95))' }}>
+        {onCalibRemove && (
+          <button
+            onClick={() => onCalibRemove(clue.id)}
+            className="mb-1 w-5 h-5 rounded-full bg-red-500/90 text-white text-[10px] flex items-center justify-center hover:bg-red-400 leading-none shadow-lg border border-red-300/30"
+          >✕</button>
+        )}
+        <button
+          className={`relative flex flex-col items-center select-none group ${onCalibDrag ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'}`}
+          onClick={() => { if (!hasDragged.current) onPreview(clue); }}
+          onPointerDown={onCalibDrag ? (e) => {
+            e.stopPropagation();
+            e.currentTarget.setPointerCapture(e.pointerId);
+            hasDragged.current = false;
+            dragRef.current = { startX: e.clientX, startY: e.clientY, startYaw: anchor.yaw, startPitch: anchor.pitch ?? -8 };
+            onCalibDragStart?.();
+          } : undefined}
+          onPointerMove={onCalibDrag ? (e) => {
+            if (!dragRef.current) return;
+            const dx = e.clientX - dragRef.current.startX;
+            const dy = e.clientY - dragRef.current.startY;
+            if (Math.abs(dx) + Math.abs(dy) > 4) hasDragged.current = true;
+            const newYaw = dragRef.current.startYaw - dx * 0.45;
+            const newPitch = dragRef.current.startPitch - dy * 0.28;
+            onCalibDrag(clue.id, Math.round(newYaw), Math.round(newPitch));
+          } : undefined}
+          onPointerUp={onCalibDrag ? () => { dragRef.current = null; onCalibDragEnd?.(); } : undefined}
+          onPointerCancel={onCalibDrag ? () => { dragRef.current = null; onCalibDragEnd?.(); } : undefined}
+        >
+          {/* Pulsing beacon ring */}
+          <div className="absolute rounded-full border-2 border-amber-300/40 animate-ping pointer-events-none"
+            style={{ width: 46, height: 46, top: -3, left: -3 }} />
+          {/* Pin head circle */}
+          <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xl z-10 relative
+            transition-transform duration-150 group-hover:scale-110 border-2
+            ${collected
+              ? 'bg-amber-500 text-white border-amber-300 shadow-[0_0_10px_rgba(251,191,36,0.5)]'
+              : 'bg-amber-400 text-stone-900 border-amber-200 shadow-[0_0_12px_rgba(251,191,36,0.7)]'
+            }
+          `}>
+            {collected ? '📍' : CLUE_ICONS[clue.type]}
+          </div>
+          {/* Pin tail */}
+          <div className="-mt-px" style={{
+            width: 0, height: 0,
+            borderLeft: '6px solid transparent',
+            borderRight: '6px solid transparent',
+            borderTop: `10px solid ${collected ? '#f59e0b' : '#fbbf24'}`,
+          }} />
+          {/* Label tooltip above */}
+          <span className="absolute whitespace-nowrap px-2 py-0.5 rounded-lg text-[10px] font-serif
+            bg-black/90 border border-amber-400/40 text-amber-100
+            opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none z-20"
+            style={{ bottom: '100%', marginBottom: 8, left: '50%', transform: 'translateX(-50%)' }}>
+            {clue.label}
+          </span>
+        </button>
+      </div>
     </Html>
   );
 }
@@ -193,13 +245,13 @@ function NavHotspot({
         onClick={() => onNavigate(anchor.toNodeId)}
       >
         {!isBack && (
-          <ArrowUp className="w-5 h-5 text-white/80 group-hover:text-white transition-all drop-shadow-[0_0_6px_rgba(255,255,255,0.6)]" />
+          <ArrowUp className="w-5 h-5 text-amber-400 group-hover:text-amber-200 transition-all drop-shadow-[0_2px_4px_rgba(0,0,0,1)]" />
         )}
         <span className="px-3 py-1 rounded-lg text-[11px] font-serif bg-black/55 text-white/90 group-hover:bg-black/75 group-hover:text-white transition-all whitespace-nowrap shadow-lg backdrop-blur-sm">
           {anchor.label ?? 'Đi tiếp'}
         </span>
         {isBack && (
-          <ArrowDown className="w-5 h-5 text-white/80 group-hover:text-white transition-all drop-shadow-[0_0_6px_rgba(255,255,255,0.6)]" />
+          <ArrowDown className="w-5 h-5 text-amber-400 group-hover:text-amber-200 transition-all drop-shadow-[0_2px_4px_rgba(0,0,0,1)]" />
         )}
       </button>
     </Html>
@@ -224,16 +276,18 @@ function ScanHotspot({ anchor, onOpen }: { anchor: TourScanAnchor; onOpen: (url:
   );
 }
 
-// Calibration tracker — reads camera yaw every frame, writes to a DOM ref (no React re-render).
+// Calibration tracker — reads camera yaw+pitch every frame, writes to a DOM ref (no React re-render).
 function CalibTracker({ yawElRef }: { yawElRef: React.RefObject<HTMLSpanElement> }) {
   const { camera } = useThree();
   useFrame(() => {
     const dir = new THREE.Vector3();
     camera.getWorldDirection(dir);
     const yaw = Math.round(Math.atan2(-dir.x, -dir.z) * 180 / Math.PI);
+    const pitch = Math.round(Math.atan2(dir.y, Math.sqrt(dir.x * dir.x + dir.z * dir.z)) * 180 / Math.PI);
     if (yawElRef.current) {
       yawElRef.current.textContent = `${yaw}`;
       yawElRef.current.dataset.yaw = String(yaw);
+      yawElRef.current.dataset.pitch = String(pitch);
     }
   });
   return null;
@@ -253,6 +307,11 @@ function Scene({
   clueVisible,
   playgroundBlocked,
   onInteract,
+  onCalibClueDrag,
+  onCalibClueRemove,
+  onCalibClueDragStart,
+  onCalibClueDragEnd,
+  clueIsDragging,
 }: {
   node: TourNode;
   collectedIds: string[];
@@ -266,6 +325,11 @@ function Scene({
   clueVisible: boolean;
   playgroundBlocked: boolean;
   onInteract: () => void;
+  onCalibClueDrag?: (clueId: string, yaw: number, pitch: number) => void;
+  onCalibClueRemove?: (clueId: string) => void;
+  onCalibClueDragStart?: () => void;
+  onCalibClueDragEnd?: () => void;
+  clueIsDragging?: boolean;
 }) {
   return (
     <>
@@ -283,6 +347,10 @@ function Scene({
             clue={clue}
             collected={collectedIds.includes(anchor.clueId)}
             onPreview={onPreview}
+            onCalibDrag={calibrate ? onCalibClueDrag : undefined}
+            onCalibRemove={calibrate ? onCalibClueRemove : undefined}
+            onCalibDragStart={calibrate ? onCalibClueDragStart : undefined}
+            onCalibDragEnd={calibrate ? onCalibClueDragEnd : undefined}
           />
         );
       })}
@@ -304,6 +372,7 @@ function Scene({
         enablePan={false}
         rotateSpeed={-0.4}
         makeDefault
+        enabled={!clueIsDragging}
         onChange={onInteract}
       />
     </>
@@ -324,6 +393,7 @@ function CluePreviewModal({
   onClose: () => void;
 }) {
   const [playing, setPlaying] = useState(false);
+  const [activeTab, setActiveTab] = useState<'memory' | 'planning'>('memory');
   const howlRef = useRef<Howl | null>(null);
 
   useEffect(() => {
@@ -350,9 +420,9 @@ function CluePreviewModal({
 
   return (
     <div className="absolute inset-0 z-30 flex items-end justify-center p-4 bg-black/50">
-      <div className="w-full max-w-sm bg-[#FCFAF2] rounded-2xl p-5 shadow-2xl border border-muctim/10">
+      <div className="w-full max-w-sm bg-[#FCFAF2] rounded-2xl p-5 shadow-2xl border border-muctim/10 flex flex-col max-h-[85%] overflow-hidden">
         {/* Header */}
-        <div className="flex items-start justify-between mb-3">
+        <div className="flex items-start justify-between mb-3 flex-none">
           <div>
             <p className="font-mono text-[9px] text-muctim-faded uppercase tracking-widest">
               {CLUE_ICONS[clue.type]} {clue.type}
@@ -364,55 +434,167 @@ function CluePreviewModal({
           </button>
         </div>
 
-        {/* Quote */}
-        <p className="font-handwritten text-muctim italic mb-3 leading-relaxed text-sm">
-          {clue.quote}
-        </p>
-
-        {/* Oral history audio player */}
-        {clue.audioSrc && (
+        {/* Tab Selection */}
+        <div className="flex border-b border-muctim/10 mb-4 text-[11px] font-serif font-bold flex-none">
           <button
-            onClick={togglePlay}
-            className={`flex items-center gap-3 w-full mb-3 px-3 py-2.5 rounded-xl transition-all text-left
-              ${playing
-                ? 'bg-muctim/12 border border-muctim/20'
-                : 'bg-muctim/6 hover:bg-muctim/10 border border-muctim/10'}`}
+            onClick={() => setActiveTab('memory')}
+            className={`flex-1 pb-2 text-center transition-all ${
+              activeTab === 'memory'
+                ? 'text-muctim border-b-2 border-muctim'
+                : 'text-muctim-faded hover:text-muctim'
+            }`}
           >
-            <div className={`w-7 h-7 rounded-full flex-none flex items-center justify-center text-sm transition-all
-              ${playing ? 'bg-muctim text-white' : 'bg-muctim/15 text-muctim'}`}>
-              {playing ? '⏸' : '▶'}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-mono text-[9px] text-muctim-faded uppercase tracking-wider">
-                {playing ? 'Đang phát giọng kể...' : 'Nghe lời kể trực tiếp'}
+            📍 Ký ức tuổi thơ
+          </button>
+          <button
+            onClick={() => setActiveTab('planning')}
+            className={`flex-1 pb-2 text-center transition-all ${
+              activeTab === 'planning'
+                ? 'text-amber-800 border-b-2 border-amber-800'
+                : 'text-muctim-faded hover:text-amber-800'
+            }`}
+          >
+            ⚠️ Quy hoạch 2026
+          </button>
+        </div>
+
+        {/* Tab Content (Scrollable if needed) */}
+        <div className="flex-1 overflow-y-auto mb-4 pr-1 scrollbar-thin">
+          {activeTab === 'memory' ? (
+            <div>
+              {/* Quote */}
+              <p className="font-handwritten text-muctim italic mb-3 leading-relaxed text-sm">
+                {clue.quote}
               </p>
-              {playing && (
-                <div className="flex gap-0.5 items-end h-2.5 mt-1">
-                  {[0.6, 1, 0.7, 0.9, 0.5, 0.8, 0.6].map((h, i) => (
-                    <div key={i} className="w-0.5 bg-muctim/50 rounded-full animate-pulse"
-                      style={{ height: `${h * 10}px`, animationDelay: `${i * 0.1}s` }} />
-                  ))}
-                </div>
+
+              {/* Oral history audio player */}
+              {clue.audioSrc && (
+                <button
+                  onClick={togglePlay}
+                  className={`flex items-center gap-3 w-full mb-3 px-3 py-2.5 rounded-xl transition-all text-left
+                    ${playing
+                      ? 'bg-muctim/12 border border-muctim/20'
+                      : 'bg-muctim/6 hover:bg-muctim/10 border border-muctim/10'}`}
+                >
+                  <div className={`w-7 h-7 rounded-full flex-none flex items-center justify-center text-sm transition-all
+                    ${playing ? 'bg-muctim text-white' : 'bg-muctim/15 text-muctim'}`}>
+                    {playing ? '⏸' : '▶'}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-mono text-[9px] text-muctim-faded uppercase tracking-wider">
+                      {playing ? 'Đang phát giọng kể...' : 'Nghe lời kể trực tiếp'}
+                    </p>
+                    {playing && (
+                      <div className="flex gap-0.5 items-end h-2.5 mt-1">
+                        {[0.6, 1, 0.7, 0.9, 0.5, 0.8, 0.6].map((h, i) => (
+                          <div key={i} className="w-0.5 bg-muctim/50 rounded-full animate-pulse"
+                            style={{ height: `${h * 10}px`, animationDelay: `${i * 0.1}s` }} />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </button>
               )}
+
+              {/* Voice note text */}
+              <p className="font-serif text-xs text-muctim-faded leading-relaxed">
+                {clue.voiceNote}
+              </p>
             </div>
-          </button>
-        )}
+          ) : (
+            <div className="bg-stone-100/70 border border-stone-200 rounded-xl p-3.5 font-serif">
+              <p className="font-mono text-[8px] text-stone-500 uppercase tracking-widest mb-1.5 font-bold">
+                Quyết định giải phóng mặt bằng
+              </p>
+              <p className="text-xs text-stone-700 leading-relaxed font-medium">
+                {clue.planningImpact || 'Địa điểm này nằm trong ranh giới dự án cải tạo hạ tầng kỹ thuật và nâng cấp đô thị năm 2026. Công trình và hiện trạng cũ sẽ bị phá dỡ hoàn toàn.'}
+              </p>
+            </div>
+          )}
+        </div>
 
-        {/* Voice note text */}
-        <p className="font-serif text-xs text-muctim-faded leading-relaxed mb-4">
-          {clue.voiceNote}
+        {/* Action Button */}
+        <div className="flex-none pt-2 border-t border-muctim/5">
+          {collected ? (
+            <p className="text-center font-serif text-xs text-emerald-700 font-bold">✓ Đã lưu trữ thành công</p>
+          ) : (
+            <button
+              onClick={() => {
+                onCollect();
+                // Play pluck sound via Synth is already done in parent handleCollect
+              }}
+              className="w-full py-2.5 bg-muctim text-white font-serif text-sm font-semibold rounded-xl hover:bg-muctim/80 transition-all shadow-sm"
+            >
+              Lưu trữ mảnh ký ức này
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---------- Calib clue sidebar ----------
+
+function CalibCluePanel({
+  allClues,
+  nodeId,
+  calibClues,
+  baseAnchors,
+  onPlace,
+  onRemove,
+}: {
+  allClues: Clue[];
+  nodeId: string;
+  calibClues: Array<{ nodeId: string; clueId: string; yaw: number; pitch: number; removed?: boolean }>;
+  baseAnchors: Array<{ clueId: string }> | undefined;
+  onPlace: (clueId: string) => void;
+  onRemove: (clueId: string) => void;
+}) {
+  const baseIds = new Set((baseAnchors ?? []).map(a => a.clueId));
+  const nodeCalib = calibClues.filter(c => c.nodeId === nodeId);
+  const removedIds = new Set(nodeCalib.filter(c => c.removed).map(c => c.clueId));
+  const addedIds = new Set(nodeCalib.filter(c => !c.removed && !baseIds.has(c.clueId)).map(c => c.clueId));
+
+  const isOnNode = (id: string) =>
+    (baseIds.has(id) && !removedIds.has(id)) || addedIds.has(id);
+
+  return (
+    <div className="absolute right-3 top-14 bottom-20 z-40 w-52 flex flex-col overflow-hidden">
+      <div className="bg-black/80 backdrop-blur-sm rounded-xl border border-white/10 flex flex-col overflow-hidden">
+        <p className="text-[9px] font-mono text-yellow-400/70 uppercase tracking-widest px-3 pt-2 pb-1 flex-none">
+          Clues — click Place, then drag
         </p>
-
-        {collected ? (
-          <p className="text-center font-serif text-xs text-sage">✓ Đã thu thập</p>
-        ) : (
-          <button
-            onClick={onCollect}
-            className="w-full py-2.5 bg-muctim text-white font-serif text-sm font-semibold rounded-xl hover:bg-muctim/80 transition-all"
-          >
-            Thu thập mảnh ký ức
-          </button>
-        )}
+        <div className="overflow-y-auto flex-1 px-2 pb-2 flex flex-col gap-1">
+          {allClues.map(clue => {
+            const on = isOnNode(clue.id);
+            return (
+              <div
+                key={clue.id}
+                className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-[10px] font-mono border ${
+                  on
+                    ? 'bg-purple-500/20 border-purple-400/50 text-purple-200'
+                    : 'bg-white/5 border-white/10 text-white/60'
+                }`}
+              >
+                <span className="flex-1 truncate" title={clue.label}>
+                  {CLUE_ICONS[clue.type]} {clue.label}
+                </span>
+                {on ? (
+                  <button
+                    onClick={() => onRemove(clue.id)}
+                    className="flex-none text-red-400 hover:text-red-300 bg-red-500/20 rounded px-1 text-[9px]"
+                  >✕ Remove</button>
+                ) : (
+                  <button
+                    onClick={() => onPlace(clue.id)}
+                    className="flex-none text-green-400 hover:text-green-300 bg-green-500/20 rounded px-1 text-[9px]"
+                  >+ Place</button>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
@@ -566,6 +748,7 @@ export function PanoramaViewer({
   allClues,
   minimapFlipX = false,
   onNodeIndexChange,
+  driveMode = false,
 }: {
   nodes: TourNode[];
   startNodeId?: string;
@@ -575,6 +758,7 @@ export function PanoramaViewer({
   allClues: Clue[];
   minimapFlipX?: boolean;
   onNodeIndexChange?: (idx: number) => void;
+  driveMode?: boolean;
 }) {
   // Stable key for this sequence (e.g. \"ct\" from \"ct-01\"), used for localStorage
   const seqKey = useRef(nodes[0]?.id.replace(/-\d+$/, '') ?? 'seq').current;
@@ -611,12 +795,21 @@ export function PanoramaViewer({
   const [allShots, setAllShots] = useState<string[]>([]);
   const [manifestError, setManifestError] = useState<string | null>(null);
   const [copyFlash, setCopyFlash] = useState(false);
+  const [clueIsDragging, setClueIsDragging] = useState(false);
   const [showHistoric, setShowHistoric] = useState(false);
   const [dragHintVisible, setDragHintVisible] = useState(true);
   const [exportText, setExportText] = useState<string | null>(null);
   const [dwellSecs, setDwellSecs] = useState(0);
-  const clueVisible = dwellSecs >= 8;
-  const playgroundBlocked = !!nodeId?.startsWith('tt-pg') && dwellSecs < 15;
+  // In calib mode: bypass all dwell gates so clues appear immediately and playground isn't locked
+  const clueVisible = CALIB_MODE || dwellSecs >= 8;
+  const playgroundBlocked = !CALIB_MODE && !!nodeId?.startsWith('tt-pg') && dwellSecs < 15;
+
+  // Drive mode — auto-advance through nodes like a moving car
+  const DRIVE_MS = 4500;
+  const [drivePlaying, setDrivePlaying] = useState(true);
+  const [driveProgress, setDriveProgress] = useState(0); // 0–100
+  const driveElapsedRef = useRef(0);
+  const driveLastRef = useRef(Date.now());
 
   // Persist node list for this sequence whenever it changes
   useEffect(() => {
@@ -625,12 +818,30 @@ export function PanoramaViewer({
     catch (e) { console.error('[calib] localStorage write failed (nodes):', e); }
   }, [localNodes, seqKey]);
 
+  // calibClues: clue anchor positions calibrated this session, persisted to localStorage
+  // removed:true = clue was explicitly deleted from this node in calib mode
+  const [calibClues, setCalibClues] = useState<Array<{ nodeId: string; clueId: string; yaw: number; pitch: number; removed?: boolean }>>(() => {
+    if (!CALIB_MODE) return [];
+    try {
+      const saved = localStorage.getItem('calib_clues');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return [];
+  });
+
   // Persist accumulated yaws whenever they change
   useEffect(() => {
     if (!CALIB_MODE) return;
     try { localStorage.setItem('calib_yaws', JSON.stringify(calibYaws)); }
     catch (e) { console.error('[calib] localStorage write failed (yaws):', e); }
   }, [calibYaws]);
+
+  // Persist calibrated clue positions
+  useEffect(() => {
+    if (!CALIB_MODE) return;
+    try { localStorage.setItem('calib_clues', JSON.stringify(calibClues)); }
+    catch (e) { console.error('[calib] localStorage write failed (clues):', e); }
+  }, [calibClues]);
 
   // Load full_manifest in calib mode to know available shots
   useEffect(() => {
@@ -684,6 +895,36 @@ export function PanoramaViewer({
     }, 1000);
     return () => clearInterval(t);
   }, [nodeId]);
+
+  // Drive mode: reset progress whenever node changes
+  useEffect(() => {
+    if (!driveMode) return;
+    driveElapsedRef.current = 0;
+    driveLastRef.current = Date.now();
+    setDriveProgress(0);
+  }, [nodeId, driveMode]);
+
+  // Drive mode: tick forward, auto-advance when timer expires
+  useEffect(() => {
+    if (!driveMode) return;
+    const id = setInterval(() => {
+      if (!drivePlaying || preview) return;
+      const now = Date.now();
+      driveElapsedRef.current += now - driveLastRef.current;
+      driveLastRef.current = now;
+      const pct = Math.min(100, (driveElapsedRef.current / DRIVE_MS) * 100);
+      setDriveProgress(pct);
+      if (driveElapsedRef.current >= DRIVE_MS) {
+        driveElapsedRef.current = 0;
+        setDriveProgress(0);
+        setNodeId(cur => {
+          const idx = localNodes.findIndex(n => n.id === cur);
+          return idx < localNodes.length - 1 ? localNodes[idx + 1].id : cur;
+        });
+      }
+    }, 80);
+    return () => clearInterval(id);
+  }, [driveMode, drivePlaying, preview, localNodes]);
 
   // Notify parent component of the current node index change
   useEffect(() => {
@@ -785,10 +1026,15 @@ export function PanoramaViewer({
       return;
     }
 
-    const json = JSON.stringify(allData, null, 2);
-    setExportText(json);
-    try { navigator.clipboard?.writeText(json); } catch {}
-  }, [seqKey, localNodes, calibYaws]);
+    const navJson = JSON.stringify(allData, null, 2);
+    // Also include any clue anchors calibrated this session
+    const clueJson = calibClues.length > 0
+      ? '\n\n// === Calibrated clue anchors — paste into stories.ts ===\n' + JSON.stringify(calibClues, null, 2)
+      : '';
+    const combined = navJson + clueJson;
+    setExportText(combined);
+    try { navigator.clipboard?.writeText(combined); } catch {}
+  }, [seqKey, localNodes, calibYaws, calibClues]);
 
   // Keyboard handlers
   useEffect(() => {
@@ -813,6 +1059,21 @@ export function PanoramaViewer({
         console.log('CALIB_BACK', JSON.stringify({ nodeId, backYaw: yaw }) + ',');
         setJustLocked('back');
         setTimeout(() => setJustLocked(null), 800);
+      }
+      // C key: lock current camera yaw as the clue anchor yaw for ALL clues at this node
+      if (e.key === 'c' || e.key === 'C') {
+        const anchors = rawNode?.clueAnchors ?? [];
+        if (anchors.length > 0) {
+          const newEntries = anchors.map(a => ({ nodeId, clueId: a.clueId, yaw, pitch: a.pitch ?? -8 }));
+          setCalibClues(prev => {
+            const filtered = prev.filter(c => !(c.nodeId === nodeId && anchors.some(a => a.clueId === c.clueId)));
+            return [...filtered, ...newEntries];
+          });
+          console.log('CALIB_CLUE', JSON.stringify(newEntries) + ',');
+          setJustLocked('fwd');
+          setTimeout(() => setJustLocked(null), 800);
+        }
+        return;
       }
     };
     window.addEventListener('keydown', handler);
@@ -850,7 +1111,22 @@ export function PanoramaViewer({
       pitch: -10,
       label: 'Tiếp tục',
     });
-    return { ...base, navAnchors };
+    // Apply calibrated clue anchors: reposition existing, filter removed, add newly placed
+    const nodeCalib = calibClues.filter(c => c.nodeId === base.id);
+    const removedIds = new Set(nodeCalib.filter(c => c.removed).map(c => c.clueId));
+    const calibrated = (base.clueAnchors ?? [])
+      .filter(a => !removedIds.has(a.clueId))
+      .map(a => {
+        const c = nodeCalib.find(cc => cc.clueId === a.clueId && !cc.removed);
+        return c ? { ...a, yaw: c.yaw, pitch: c.pitch } : a;
+      });
+    // Add clues placed via sidebar that weren't in the original node
+    const baseIds = new Set((base.clueAnchors ?? []).map(a => a.clueId));
+    const added = nodeCalib
+      .filter(c => !c.removed && !baseIds.has(c.clueId))
+      .map(c => ({ clueId: c.clueId, yaw: c.yaw, pitch: c.pitch }));
+    const allClueAnchors = [...calibrated, ...added];
+    return { ...base, navAnchors, ...(allClueAnchors.length ? { clueAnchors: allClueAnchors } : { clueAnchors: [] }) };
   })();
 
   // Ambient audio disabled
@@ -874,6 +1150,21 @@ export function PanoramaViewer({
           clueVisible={clueVisible}
           playgroundBlocked={playgroundBlocked}
           onInteract={() => { nodeInteracted.current = true; }}
+          onCalibClueDrag={CALIB_MODE ? (clueId, yaw, pitch) => {
+            setCalibClues(prev => {
+              const filtered = prev.filter(c => !(c.nodeId === nodeId && c.clueId === clueId));
+              return [...filtered, { nodeId, clueId, yaw, pitch }];
+            });
+          } : undefined}
+          onCalibClueRemove={CALIB_MODE ? (clueId) => {
+            setCalibClues(prev => {
+              const filtered = prev.filter(c => !(c.nodeId === nodeId && c.clueId === clueId));
+              return [...filtered, { nodeId, clueId, yaw: 0, pitch: -8, removed: true }];
+            });
+          } : undefined}
+          onCalibClueDragStart={CALIB_MODE ? () => setClueIsDragging(true) : undefined}
+          onCalibClueDragEnd={CALIB_MODE ? () => setClueIsDragging(false) : undefined}
+          clueIsDragging={clueIsDragging}
         />
       </Canvas>
 
@@ -964,9 +1255,99 @@ export function PanoramaViewer({
             {copyFlash ? '✓ Copied!' : '💾 Copy calib'}
           </button>
           <span className="text-white/30 text-[10px]">
-            {Object.keys(calibYaws).length} locked total
+            {Object.keys(calibYaws).length} nav locked · {calibClues.length} clues
           </span>
+          {(rawNode?.clueAnchors?.length ?? 0) > 0 && (
+            <>
+              <span className="text-white/30 w-full text-center text-[9px]">— clues at this node —</span>
+              {rawNode!.clueAnchors!.map(a => {
+                const cal = calibClues.find(c => c.nodeId === nodeId && c.clueId === a.clueId);
+                return (
+                  <span key={a.clueId} className={cal ? 'text-purple-300 font-bold' : 'text-yellow-400/80'}>
+                    <kbd className="bg-white/20 px-1 rounded text-[9px]">C</kbd>{' '}
+                    {a.clueId.split('-').slice(-2).join('-')} @ {cal?.yaw ?? a.yaw}°
+                    {cal ? ' ✓' : ' (default)'}
+                  </span>
+                );
+              })}
+            </>
+          )}
         </div>
+      )}
+
+      {/* Calib clue sidebar */}
+      {CALIB_MODE && (
+        <CalibCluePanel
+          allClues={allClues}
+          nodeId={nodeId}
+          calibClues={calibClues}
+          baseAnchors={rawNode?.clueAnchors}
+          onPlace={(clueId) => {
+            const yaw = Number(yawElRef.current?.dataset.yaw ?? 0);
+            const pitch = Number(yawElRef.current?.dataset.pitch ?? -8);
+            setCalibClues(prev => {
+              const filtered = prev.filter(c => !(c.nodeId === nodeId && c.clueId === clueId));
+              return [...filtered, { nodeId, clueId, yaw, pitch }];
+            });
+          }}
+          onRemove={(clueId) => {
+            setCalibClues(prev => {
+              const filtered = prev.filter(c => !(c.nodeId === nodeId && c.clueId === clueId));
+              return [...filtered, { nodeId, clueId, yaw: 0, pitch: -8, removed: true }];
+            });
+          }}
+        />
+      )}
+
+      {/* Minimap — show whenever nodes carry GPS, regardless of drive mode */}
+      {!CALIB_MODE && localNodes.some(n => n.lat != null) && (
+        <DriveMinimap nodes={localNodes} currentIndex={nodeIndex} />
+      )}
+
+      {/* Drive mode — progress bar + play/pause + walking badge */}
+      {driveMode && !CALIB_MODE && (
+        <>
+          {/* Drive progress bar — thin strip at the very bottom */}
+          <div className="absolute bottom-0 left-0 right-0 z-30 h-[3px] bg-white/10">
+            <div
+              className="h-full bg-amber-400/80 transition-none"
+              style={{ width: `${driveProgress}%` }}
+            />
+          </div>
+
+          {/* Play / pause button — bottom-right above nav dot */}
+          <button
+            onClick={() => {
+              driveLastRef.current = Date.now();
+              setDrivePlaying(p => !p);
+            }}
+            className="absolute bottom-[52px] right-4 z-30 flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-mono text-[11px] transition-all select-none"
+            style={{
+              background: 'rgba(0,0,0,0.55)',
+              border: '1px solid rgba(255,255,255,0.18)',
+              color: 'rgba(255,255,255,0.85)',
+              backdropFilter: 'blur(6px)',
+            }}
+          >
+            {drivePlaying ? '⏸' : '▶'} {drivePlaying ? 'tạm dừng' : 'tiếp tục'}
+          </button>
+
+          {/* "Đang đi" badge — top centre label */}
+          <div className="absolute top-[52px] left-1/2 -translate-x-1/2 z-30 pointer-events-none">
+            <div
+              className="flex items-center gap-1.5 px-3 py-1 rounded-full font-mono text-[10px]"
+              style={{
+                background: 'rgba(0,0,0,0.5)',
+                border: '1px solid rgba(255,255,255,0.15)',
+                color: 'rgba(255,255,255,0.7)',
+                backdropFilter: 'blur(4px)',
+              }}
+            >
+              <span style={{ fontSize: 9 }}>🚶</span>
+              {drivePlaying ? 'Đang đi...' : 'Đã dừng'}
+            </div>
+          </div>
+        </>
       )}
 
       {/* Drag hint — auto-fades after 4s */}
