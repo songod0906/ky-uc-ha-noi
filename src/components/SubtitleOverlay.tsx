@@ -14,7 +14,7 @@ function parseSrt(raw: string): SubtitleCue[] {
     const lines = block.trim().split('\n');
     if (lines.length < 3) continue;
     const m = lines[1].match(
-      /(\d{2}):(\d{2}):(\d{2}),(\d{3}) --> (\d{2}):(\d{2}):(\d{2}),(\d{3})/
+      /(\d{2}):(\d{2}):(\d{2})[,.](\d{3}) --> (\d{2}):(\d{2}):(\d{2})[,.](\d{3})/
     );
     if (!m) continue;
     const sec = (h: string, min: string, s: string, ms: string) =>
@@ -28,22 +28,24 @@ function parseSrt(raw: string): SubtitleCue[] {
   return cues;
 }
 
-const SRT_MAP: Record<string, string> = {
-  '/audio/oral-history/thanh-cong.m4a':    '/subtitles/thanh-cong-eng.srt',
-  '/audio/oral-history/trung-liet.m4a':    '/subtitles/trung-liet-eng.srt',
-  '/audio/oral-history/hoang-hoa-tham.m4a': '/subtitles/hoang-hoa-tham-eng.srt',
+const SRT_MAP: Record<string, { en: string; vi: string }> = {
+  '/audio/oral-history/thanh-cong.m4a':     { en: '/subtitles/thanh-cong-eng.srt',      vi: '/subtitles/thanh-cong-vie.srt' },
+  '/audio/oral-history/trung-liet.m4a':     { en: '/subtitles/trung-liet-eng.srt',      vi: '/subtitles/trung-liet-vie.srt' },
+  '/audio/oral-history/hoang-hoa-tham.m4a': { en: '/subtitles/hoang-hoa-tham-eng.srt',  vi: '/subtitles/hoang-hoa-tham-vie.srt' },
 };
 
 export function SubtitleOverlay({ audioSrc }: { audioSrc: string }) {
+  const [lang, setLang]         = useState<'en' | 'vi'>('en');
   const [cues, setCues]         = useState<SubtitleCue[]>([]);
   const [currentText, setText]  = useState('');
   const rafRef                  = useRef<number>(0);
 
+  const paths = SRT_MAP[audioSrc];
+
   useEffect(() => {
-    const path = SRT_MAP[audioSrc];
-    if (!path) return;
-    fetch(path).then(r => r.text()).then(raw => setCues(parseSrt(raw)));
-  }, [audioSrc]);
+    if (!paths) return;
+    fetch(paths[lang]).then(r => r.text()).then(raw => setCues(parseSrt(raw)));
+  }, [audioSrc, lang]);
 
   useEffect(() => {
     if (cues.length === 0) return;
@@ -53,6 +55,8 @@ export function SubtitleOverlay({ audioSrc }: { audioSrc: string }) {
         const t = el.currentTime;
         const hit = cues.find(c => t >= c.start && t <= c.end);
         setText(hit?.text ?? '');
+      } else {
+        setText('');
       }
       rafRef.current = requestAnimationFrame(tick);
     };
@@ -60,8 +64,10 @@ export function SubtitleOverlay({ audioSrc }: { audioSrc: string }) {
     return () => cancelAnimationFrame(rafRef.current);
   }, [cues]);
 
+  if (!paths) return null;
+
   return (
-    <div className="absolute bottom-20 left-0 right-0 z-[60] flex justify-center px-6 pointer-events-none">
+    <div className="absolute bottom-20 left-0 right-0 z-[60] flex flex-col items-center gap-2 px-6 pointer-events-none">
       <AnimatePresence mode="wait">
         {currentText && (
           <motion.p
@@ -81,6 +87,26 @@ export function SubtitleOverlay({ audioSrc }: { audioSrc: string }) {
           </motion.p>
         )}
       </AnimatePresence>
+
+      {/* Language toggle — always visible when subtitles are available */}
+      <div
+        className="flex rounded-lg overflow-hidden pointer-events-auto"
+        style={{ background: 'rgba(6,4,2,0.65)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.1)' }}
+      >
+        {(['en', 'vi'] as const).map((l) => (
+          <button
+            key={l}
+            onClick={() => setLang(l)}
+            className="px-3 py-1 font-mono text-[10px] uppercase tracking-widest transition-colors"
+            style={{
+              color: lang === l ? '#fff' : 'rgba(255,255,255,0.4)',
+              background: lang === l ? 'rgba(255,255,255,0.12)' : 'transparent',
+            }}
+          >
+            {l === 'en' ? 'EN' : 'VI'}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

@@ -1,8 +1,7 @@
 // Separate audio channel for background oral history narration.
 // Lives independently from AudioManager so clue audio never cuts the narration.
 let _el: HTMLAudioElement | null = null;
-let _targetVol = 0.22;
-let _ducked = false;
+const _targetVol = 0.22;
 
 export const OralHistoryAudio = {
   play(src: string, startSec: number, endSec?: number) {
@@ -22,9 +21,9 @@ export const OralHistoryAudio = {
       let v = 0;
       const step = () => {
         if (_el !== el) return;
-        v = Math.min(v + 0.02, _ducked ? 0.04 : _targetVol);
+        v = Math.min(v + 0.02, _targetVol);
         el.volume = v;
-        if (v < (_ducked ? 0.04 : _targetVol)) requestAnimationFrame(step);
+        if (v < _targetVol) requestAnimationFrame(step);
       };
       requestAnimationFrame(step);
     }).catch(() => {});
@@ -39,16 +38,14 @@ export const OralHistoryAudio = {
     }
   },
 
-  // Call when a clue modal opens — narration becomes a murmur
+  // Call when a clue modal opens — pause narration so clue audio is heard clearly
   duck() {
-    _ducked = true;
-    if (_el) _el.volume = 0.04;
+    if (_el && !_el.paused) _el.pause();
   },
 
-  // Call when clue modal closes — restore
+  // Call when clue modal closes — resume narration from where it paused
   restore() {
-    _ducked = false;
-    if (_el) _el.volume = _targetVol;
+    if (_el && _el.paused) _el.play().catch(() => {});
   },
 
   get current(): HTMLAudioElement | null { return _el; },

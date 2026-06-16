@@ -46,7 +46,7 @@ export function GameStart({ onBegin }: GameStartProps) {
           Three neighborhoods in Hanoi are about to be demolished. Three people grew up there.
           <br className="hidden sm:block" />
           <span className="italic mt-2 block">
-            Follow them. Find memory fragments. Reassemble an ordinary day before it disappears.
+            Follow them. Find memory fragments. Preserve what remains before it disappears.
           </span>
         </motion.p>
 

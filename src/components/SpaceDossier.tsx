@@ -48,7 +48,7 @@ export function SpaceDossier({ story, space, narratorColor, onEnter }: SpaceDoss
   const handlePlay = () => {
     if (reelsSpinning) return;
     setReelsSpinning(true);
-    onEnter(); // direct call — stays inside gesture context for audio autoplay
+    setTimeout(() => onEnter(), 1400);
   };
 
   const side = SIDE_LABEL[story.narrator] ?? 'A';

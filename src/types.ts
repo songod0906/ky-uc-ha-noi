@@ -28,6 +28,7 @@ export interface TourClueAnchor {
   clueId: string;
   yaw: number;    // degrees: 0 = forward, positive = right
   pitch: number;  // degrees: 0 = horizon, positive = up
+  audioSec?: number; // Override for subtitle lookup: where this clue's MP3 starts in the oral history
 }
 
 export interface TourNavAnchor {
@@ -42,6 +43,7 @@ export interface TourScanAnchor {
   yaw: number;
   pitch: number;
   label: string;
+  clueId?: string; // clue accessible from inside this 3D scan (if not already on the scan node)
 }
 
 export interface TourNode {
@@ -53,6 +55,7 @@ export interface TourNode {
   clueAnchors?: TourClueAnchor[];
   navAnchors?: TourNavAnchor[];
   scanAnchors?: TourScanAnchor[];
+  audioSec?: number;             // Seek oral history to this second when entering this node
 }
 // --------------------------------
 
@@ -105,6 +108,7 @@ export interface DiaryEntry {
   narratorColor: string;
   clueLabel: string;
   quote: string;
+  voiceNote?: string;
   foundAt: number;
 }
 

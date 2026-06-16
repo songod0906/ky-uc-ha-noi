@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { DiaryEntry, Story } from '../types';
 import { MemorySpace as MemorySpaceComponent } from './MemorySpace';
 import { EndingCannotBeMoved } from './EndingCannotBeMoved';
 import { AudioSynth, playClick, playDiscover } from '../utils/AudioSynth';
 import { AudioManager } from '../utils/AudioManager';
+import { OralHistoryAudio } from '../utils/OralHistoryAudio';
 import { ChevronLeft, CheckSquare } from 'lucide-react';
 import { SpaceDossier } from './SpaceDossier';
 
@@ -22,12 +24,14 @@ interface MemoryRouteGameProps {
   singleSpaceMode?: boolean;
   diary: DiaryEntry[];
   addToDiary: (entry: DiaryEntry) => void;
+  removeDiaryEntries?: (clueIds: string[]) => void;
   onBack: () => void;
   onNextStory?: (storyId: string) => void;
 }
 
-export function MemoryRouteGame({ story, initialSpaceIdx = 0, diary, addToDiary, onBack, onNextStory }: MemoryRouteGameProps) {
+export function MemoryRouteGame({ story, initialSpaceIdx = 0, diary, addToDiary, removeDiaryEntries, onBack, onNextStory }: MemoryRouteGameProps) {
   const [phase, setPhase] = useState<Phase>('dossier');
+  const [finishing, setFinishing] = useState(false);
   const [spaceIndex] = useState(initialSpaceIdx);
   const narratorColor = NARRATOR_COLOR[story.narrator] ?? '#C8B89A';
   const activeSpace = story.spaces[spaceIndex];
@@ -67,11 +71,17 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, diary, addToDiary,
   };
 
   const handleFinish = () => {
+    if (finishing) return;
     playClick();
-    AudioManager.stop();
+    OralHistoryAudio.stop();
     AudioSynth.stopAmbient();
     AudioSynth.stopBackgroundMusic();
-    setPhase('ending');
+    setFinishing(true);
+    setTimeout(() => {
+      AudioManager.stop();
+      setFinishing(false);
+      setPhase('ending');
+    }, 600);
   };
 
   const handleCollect = (clueId: string) => {
@@ -88,6 +98,7 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, diary, addToDiary,
       narratorColor,
       clueLabel: clue.label,
       quote: clue.quote,
+      voiceNote: clue.voiceNote,
       foundAt: Date.now(),
     });
   };
@@ -95,9 +106,11 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, diary, addToDiary,
   const handleRestart = () => {
     playClick();
     AudioManager.stop();
+    OralHistoryAudio.stop();
     AudioSynth.stopAmbient();
     AudioSynth.stopBackgroundMusic();
-    setCollectedIds(getDiaryIdsForSpace());
+    removeDiaryEntries?.(activeSpace.clues.map((c) => c.id));
+    setCollectedIds([]);
     setPhase('dossier');
   };
 
@@ -126,10 +139,11 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, diary, addToDiary,
 
   // ── Ending phase ──
   if (phase === 'ending') {
+    const spaceClueIds = new Set(activeSpace.clues.map((c) => c.id));
     return (
       <EndingCannotBeMoved
         story={story}
-        diary={diary}
+        diary={diary.filter((e) => spaceClueIds.has(e.clueId))}
         onRestart={handleRestart}
         onChooseOther={handleBack}
         onNextStory={onNextStory}
@@ -160,12 +174,19 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, diary, addToDiary,
         </div>
 
         <button
-          onClick={handleFinish}
-          className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl font-serif text-sm transition-all shadow-[0_0_12px_rgba(200,168,130,0.45)]"
-          style={{
+          onClick={collectedIds.length > 0 ? handleFinish : undefined}
+          title={collectedIds.length === 0 ? 'Collect at least one memory fragment first' : undefined}
+          className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl font-serif text-sm transition-all"
+          style={collectedIds.length > 0 ? {
             background: narratorColor,
             border: `1px solid ${narratorColor}`,
             color: '#0a0806',
+            boxShadow: '0 0 12px rgba(200,168,130,0.45)',
+          } : {
+            background: 'transparent',
+            border: `1px solid rgba(255,255,255,0.15)`,
+            color: 'rgba(255,255,255,0.3)',
+            cursor: 'not-allowed',
           }}
         >
           <CheckSquare className="w-3.5 h-3.5" />
@@ -181,9 +202,20 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, diary, addToDiary,
           story={story}
           collectedIds={collectedIds}
           onCollect={handleCollect}
-          onClueModalChange={() => {}}
         />
       </main>
+
+      {/* Fade-to-black on archive complete */}
+      <AnimatePresence>
+        {finishing && (
+          <motion.div
+            className="absolute inset-0 z-[300] bg-[#080706] pointer-events-none"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

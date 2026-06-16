@@ -6,8 +6,6 @@ import { ScanPlaceholder } from './ScanPlaceholder';
 import { PanoramicVideoViewer } from './PanoramicVideoViewer';
 import { AudioManager } from '../utils/AudioManager';
 import { AudioSynth } from '../utils/AudioSynth';
-import { OralHistoryAudio } from '../utils/OralHistoryAudio';
-import { SubtitleOverlay } from './SubtitleOverlay';
 
 // LOCAL TEST ONLY — PanoramaViewer.tsx is gitignored, do NOT push this import.
 // Revert to the commented-out version before committing.
@@ -20,22 +18,15 @@ interface MemorySpaceProps {
   story: Story;
   collectedIds: string[];
   onCollect: (clueId: string) => void;
-  onClueModalChange?: (open: boolean) => void;
 }
 
-export function MemorySpace({ space, story, collectedIds, onCollect, onClueModalChange: _onClueModalChange }: MemorySpaceProps) {
-  const onClueModalChange = (open: boolean) => {
-    open ? OralHistoryAudio.duck() : OralHistoryAudio.restore();
-    _onClueModalChange?.(open);
-  };
+export function MemorySpace({ space, story, collectedIds, onCollect }: MemorySpaceProps) {
   const hasTour = !!space.bgTourNodes?.length;
   const [videoExpanded, setVideoExpanded] = useState(false);
   const [currentNodeIndex, setCurrentNodeIndex] = useState(0);
   const [isScanOpen, setIsScanOpen] = useState(false);
   const driveMode = ['quan-net', 'nha-ngo', 'nha-hoc-them'].includes(space.id);
   const driveIntervalMs = space.id === 'nha-ngo' ? 2200 : space.id === 'nha-hoc-them' ? 3200 : 4500;
-  // True when at least one node in this space has a 3D scan anchor
-  const hasScanNodes = space.bgTourNodes?.some(n => n.scanAnchors?.length) ?? false;
   const [demolitionFlash, setDemolitionFlash] = useState(false);
 
   // Memory fade: desaturate scene as player walks deeper into the sequence
@@ -64,23 +55,6 @@ export function MemorySpace({ space, story, collectedIds, onCollect, onClueModal
 
     return () => { AudioSynth.stopAmbient(); };
   }, [space.id, currentNodeIndex, isScanOpen]);
-
-  // Spaces WITH a 3D scan: oral history plays on OralHistoryAudio channel while scan is open
-  useEffect(() => {
-    if (!hasScanNodes || !space.audioSegment) return;
-    if (isScanOpen) {
-      OralHistoryAudio.play(space.audioSegment.src, space.audioSegment.startSec, space.audioSegment.endSec);
-    } else {
-      OralHistoryAudio.stop();
-    }
-  }, [isScanOpen, hasScanNodes, space.audioSegment]);
-
-  // Spaces WITHOUT a 3D scan: oral history plays as background on entry
-  useEffect(() => {
-    if (hasScanNodes || !space.audioSegment) return;
-    OralHistoryAudio.play(space.audioSegment.src, space.audioSegment.startSec, space.audioSegment.endSec);
-    return () => { OralHistoryAudio.stop(); };
-  }, [space.id]);
 
   // Auto-expand video when reaching the last panorama node — flash demolition notice first
   useEffect(() => {
@@ -138,6 +112,7 @@ export function MemorySpace({ space, story, collectedIds, onCollect, onClueModal
               driveMode={driveMode}
               driveIntervalMs={driveIntervalMs}
               onScanChange={setIsScanOpen}
+              audioSegmentSrc={space.audioSegment?.src}
             />
           </Suspense>
         </div>
@@ -194,11 +169,6 @@ export function MemorySpace({ space, story, collectedIds, onCollect, onClueModal
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Live subtitles for oral history audio */}
-      {space.audioSegment && !videoExpanded && !demolitionFlash && (
-        <SubtitleOverlay audioSrc={space.audioSegment.src} />
-      )}
 
       {/* Street View panorama — Google Maps embed, placeholder until 360 scan is ready */}
       {!hasTour && space.bgStreetView && (

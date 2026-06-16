@@ -24,6 +24,27 @@ import { AudioSynth } from '../utils/AudioSynth';
 
 // ---------- helpers ----------
 
+interface SrtCue { start: number; end: number; text: string; }
+
+function parseSrt(raw: string): SrtCue[] {
+  const cues: SrtCue[] = [];
+  for (const block of raw.trim().split(/\n\n+/)) {
+    const lines = block.trim().split('\n');
+    if (lines.length < 3) continue;
+    const m = lines[1].match(/(\d{2}):(\d{2}):(\d{2})[,.](\d{3})\s*-->\s*(\d{2}):(\d{2}):(\d{2})[,.](\d{3})/);
+    if (!m) continue;
+    const s = (h: string, mn: string, sc: string, ms: string) => +h * 3600 + +mn * 60 + +sc + +ms / 1000;
+    cues.push({ start: s(m[1],m[2],m[3],m[4]), end: s(m[5],m[6],m[7],m[8]), text: lines.slice(2).join(' ').trim() });
+  }
+  return cues;
+}
+
+const SRT_MAP: Record<string, string> = {
+  '/audio/oral-history/thanh-cong.m4a':     '/subtitles/thanh-cong-eng.srt',
+  '/audio/oral-history/trung-liet.m4a':     '/subtitles/trung-liet-eng.srt',
+  '/audio/oral-history/hoang-hoa-tham.m4a': '/subtitles/hoang-hoa-tham-eng.srt',
+};
+
 const CLUE_ICONS: Record<string, string> = {
   place: '📍',
   sound: '🔊',
@@ -421,13 +442,19 @@ function Scene({
       }
     }
 
-    // Fallback: if not found, look for any forward nav anchor
+    // Fallback for initial entry (lastNavDir === 'none'): face the first clue if present,
+    // otherwise face the forward nav anchor.
     if (!found) {
-      const fwdAnchor = node.navAnchors?.find(
-        (a) => a.label === 'Tiếp tục' || a.label === 'Đi tiếp' || !a.label
-      );
-      if (fwdAnchor) {
-        targetYaw = fwdAnchor.yaw;
+      const clueAnchor = node.clueAnchors?.[0];
+      if (clueAnchor && lastNavDir === 'none') {
+        targetYaw = clueAnchor.yaw;
+      } else {
+        const fwdAnchor = node.navAnchors?.find(
+          (a) => a.label === 'Tiếp tục' || a.label === 'Đi tiếp' || !a.label
+        );
+        if (fwdAnchor) {
+          targetYaw = fwdAnchor.yaw;
+        }
       }
     }
 
@@ -826,6 +853,7 @@ export function PanoramaViewer({
   driveIntervalMs = 4500,
   backgroundMode = false,
   onScanChange,
+  audioSegmentSrc,
 }: {
   nodes: TourNode[];
   startNodeId?: string;
@@ -839,6 +867,7 @@ export function PanoramaViewer({
   driveIntervalMs?: number;
   backgroundMode?: boolean;
   onScanChange?: (isOpen: boolean) => void;
+  audioSegmentSrc?: string;
 }) {
   // Stable key for this sequence (e.g. \"ct\" from \"ct-01\"), used for localStorage
   const seqKey = useRef(nodes[0]?.id.replace(/-\d+$/, '') ?? 'seq').current;
@@ -859,15 +888,34 @@ export function PanoramaViewer({
   const [memoryProgress, setMemoryProgress] = useState(0);
   const [memoryDuration, setMemoryDuration] = useState(0);
   const [activeScan, setActiveScan] = useState<string | null>(null);
+  const [srtCues, setSrtCues] = useState<SrtCue[]>([]);
 
   // Notify parent component of active 3D scan state changes
   useEffect(() => {
     onScanChange?.(!!activeScan);
   }, [activeScan, onScanChange]);
 
+  // Load the full oral history SRT once (EN). Each clue is a segment of this recording,
+  // so we look up cues using (node.audioSec + memoryProgress) as the absolute timestamp.
+  useEffect(() => {
+    const srtPath = audioSegmentSrc ? SRT_MAP[audioSegmentSrc] : undefined;
+    if (!srtPath) { setSrtCues([]); return; }
+    fetch(srtPath)
+      .then(r => { if (!r.ok) throw new Error(); return r.text(); })
+      .then(raw => setSrtCues(parseSrt(raw)))
+      .catch(() => setSrtCues([]));
+  }, [audioSegmentSrc]);
+
+  // Keep currentAudioSecRef in sync with the current node's audioSec.
+  useEffect(() => {
+    currentAudioSecRef.current = rawNode?.audioSec ?? 0;
+  });
+
   const memoryHowlRef = useRef<Howl | null>(null);
   const memoryProgressTimerRef = useRef<number | null>(null);
   const lastNavDirRef = useRef<'fwd' | 'back' | 'none'>('none');
+  const currentAudioSecRef = useRef<number>(0);
+  const activeClueAudioSecRef = useRef<number>(0);
   const yawElRef = useRef<HTMLSpanElement>(null);
   // Only count dwell time after the player first drags at each node (not during narrator card)
   const nodeInteracted = useRef(false);
@@ -1000,6 +1048,10 @@ export function PanoramaViewer({
   }, [clearMemoryProgressTimer]);
 
   const startMemoryClue = useCallback((clue: Clue) => {
+    // Use the anchor-level audioSec override if present (clue MP3 may start at a different
+    // position in the oral history than the node's background audioSec).
+    const anchor = rawNode?.clueAnchors?.find(a => a.clueId === clue.id);
+    activeClueAudioSecRef.current = anchor?.audioSec ?? currentAudioSecRef.current;
     onCollect(clue.id);
     setActiveClue(clue);
     setMemoryProgress(0);
@@ -1044,7 +1096,7 @@ export function PanoramaViewer({
 
     memoryHowlRef.current = sound;
     sound.play();
-  }, [clearMemoryProgressTimer, onCollect, stopMemoryAudio]);
+  }, [clearMemoryProgressTimer, onCollect, stopMemoryAudio, rawNode]);
 
   const toggleMemoryAudio = useCallback(() => {
     const sound = memoryHowlRef.current;
@@ -1422,10 +1474,11 @@ export function PanoramaViewer({
       )}
       {!backgroundMode && playgroundBlocked && (
         <div className="absolute right-3 top-1/2 -translate-y-1/2 z-40 pointer-events-none">
-          <div className="bg-black/85 backdrop-blur-md text-amber-50/90 rounded-2xl px-5 py-4 border border-amber-400/25 text-center flex flex-col items-center gap-1.5 shadow-2xl min-w-[140px] whitespace-nowrap">
+          <div className="bg-black/85 backdrop-blur-md text-amber-50/90 rounded-2xl px-5 py-4 border border-amber-400/25 text-center flex flex-col items-center gap-2 shadow-2xl" style={{ minWidth: 148 }}>
             <div className="w-5 h-5 border-2 border-amber-400/20 border-t-amber-400 rounded-full animate-spin" />
-            <span className="font-serif text-[12px] font-bold tracking-wider uppercase mt-1 text-amber-100">Exploring</span>
-            <span className="font-mono text-[11px] font-medium text-amber-400/90">{Math.max(0, 15 - dwellSecs)}s remaining</span>
+            <span className="font-serif text-[12px] font-bold tracking-wider uppercase mt-0.5 text-amber-100">Stay a moment</span>
+            <span className="font-serif text-[10px] italic text-amber-200/55 leading-snug" style={{ maxWidth: 120 }}>You never got to linger here before</span>
+            <span className="font-mono text-[11px] font-medium text-amber-400/80">{Math.max(0, 15 - dwellSecs)}s</span>
           </div>
         </div>
       )}
@@ -1635,27 +1688,30 @@ export function PanoramaViewer({
         </button>
       )}
 
-      {/* Historic Street View iframe overlay */}
+      {/* Historic Street View — split panel (de-la-thanh style): panorama left, Street View right */}
       {showHistoric && fallbackHistoricUrl && (
-        <div className="absolute inset-0 z-[60] flex flex-col">
-          <iframe
-            src={fallbackHistoricUrl}
-            className="flex-1 w-full border-0"
-            allowFullScreen
-            loading="lazy"
-            referrerPolicy="no-referrer-when-downgrade"
-            title="Past Google Street View"
-          />
-          <div className="flex-none flex items-center justify-between px-4 py-2 bg-black/70">
-            <p className="font-mono text-[10px] text-white/50 uppercase tracking-widest">Google Street View — Past</p>
-            <button
-              onClick={() => setShowHistoric(false)}
-              className="flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white rounded-xl px-3 py-1.5 text-xs font-mono transition-all"
-            >
-              <X className="w-3.5 h-3.5" /> Go Back
-            </button>
+        <>
+          {/* Right half: historic Street View */}
+          <div className="absolute inset-y-0 right-0 w-1/2 z-[60] flex flex-col">
+            <iframe
+              src={fallbackHistoricUrl}
+              className="flex-1 w-full border-0"
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              title="Past Google Street View"
+            />
           </div>
-        </div>
+          {/* Center divider */}
+          <div className="absolute inset-y-0 left-1/2 -translate-x-px w-px bg-white/40 z-[61] pointer-events-none" />
+          {/* Year labels */}
+          <div className="absolute top-12 left-4 z-[62] bg-black/70 text-white font-mono text-[10px] uppercase tracking-widest px-3 py-1.5 rounded-lg pointer-events-none">
+            2026 · Now
+          </div>
+          <div className="absolute top-12 right-4 z-[62] bg-black/70 text-white font-mono text-[10px] uppercase tracking-widest px-3 py-1.5 rounded-lg pointer-events-none">
+            Past · Google Street View
+          </div>
+        </>
       )}
 
       {/* 3D Scan overlay */}
@@ -1663,11 +1719,40 @@ export function PanoramaViewer({
         <div className="absolute inset-0 z-[70] bg-black flex flex-col">
           <div className="flex-1 relative">
             <ScanViewer url={activeScan} />
+            {/* Clue hotspots available inside the 3D scan.
+                Collects: clues already on this node + any clue explicitly linked via scanAnchor.clueId */}
+            {(() => {
+              const nodeClueIds = new Set((rawNode?.clueAnchors ?? []).map(a => a.clueId));
+              if (currentScanAnchor?.clueId) nodeClueIds.add(currentScanAnchor.clueId);
+              const scanClues = Array.from(nodeClueIds).map(id => allClues.find(c => c.id === id)).filter(Boolean) as typeof allClues;
+              if (!scanClues.length) return null;
+              return (
+                <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-3 px-4 pointer-events-none">
+                  {scanClues.map(clue => {
+                    const collected = collectedIds.includes(clue.id);
+                    return (
+                      <button
+                        key={clue.id}
+                        onClick={() => startMemoryClue(clue)}
+                        className="pointer-events-auto flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-serif transition-all active:scale-95"
+                        style={collected
+                          ? { background: 'rgba(52,211,153,0.12)', borderColor: 'rgba(52,211,153,0.3)', color: 'rgba(167,243,208,0.8)' }
+                          : { background: 'rgba(251,191,36,0.15)', borderColor: 'rgba(251,191,36,0.4)', color: 'rgba(253,230,138,0.95)' }
+                        }
+                      >
+                        {collected ? <Check className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+                        {clue.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              );
+            })()}
           </div>
           {/* Close bar sits outside the Canvas so clicks always land */}
           <div className="flex-none flex items-center justify-between px-4 py-3 bg-black/80">
             <p className="text-white/40 font-mono text-xs">
-              Drag to rotate · Scroll to zoom
+              W / A / S / D to move · drag to look
             </p>
             <button
               onClick={() => setActiveScan(null)}
@@ -1679,20 +1764,36 @@ export function PanoramaViewer({
         </div>
       )}
 
-      {activeClue && (
-        <MemoryAudioDock
-          clue={activeClue}
-          playing={memoryPlaying}
-          progress={memoryProgress}
-          duration={memoryDuration}
-          saved={collectedIds.includes(activeClue.id)}
-          scanLabel={currentScanAnchor?.label}
-          raised={!!activeScan}
-          onToggle={toggleMemoryAudio}
-          onClose={closeMemoryDock}
-          onOpenScan={currentScanAnchor ? () => setActiveScan(currentScanAnchor.scanUrl) : undefined}
-        />
-      )}
+      {activeClue && (() => {
+        const t = activeClueAudioSecRef.current + memoryProgress;
+        const cueText = memoryPlaying ? (srtCues.find(c => t >= c.start && t <= c.end)?.text ?? '') : '';
+        // Subtitle sits above the dock — dock is ~130px tall at bottom-4 (16px), so top edge ~146px.
+        // Raised dock (scan open) is at bottom-20 (80px), top edge ~210px.
+        const subBottom = activeScan ? 'bottom-[228px]' : 'bottom-44';
+        return (
+          <>
+            {cueText && (
+              <div className={`absolute ${subBottom} left-0 right-0 z-[91] flex justify-center px-6 pointer-events-none`}>
+                <div className="bg-black/80 backdrop-blur-md px-4 py-2.5 rounded-xl text-white font-serif text-sm leading-relaxed text-center max-w-lg border border-white/10 shadow-xl">
+                  {cueText}
+                </div>
+              </div>
+            )}
+            <MemoryAudioDock
+              clue={activeClue}
+              playing={memoryPlaying}
+              progress={memoryProgress}
+              duration={memoryDuration}
+              saved={collectedIds.includes(activeClue.id)}
+              scanLabel={currentScanAnchor?.label}
+              raised={!!activeScan}
+              onToggle={toggleMemoryAudio}
+              onClose={closeMemoryDock}
+              onOpenScan={currentScanAnchor ? () => setActiveScan(currentScanAnchor.scanUrl) : undefined}
+            />
+          </>
+        );
+      })()}
 
       {/* Calib export modal — shown when clipboard API is unavailable (http://IP) */}
       {exportText && (

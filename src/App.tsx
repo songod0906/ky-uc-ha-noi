@@ -78,6 +78,10 @@ export default function App() {
     );
   };
 
+  const removeDiaryEntries = (clueIds: string[]) => {
+    setDiary((prev) => prev.filter((e) => !clueIds.includes(e.clueId)));
+  };
+
   return (
     <div className="h-screen overflow-hidden bg-[#FCFAF2] text-muctim selection:bg-nangthu-glow selection:text-muctim">
       <AnimatePresence mode="wait">
@@ -106,6 +110,7 @@ export default function App() {
             singleSpaceMode
             diary={diary}
             addToDiary={addToDiary}
+            removeDiaryEntries={removeDiaryEntries}
             onBack={handleBackToSelect}
             onNextStory={handleNextStory}
           />

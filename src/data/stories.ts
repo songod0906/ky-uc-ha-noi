@@ -5,19 +5,19 @@ import { Story, TourNode, TourNavAnchor, TourScanAnchor } from '../types';
 // gps: one [lat, lng] per panorama (or null) — drives minimap bearing when present.
 function makeNodes(
   panoramas: string[],
-  clues: Array<{ idx: number; clueId: string; yaw?: number; pitch?: number }>,
+  clues: Array<{ idx: number; clueId: string; yaw?: number; pitch?: number; audioSec?: number }>,
   pfx: string,
-  scans?: Array<{ idx: number; scanUrl: string; label: string; yaw?: number; pitch?: number }>,
+  scans?: Array<{ idx: number; scanUrl: string; label: string; yaw?: number; pitch?: number; clueId?: string }>,
   gps?: Array<[number, number] | null>
 ): TourNode[] {
   return panoramas.map((panorama, i) => {
     const id = `${pfx}-${String(i + 1).padStart(2, '0')}`;
     const clueAnchors = clues
       .filter(c => c.idx === i)
-      .map(({ clueId, yaw = 45, pitch = -5 }) => ({ clueId, yaw, pitch }));
+      .map(({ clueId, yaw = 45, pitch = -5, audioSec }) => ({ clueId, yaw, pitch, ...(audioSec !== undefined ? { audioSec } : {}) }));
     const scanAnchors: TourScanAnchor[] = (scans ?? [])
       .filter(s => s.idx === i)
-      .map(({ scanUrl, label, yaw = 0, pitch = -10 }) => ({ scanUrl, label, yaw, pitch }));
+      .map(({ scanUrl, label, yaw = 0, pitch = -10, clueId }) => ({ scanUrl, label, yaw, pitch, ...(clueId ? { clueId } : {}) }));
     const nav: TourNavAnchor[] = [];
     if (i > 0)
       nav.push({ toNodeId: `${pfx}-${String(i).padStart(2, '0')}`, yaw: 180, pitch: -10, label: 'Quay lại' });
@@ -58,6 +58,17 @@ function applyYaws(
 function withHistoric(nodes: TourNode[], items: Array<{ idx: number; url: string }>): TourNode[] {
   const map = new Map(items.map(({ idx, url }) => [idx, url]));
   return nodes.map((n, i) => map.has(i) ? { ...n, historicMapUrl: map.get(i)! } : n);
+}
+
+// Maps per-node oral history seek positions (seconds into the audio file).
+// null = no seek override for that node.
+// For scan spaces: only the scan node's audioSec is used (when the scan opens).
+// For non-scan spaces: audio seeks to each node's audioSec as the user navigates.
+function withAudioSecs(nodes: TourNode[], secs: (number | null)[]): TourNode[] {
+  return nodes.map((n, i) => {
+    const s = secs[i];
+    return s != null ? { ...n, audioSec: s } : n;
+  });
 }
 
 // ─── LTK panorama sequences ──────────────────────────────────────────────────
@@ -258,11 +269,11 @@ const TRANG: Story = {
       ],
       bgGradient: 'linear-gradient(160deg, #f5e6c8 0%, #e8d5a3 40%, #d4b896 100%)',
       bgTone: '#c8a96e',
-      bgTourNodes: withHistoric(applyYaws(makeNodes(ltk_cong_truong, [
-        { idx: 0, clueId: 'trang-tieng-trong', yaw: 9, pitch: -8 },
+      bgTourNodes: withAudioSecs(withHistoric(applyYaws(makeNodes(ltk_cong_truong, [
+        { idx: 0, clueId: 'trang-tieng-trong', yaw: 9, pitch: -8, audioSec: 61 },
         { idx: 2, clueId: 'trang-an-vat', yaw: -16, pitch: -8 },
       ], 'ct', [
-        { idx: 3, scanUrl: '/scans/quan-an-vat.glb', label: 'View 3D Food Stall', yaw: 0, pitch: -10 },
+        { idx: 3, scanUrl: '/scans/quan-an-vat.glb', label: 'View 3D Food Stall', yaw: 0, pitch: -10, clueId: 'trang-an-vat' },
       ], [
         [21.023341657971606, 105.81264611592633],
         [21.0233557985251,   105.81270836766542],
@@ -271,6 +282,8 @@ const TRANG: Story = {
       ]), CT_YAWS), [
         { idx: 0, url: 'https://www.google.com/maps/embed?pb=!4v1781406756612!6m8!1m7!1sgw5FtU3SO2EZh6Fw6DHM1Q!2m2!1d21.02335819365613!2d105.812700469784!3f177.3934717023654!4f-8.877060164979412!5f0.7820865974627469' },
       ]),
+      // node 0=gate(36s) 1=stall-view1(88s) 2=stall-view3(127s) 3=stall+scan(279s lemon-ice-cream)
+      [36, 88, 127, 279]),
       memoryEchoes: [
         '"Doraemon books for 2,000đ a day..."',
         '"Lemon ice cream after school..."',
@@ -325,8 +338,8 @@ const TRANG: Story = {
       ],
       bgGradient: 'linear-gradient(160deg, #2a1f3d 0%, #3d2f5c 50%, #1a1228 100%)',
       bgTone: '#1a1228',
-      bgTourNodes: withHistoric(applyYaws(makeNodes(ltk_quan_net, [
-        { idx: 5, clueId: 'trang-choi-net', yaw: 25, pitch: -8 },
+      bgTourNodes: withAudioSecs(withHistoric(applyYaws(makeNodes(ltk_quan_net, [
+        { idx: 5, clueId: 'trang-choi-net', yaw: 25, pitch: -8, audioSec: 437 },
         { idx: 16, clueId: 'trang-tieng-chui', yaw: 103, pitch: -8 },
       ], 'qn', [
         { idx: 16, scanUrl: '/scans/quan-net.glb', label: 'View 3D Net Café', yaw: 0, pitch: -10 },
@@ -352,6 +365,9 @@ const TRANG: Story = {
         { idx: 8,  url: 'https://www.google.com/maps/embed?pb=!4v1781407009670!6m8!1m7!1sqQjwzEUZWPM_9nT86j3UrA!2m2!1d21.02131186181676!2d105.814022273258!3f178.13185559786697!4f-4.577780076155491!5f0.7820865974627469' },
         { idx: 9,  url: 'https://www.google.com/maps/embed?pb=!4v1781406844727!6m8!1m7!1s8GbK_z_u6JmL2Oq_b8ndVw!2m2!1d21.02121343497108!2d105.8140269312972!3f253.58290338190974!4f-13.194011320911557!5f0.7820865974627469' },
       ]),
+      // 0-1=leaving school(439s) 2-3=café reveal(444s) 4-6=neighbourhood(450s)
+      // 7-10=CRT setup(465s) 11-13=approaching door(480s) 14-15=inside(497s) 16=scan(497s two sounds)
+      [439, 439, 444, 444, 450, 455, 460, 463, 466, 469, 475, 480, 485, 490, 497, 509, 497]),
       memoryEchoes: [
         '"Audition keys clattering: clack-clack-clack..."',
         '"Huge CRT monitors with heavy computer towers..."',
@@ -404,8 +420,8 @@ const TRANG: Story = {
       minimapFlipX: true,
       bgGradient: 'linear-gradient(160deg, #c8dde8 0%, #a3c4d5 40%, #7eaabf 100%)',
       bgTone: '#5a7a8a',
-      bgTourNodes: withHistoric(applyYaws(makeNodes(ltk_ho_thanh_cong, [
-        { idx: 0, clueId: 'trang-xe-dap', yaw: 143, pitch: -8 },
+      bgTourNodes: withAudioSecs(withHistoric(applyYaws(makeNodes(ltk_ho_thanh_cong, [
+        { idx: 0, clueId: 'trang-xe-dap', yaw: 143, pitch: -8, audioSec: 609 },
         { idx: 6, clueId: 'trang-nhac-aerobic', yaw: 25, pitch: -8 },
         { idx: 10, clueId: 'trang-khu-tap-the', yaw: 25, pitch: -8 },
       ], 'htc', undefined, [
@@ -424,6 +440,10 @@ const TRANG: Story = {
       ]), HTC_YAWS), [
         { idx: 0, url: 'https://www.google.com/maps/embed?pb=!4v1781407926721!6m8!1m7!1sAnVN58QpnXISxwLh_W32yA!2m2!1d21.02048879554921!2d105.8132082827019!3f195.77940340158702!4f-7.682892952432283!5f0.7820865974627469' },
       ]),
+      // 0=grandparents bring to lake(527s) 2=concrete not paved(540s) 5=back gate hard to open(560s)
+      // 7=squeezing bike through(582s) 8=park fences removed(594s) 9=bicycle question(609s)
+      // 10=hated being forced to learn(618s) 11=fear of falling in public(631s)
+      [527, 534, 540, 550, 555, 560, 571, 582, 594, 609, 618, 631]),
       memoryEchoes: [
         '"Uneven concrete paths by the lake..."',
         '"Squeezing through the half-closed back gate..."',
@@ -457,7 +477,6 @@ const TRANG: Story = {
           planningImpact:
             'The old iron speaker blaring aerobic music every afternoon will be dismantled to be replaced by a smart sound system as part of the park\'s new landscape renovation project.',
           ambient: 'aerobic',
-          audioSrc: '/audio/trang-nhac-aerobic.mp3',
           x: 72,
           y: 38,
         },
@@ -472,7 +491,6 @@ const TRANG: Story = {
           planningImpact:
             'The old Thanh Cong collective housing quarters will be razed to execute a new commercial urban district project. A long-established and close-knit residential community will be dispersed to different resettlement areas.',
           ambient: 'wind',
-          audioSrc: '/audio/trang-khu-tap-the.mp3',
           x: 30,
           y: 35,
         },
@@ -514,10 +532,10 @@ const ESSY: Story = {
       ],
       bgGradient: 'linear-gradient(160deg, #d4c5a9 0%, #c5b08a 40%, #b09060 100%)',
       bgTone: '#6b5a3e',
-      bgTourNodes: withHistoric(applyYaws(makeNodes(essy_duong_vao_nha, [
-        { idx: 0, clueId: 'essy-ngo-kho', yaw: 25, pitch: -8 },
+      bgTourNodes: withAudioSecs(withHistoric(applyYaws(makeNodes(essy_duong_vao_nha, [
+        { idx: 0, clueId: 'essy-ngo-kho', yaw: 25, pitch: -8, audioSec: 75 },
         { idx: 7, clueId: 'essy-ngap-mua', yaw: 25, pitch: -8 },
-        { idx: 13, clueId: 'essy-cay-xanh-ngo', yaw: 25, pitch: -8 },
+        { idx: 13, clueId: 'essy-cay-xanh-ngo', yaw: 25, pitch: -8, audioSec: 20 },
       ], 'es-ng', [
         { idx: 13, scanUrl: '/scans/nha-essy.glb', label: 'View 3D House', yaw: 0, pitch: -10 },
       ], [
@@ -540,6 +558,10 @@ const ESSY: Story = {
         { idx: 10, url: 'https://www.google.com/maps/embed?pb=!4v1781412199393!6m8!1m7!1s7d03mG0z6vi2eZtWE7TRFQ!2m2!1d21.04106422876278!2d105.8181299031744!3f107.38807014797955!4f0.4437072786251264!5f0.7820865974627469' },
         { idx: 13, url: 'https://www.google.com/maps/embed?pb=!4v1781412069003!6m8!1m7!1sUAlJ_dGe8w88WdPKaRZJuw!2m2!1d21.04098537974627!2d105.818354031628!3f202.05707186222304!4f-13.064484507307242!5f0.7820865974627469' },
       ]),
+      // 0=deep in alley(1s) 2=row of houses/courtyard(33s) 3=freshness entering(45s)
+      // 5=between 3 streets(82s) 6=Grab drivers can't find it(82s) 7=road will cut through(148s)
+      // 9=community sharing(218s) 10=childhood grocery trips(240s) 13=scan+trust/tab(277s)
+      [1, 20, 33, 45, 62, 82, 82, 148, 164, 218, 240, 252, 262, 277]),
       memoryEchoes: [
         '"Five ways to enter from three main roads..."',
         '"Deep alleys where Grab drivers get lost..."',
@@ -604,13 +626,16 @@ const ESSY: Story = {
       vimeoUrl: 'https://player.vimeo.com/video/1201125560?badge=0&autopause=0&player_id=0&app_id=58479',
       bgGradient: 'linear-gradient(160deg, #a8c5a0 0%, #7da87a 40%, #5a8a56 100%)',
       bgTone: '#3a6a36',
-      bgTourNodes: withHistoric(makeNodes(essy_playground, [
+      bgTourNodes: withAudioSecs(withHistoric(makeNodes(essy_playground, [
         { idx: 0, clueId: 'essy-tre-con-gieng', yaw: 25, pitch: -8 },
-        { idx: 2, clueId: 'essy-gieng-mat', yaw: 25, pitch: -8 },
-        { idx: 3, clueId: 'essy-di-tich', yaw: 25, pitch: -8 },
+        { idx: 2, clueId: 'essy-gieng-mat', yaw: 25, pitch: -8, audioSec: 341 },
+        { idx: 3, clueId: 'essy-di-tich', yaw: 25, pitch: -8, audioSec: 362 },
       ], 'es-gk'), [
         { idx: 0, url: 'https://www.google.com/maps/embed?pb=!4v1781411941294!6m8!1m7!1s4kK0rMHW11aCh1X_sTPlaQ!2m2!1d21.04034879948579!2d105.817488961791!3f281.32678038512734!4f-16.875345166491712!5f0.7820865974627469' },
       ]),
+      // 0=leave HHT street/nice area(291s) 1=path only locals know/leads to well(298s)
+      // 2=the well/converted to exercise yard(308s) 3=comfortable/shops+market(324s)
+      [291, 298, 308, 324]),
       memoryEchoes: [
         '"A hidden shortcut to the ancient well..."',
         '"Shaded green courtyard, cooler than the city..."',
@@ -700,8 +725,8 @@ const TRANG_THAI_THINH: Story = {
       ],
       bgGradient: 'linear-gradient(160deg, #f0e4c8 0%, #d9c49a 40%, #c4a870 100%)',
       bgTone: '#c4a870',
-      bgTourNodes: withHistoric(applyYaws(makeNodes(trang_di_hoc_them, [
-        { idx: 0, clueId: 'thai-thinh-hoc-them', yaw: 25, pitch: -8 },
+      bgTourNodes: withAudioSecs(withHistoric(applyYaws(makeNodes(trang_di_hoc_them, [
+        { idx: 0, clueId: 'thai-thinh-hoc-them', yaw: 25, pitch: -8, audioSec: 66 },
         { idx: 3, clueId: 'thai-thinh-pho-khong-xe', yaw: 25, pitch: -8 },
       ], 'tt-hoc', undefined, [
         [21.010379, 105.819129], // tt-hoc-01
@@ -718,6 +743,10 @@ const TRANG_THAI_THINH: Story = {
         { idx: 3, url: 'https://www.google.com/maps/embed?pb=!4v1781408364592!6m8!1m7!1s_n6SQubPSlBt-Zd_87SShA!2m2!1d21.01075480596271!2d105.8196807127992!3f324.39853889627045!4f-6.447499879491232!5f0.7820865974627469' },
         { idx: 4, url: 'https://www.google.com/maps/embed?pb=!4v1781408422825!6m8!1m7!1s1XpIx8FMLqaQpo6_jUhk7A!2m2!1d21.01095812934958!2d105.8195033436658!3f317.37933527468243!4f-3.6715733113441473!5f0.7820865974627469' },
       ]),
+      // 0=extra classes near mom's shop(27s) 1=4-5PM mom walks me(63s) 2=not many cars(79s)
+      // 3=walking back from work surprised(87s) 4=last time I saw alley no cars(98s)
+      // 5=motorbikes replaced by cars(125s) 6=Nguyen Van Tuyet was a ditch(152s)
+      [27, 63, 79, 87, 98, 125, 152]),
       memoryEchoes: [
         '"Walking to class around 4 or 5 PM..."',
         '"A quiet street when the road was still a ditch..."',
@@ -771,9 +800,9 @@ const TRANG_THAI_THINH: Story = {
       ],
       bgGradient: 'linear-gradient(160deg, #b8d4b0 0%, #8aba88 40%, #6a9866 100%)',
       bgTone: '#6a9866',
-      bgTourNodes: applyYaws(makeNodes(trang_playground, [
+      bgTourNodes: withAudioSecs(applyYaws(makeNodes(trang_playground, [
         { idx: 1, clueId: 'thai-thinh-san-choi', yaw: -65, pitch: -8 },
-        { idx: 3, clueId: 'thai-thinh-tieng-cuoi', yaw: -65, pitch: -8 },
+        { idx: 3, clueId: 'thai-thinh-tieng-cuoi', yaw: -65, pitch: -8, audioSec: 250 },
       ], 'tt-pg', undefined, [
         [21.010385, 105.819069], // tt-pg-01
         [21.010467, 105.818988], // tt-pg-02
@@ -782,6 +811,10 @@ const TRANG_THAI_THINH: Story = {
         [21.010552, 105.818833], // tt-pg-05
         [21.010552, 105.818833], // tt-pg-06
       ]), TT_PG_YAWS),
+      // 0=always walked past on way to class(214s) 1=playground / never set foot inside(225s)
+      // 2=five-year-old seeing kids play happily(250s) 3=wishing to stay and play(261s)
+      // 4=walking past now still recalls that feeling(280s) 5=if playground cleared feeling gone(309s)
+      [214, 225, 250, 261, 280, 309]),
       memoryEchoes: [
         '"Watching other kids play from afar..."',
         '"Never once allowed to enter and play..."',
@@ -838,9 +871,9 @@ const TRANG_THAI_THINH: Story = {
       videoClip: 'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/video/quan-oc-violin.mp4',
       isPanoramicVideo: true,
       vimeoUrl: 'https://player.vimeo.com/video/1201125509?badge=0&autopause=0&player_id=0&app_id=58479',
-      bgTourNodes: withHistoric(applyYaws(makeNodes(trang_quan_oc, [
+      bgTourNodes: withAudioSecs(withHistoric(applyYaws(makeNodes(trang_quan_oc, [
         { idx: 0, clueId: 'thai-thinh-di-voi-me', yaw: 25, pitch: -8 },
-        { idx: 4, clueId: 'thai-thinh-vio-oc', yaw: 25, pitch: -8 },
+        { idx: 4, clueId: 'thai-thinh-vio-oc', yaw: 25, pitch: -8, audioSec: 428 },
       ], 'tt-oc', undefined, [
         [21.010715, 105.819921], // tt-oc-01
         [21.011138, 105.820287], // tt-oc-02
@@ -852,6 +885,10 @@ const TRANG_THAI_THINH: Story = {
         { idx: 1, url: 'https://www.google.com/maps/embed?pb=!4v1781408663887!6m8!1m7!1spNB7WYfP2N6cX5e7_Yf62A!2m2!1d21.0111221435295!2d105.8202784838613!3f38.21358173713219!4f-6.256166983100783!5f0.7820865974627469' },
         { idx: 2, url: 'https://www.google.com/maps/embed?pb=!4v1781408723312!6m8!1m7!1spNB7WYfP2N6cX5e7_Yf62A!2m2!1d21.0111221435295!2d105.8202784838613!3f354.0648327138127!4f-5.592324029480807!5f0.7820865974627469' },
       ]),
+      // 0=after class mom took me to eat snails(344s) 1=just a local spot back then(353s)
+      // 2=strong sense of community(360s) 3=owner playing violin / first time I knew violin(428s)
+      // 4=violin can be played anywhere even a snail stall(441s)
+      [344, 353, 360, 428, 441]),
       memoryEchoes: [
         '"Boiled snails to comfort a crying child..."',
         '"An old man playing violin among the tables..."',

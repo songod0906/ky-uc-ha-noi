@@ -207,6 +207,11 @@ export function EndingCannotBeMoved({ story, diary, onRestart, onChooseOther, on
                   <blockquote className="mt-2 border-l border-muctim/10 pl-3 font-handwritten text-base italic leading-relaxed text-terracotta">
                     {entry.quote}
                   </blockquote>
+                  {entry.voiceNote && (
+                    <p className="mt-3 font-serif text-xs leading-relaxed text-muctim/70">
+                      {entry.voiceNote}
+                    </p>
+                  )}
                 </div>
               </motion.li>
             ))}
