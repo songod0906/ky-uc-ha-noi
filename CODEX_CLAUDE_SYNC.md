@@ -120,6 +120,7 @@ Stamp diary confirmation:
 - `Complete Archive` is enabled after at least one collected clue in the current space.
 - After the archive typing transition, `Open Memory File` shows the stamp diary.
 - Browser check confirmed: collecting the Violin Snail Stall clue produces `1 / 2 stamps`, the found stamp is selectable, the missing stamp stays locked, and the selected stamp shows the clue's panorama/audio/quote/note.
+- `hanoi_memory_stamp_diary.html` is the original stamp diary/book prototype and should stay tracked as source/reference for the diary design. The live app uses `src/components/StampDiary.tsx`.
 
 Browser verification:
 

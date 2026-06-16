@@ -1,0 +1,790 @@
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: transparent; }
+
+  .diary-scene {
+    padding: 1.5rem 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    font-family: var(--font-sans);
+  }
+
+  .controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .ctrl-btn {
+    background: var(--color-background-primary);
+    border: 0.5px solid var(--color-border-secondary);
+    border-radius: var(--border-radius-md);
+    padding: 6px 14px;
+    font-size: 13px;
+    cursor: pointer;
+    color: var(--color-text-primary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.15s;
+  }
+  .ctrl-btn:hover { background: var(--color-background-secondary); }
+  .ctrl-btn.active { background: var(--color-background-secondary); border-color: var(--color-border-primary); }
+
+  .page-label {
+    font-size: 12px;
+    color: var(--color-text-tertiary);
+    min-width: 80px;
+    text-align: center;
+  }
+
+  /* BOOK */
+  .book-wrapper {
+    perspective: 1200px;
+    width: 620px;
+    height: 420px;
+    position: relative;
+  }
+
+  .book {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+  }
+
+  /* cover */
+  .book-cover {
+    position: absolute;
+    inset: 0;
+    background: #5a3e2b;
+    border-radius: 4px 16px 16px 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    border: 1.5px solid #3e2a1a;
+    transition: transform 0.8s cubic-bezier(0.4,0,0.2,1), opacity 0.4s;
+    transform-origin: left center;
+    z-index: 20;
+    cursor: pointer;
+  }
+
+  .book-cover.open {
+    transform: rotateY(-160deg);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .cover-title {
+    font-size: 18px;
+    font-weight: 500;
+    color: #f5e6c8;
+    letter-spacing: 0.05em;
+    text-align: center;
+    padding: 0 1rem;
+  }
+  .cover-sub {
+    font-size: 11px;
+    color: #c8a97a;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .cover-ornament {
+    width: 60px;
+    height: 2px;
+    background: #c8a97a;
+    border-radius: 1px;
+  }
+  .cover-stamp-icon {
+    width: 44px;
+    height: 44px;
+    border: 2px dashed #c8a97a;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #c8a97a;
+    font-size: 22px;
+  }
+
+  /* spine */
+  .book-spine {
+    position: absolute;
+    left: 0;
+    top: 6px;
+    bottom: 6px;
+    width: 28px;
+    background: #3e2a1a;
+    border-radius: 4px 0 0 4px;
+    z-index: 25;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .spine-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #c8a97a;
+    opacity: 0.6;
+  }
+
+  /* pages */
+  .pages-area {
+    position: absolute;
+    inset: 0;
+    padding-left: 32px;
+    display: none;
+  }
+  .pages-area.visible { display: block; }
+
+  .spread {
+    display: none;
+    width: 100%;
+    height: 100%;
+    gap: 0;
+  }
+  .spread.active { display: flex; }
+
+  .page {
+    flex: 1;
+    height: 100%;
+    background: #fdf8f0;
+    padding: 20px 18px 16px;
+    border: 0.5px solid #d4c5a8;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .page.left {
+    border-right: 1px solid #c8b89a;
+    border-radius: 4px 0 0 4px;
+  }
+  .page.right {
+    border-left: none;
+    border-radius: 0 12px 12px 0;
+  }
+
+  .page-header {
+    font-size: 10px;
+    color: #a08060;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    border-bottom: 0.5px solid #d4c5a8;
+    padding-bottom: 6px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .chapter-tag {
+    font-size: 9px;
+    background: #e8d8b8;
+    color: #7a5c38;
+    padding: 2px 6px;
+    border-radius: 3px;
+    letter-spacing: 0.06em;
+  }
+
+  /* STAMP GRID */
+  .stamp-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .stamp-slot {
+    aspect-ratio: 1 / 1.1;
+    border: 1.5px dashed #c0a880;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    background: #faf4e8;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    position: relative;
+    overflow: hidden;
+  }
+  .stamp-slot:hover { background: #f0e8d0; border-color: #a08060; }
+
+  .stamp-slot.filled {
+    border: 1.5px solid #8b6240;
+    background: #fff;
+    cursor: default;
+  }
+
+  .stamp-slot.filled:hover { background: #fff; border-color: #8b6240; }
+
+  .stamp-inner {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 4px 4px;
+    gap: 3px;
+  }
+
+  .stamp-img {
+    width: 38px;
+    height: 38px;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+  }
+
+  .stamp-name {
+    font-size: 8px;
+    color: #5a3e28;
+    text-align: center;
+    font-weight: 500;
+    line-height: 1.3;
+  }
+
+  .stamp-meta {
+    font-size: 7px;
+    color: #a08060;
+    text-align: center;
+  }
+
+  .stamp-perforations {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .empty-icon {
+    font-size: 18px;
+    color: #c8b090;
+    opacity: 0.5;
+  }
+  .empty-label {
+    font-size: 8px;
+    color: #c8b090;
+    text-align: center;
+  }
+
+  /* RIGHT PAGE — story detail */
+  .story-panel {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .story-featured {
+    flex: 1;
+    border: 1px solid #d4c5a8;
+    border-radius: 6px;
+    background: #f5ece0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px;
+  }
+
+  .featured-icon { font-size: 32px; }
+
+  .featured-title {
+    font-size: 12px;
+    font-weight: 500;
+    color: #4a2e14;
+    text-align: center;
+  }
+
+  .featured-desc {
+    font-size: 10px;
+    color: #7a5c38;
+    text-align: center;
+    line-height: 1.5;
+  }
+
+  .story-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .story-tag {
+    font-size: 9px;
+    background: #e8d8b8;
+    color: #7a5c38;
+    padding: 2px 7px;
+    border-radius: 10px;
+    border: 0.5px solid #c8b080;
+  }
+
+  .progress-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .progress-bar-bg {
+    flex: 1;
+    height: 4px;
+    background: #e0d0b8;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: #8b6240;
+    border-radius: 2px;
+    transition: width 0.4s;
+  }
+  .progress-label {
+    font-size: 9px;
+    color: #a08060;
+    white-space: nowrap;
+  }
+
+  /* DB schema page */
+  .schema-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9px;
+  }
+  .schema-table th {
+    text-align: left;
+    padding: 4px 6px;
+    border-bottom: 1px solid #d4c5a8;
+    color: #a08060;
+    font-weight: 500;
+    font-size: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .schema-table td {
+    padding: 4px 6px;
+    border-bottom: 0.5px solid #ecdfc8;
+    color: #4a3020;
+    vertical-align: top;
+  }
+  .schema-table tr:last-child td { border-bottom: none; }
+
+  .field-type {
+    font-size: 8px;
+    color: #8b6240;
+    font-family: var(--font-mono);
+  }
+
+  .field-badge {
+    font-size: 7px;
+    padding: 1px 4px;
+    border-radius: 2px;
+  }
+  .badge-pk { background: #e8d8b8; color: #7a5c38; }
+  .badge-fk { background: #dce8f0; color: #3a5c7a; }
+  .badge-req { background: #f0e8d8; color: #8a6040; }
+
+  .page-num {
+    position: absolute;
+    bottom: 8px;
+    font-size: 9px;
+    color: #c0a880;
+  }
+  .page.left .page-num { right: 12px; }
+  .page.right .page-num { left: 12px; }
+
+  /* transition overlay */
+  .flip-overlay {
+    position: absolute;
+    inset: 0;
+    background: #fdf0d8;
+    opacity: 0;
+    pointer-events: none;
+    border-radius: 4px 16px 16px 4px;
+    transition: opacity 0.15s;
+    z-index: 10;
+  }
+  .flip-overlay.flipping { opacity: 0.6; }
+</style>
+
+<div class="diary-scene">
+  <h2 class="sr-only">Interactive stamp diary for Hanoi childhood memory project — collect stamps from places being demolished and fill your diary</h2>
+
+  <div class="controls">
+    <button class="ctrl-btn" id="btn-open" onclick="toggleOpen()">
+      <i class="ti ti-book-2" aria-hidden="true"></i> Open diary
+    </button>
+    <span class="page-label" id="page-label" style="display:none;">Page 1 of 3</span>
+    <button class="ctrl-btn" id="btn-prev" onclick="flipPage(-1)" style="display:none;">
+      <i class="ti ti-chevron-left" aria-hidden="true"></i> Prev
+    </button>
+    <button class="ctrl-btn" id="btn-next" onclick="flipPage(1)" style="display:none;">
+      Next <i class="ti ti-chevron-right" aria-hidden="true"></i>
+    </button>
+  </div>
+
+  <div class="book-wrapper">
+    <div class="book">
+
+      <!-- Spine -->
+      <div class="book-spine">
+        <div class="spine-dot"></div>
+        <div class="spine-dot"></div>
+        <div class="spine-dot"></div>
+        <div class="spine-dot"></div>
+        <div class="spine-dot"></div>
+      </div>
+
+      <!-- Cover -->
+      <div class="book-cover" id="book-cover" onclick="toggleOpen()">
+        <div class="cover-stamp-icon"><i class="ti ti-rosette" aria-hidden="true"></i></div>
+        <div class="cover-ornament"></div>
+        <div class="cover-title">Ký Ức Hà Nội<br><span style="font-size:13px; opacity:0.7;">Memory Passport</span></div>
+        <div class="cover-ornament"></div>
+        <div class="cover-sub">Digital Humanities · 2025</div>
+      </div>
+
+      <!-- Pages -->
+      <div class="pages-area" id="pages-area">
+
+        <!-- SPREAD 1: Stamp collection + story detail -->
+        <div class="spread active" id="spread-0">
+          <div class="page left">
+            <div class="page-header">
+              <span>Collected stamps</span>
+              <span class="chapter-tag">Chapter I · Phố Cũ</span>
+            </div>
+            <div class="stamp-grid">
+              <!-- Filled stamps -->
+              <div class="stamp-slot filled" title="Chợ Đồng Xuân">
+                <div class="stamp-inner">
+                  <div class="stamp-img" style="background:#f0e4cc;">🏪</div>
+                  <div class="stamp-name">Chợ Đồng Xuân</div>
+                  <div class="stamp-meta">1954 · Market</div>
+                </div>
+              </div>
+              <div class="stamp-slot filled" title="Hồ Tây tram stop">
+                <div class="stamp-inner">
+                  <div class="stamp-img" style="background:#d8ecf4;">🚃</div>
+                  <div class="stamp-name">Trạm tàu điện</div>
+                  <div class="stamp-meta">1960s · Transit</div>
+                </div>
+              </div>
+              <!-- Empty slots -->
+              <div class="stamp-slot" onclick="sendPrompt('I found a stamp for Rạp Tháng Tám cinema — how does adding a stamp work?')">
+                <div class="empty-icon"><i class="ti ti-plus" aria-hidden="true"></i></div>
+                <div class="empty-label">Rạp Tháng Tám</div>
+              </div>
+              <div class="stamp-slot" onclick="sendPrompt('Tell me about the Phở Bát Đàn lane as a stamp location')">
+                <div class="empty-icon"><i class="ti ti-plus" aria-hidden="true"></i></div>
+                <div class="empty-label">Ngõ Bát Đàn</div>
+              </div>
+              <div class="stamp-slot">
+                <div class="empty-icon"><i class="ti ti-lock" aria-hidden="true"></i></div>
+                <div class="empty-label">Locked</div>
+              </div>
+              <div class="stamp-slot">
+                <div class="empty-icon"><i class="ti ti-lock" aria-hidden="true"></i></div>
+                <div class="empty-label">Locked</div>
+              </div>
+            </div>
+            <span class="page-num">1</span>
+          </div>
+
+          <div class="page right">
+            <div class="page-header">
+              <span>Story detail</span>
+              <span class="chapter-tag">Active memory</span>
+            </div>
+            <div class="story-panel">
+              <div class="story-featured">
+                <div class="featured-icon">🏪</div>
+                <div class="featured-title">Chợ Đồng Xuân<br><span style="font-size:10px; font-weight:400; color:#8a6040;">Oral history · Bà Lan, b. 1952</span></div>
+                <div class="featured-desc">"Mỗi sáng thứ Bảy tôi theo mẹ ra chợ…<br>mùi vải hoa còn nhớ mãi."</div>
+              </div>
+              <div class="story-tags">
+                <span class="story-tag">360° image linked</span>
+                <span class="story-tag">Oral history</span>
+                <span class="story-tag">Polyscan</span>
+                <span class="story-tag">Pre-1975</span>
+              </div>
+              <div class="progress-row">
+                <div class="progress-bar-bg">
+                  <div class="progress-bar-fill" style="width: 33%;"></div>
+                </div>
+                <span class="progress-label">2 / 6 stamps collected</span>
+              </div>
+            </div>
+            <span class="page-num">2</span>
+          </div>
+        </div>
+
+        <!-- SPREAD 2: DB schema view -->
+        <div class="spread" id="spread-1">
+          <div class="page left">
+            <div class="page-header">
+              <span>Data structure</span>
+              <span class="chapter-tag">Stamp entity</span>
+            </div>
+            <table class="schema-table">
+              <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Note</th>
+              </tr>
+              <tr>
+                <td><span class="field-badge badge-pk">PK</span> stamp_id</td>
+                <td class="field-type">uuid</td>
+                <td style="color:#8a6040;">Unique per stamp</td>
+              </tr>
+              <tr>
+                <td>place_name</td>
+                <td class="field-type">string</td>
+                <td style="color:#8a6040;">Viet + EN</td>
+              </tr>
+              <tr>
+                <td>year_range</td>
+                <td class="field-type">string</td>
+                <td style="color:#8a6040;">e.g. "1960–1975"</td>
+              </tr>
+              <tr>
+                <td><span class="field-badge badge-fk">FK</span> story_id</td>
+                <td class="field-type">uuid</td>
+                <td style="color:#8a6040;">→ oral_history</td>
+              </tr>
+              <tr>
+                <td><span class="field-badge badge-fk">FK</span> image_360_id</td>
+                <td class="field-type">uuid</td>
+                <td style="color:#8a6040;">→ panorama</td>
+              </tr>
+              <tr>
+                <td>clue_text</td>
+                <td class="field-type">text</td>
+                <td style="color:#8a6040;">Shown in scene</td>
+              </tr>
+              <tr>
+                <td>category</td>
+                <td class="field-type">enum</td>
+                <td style="color:#8a6040;">market/transit…</td>
+              </tr>
+              <tr>
+                <td>locked</td>
+                <td class="field-type">bool</td>
+                <td style="color:#8a6040;">Requires prereq</td>
+              </tr>
+              <tr>
+                <td>polyscan_ref</td>
+                <td class="field-type">url</td>
+                <td style="color:#8a6040;">3D scan link</td>
+              </tr>
+            </table>
+            <span class="page-num">3</span>
+          </div>
+
+          <div class="page right">
+            <div class="page-header">
+              <span>Data structure</span>
+              <span class="chapter-tag">Diary entity</span>
+            </div>
+            <table class="schema-table">
+              <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Note</th>
+              </tr>
+              <tr>
+                <td><span class="field-badge badge-pk">PK</span> diary_id</td>
+                <td class="field-type">uuid</td>
+                <td style="color:#8a6040;">Per player</td>
+              </tr>
+              <tr>
+                <td>player_name</td>
+                <td class="field-type">string</td>
+                <td style="color:#8a6040;">Optional alias</td>
+              </tr>
+              <tr>
+                <td>stamps_collected</td>
+                <td class="field-type">uuid[]</td>
+                <td style="color:#8a6040;">Array of stamp_id</td>
+              </tr>
+              <tr>
+                <td>stories_completed</td>
+                <td class="field-type">uuid[]</td>
+                <td style="color:#8a6040;">Finished arcs</td>
+              </tr>
+              <tr>
+                <td>current_chapter</td>
+                <td class="field-type">int</td>
+                <td style="color:#8a6040;">Progress index</td>
+              </tr>
+              <tr>
+                <td>last_active</td>
+                <td class="field-type">timestamp</td>
+                <td style="color:#8a6040;">Session sync</td>
+              </tr>
+            </table>
+            <div style="margin-top:10px; padding:8px; background:#f5ece0; border-radius:5px; border:0.5px solid #d4c5a8;">
+              <div style="font-size:9px; color:#7a5c38; font-weight:500; margin-bottom:4px;">Relation</div>
+              <div style="font-size:9px; color:#a08060; line-height:1.6;">
+                diary.stamps_collected → stamp.stamp_id<br>
+                stamp.story_id → oral_history.id<br>
+                stamp.image_360_id → panorama.id
+              </div>
+            </div>
+            <span class="page-num">4</span>
+          </div>
+        </div>
+
+        <!-- SPREAD 3: More stamp slots -->
+        <div class="spread" id="spread-2">
+          <div class="page left">
+            <div class="page-header">
+              <span>Collected stamps</span>
+              <span class="chapter-tag">Chapter II · Ký Ức</span>
+            </div>
+            <div class="stamp-grid">
+              <div class="stamp-slot">
+                <div class="empty-icon"><i class="ti ti-plus" aria-hidden="true"></i></div>
+                <div class="empty-label">Ga Hàng Cỏ</div>
+              </div>
+              <div class="stamp-slot">
+                <div class="empty-icon"><i class="ti ti-plus" aria-hidden="true"></i></div>
+                <div class="empty-label">Rạp Bạch Mai</div>
+              </div>
+              <div class="stamp-slot">
+                <div class="empty-icon"><i class="ti ti-plus" aria-hidden="true"></i></div>
+                <div class="empty-label">Hồ Ba Mẫu</div>
+              </div>
+              <div class="stamp-slot">
+                <div class="empty-icon"><i class="ti ti-lock" aria-hidden="true"></i></div>
+                <div class="empty-label">Locked</div>
+              </div>
+              <div class="stamp-slot">
+                <div class="empty-icon"><i class="ti ti-lock" aria-hidden="true"></i></div>
+                <div class="empty-label">Locked</div>
+              </div>
+              <div class="stamp-slot">
+                <div class="empty-icon"><i class="ti ti-lock" aria-hidden="true"></i></div>
+                <div class="empty-label">Locked</div>
+              </div>
+            </div>
+            <span class="page-num">5</span>
+          </div>
+
+          <div class="page right">
+            <div class="page-header">
+              <span>Collection progress</span>
+              <span class="chapter-tag">Overview</span>
+            </div>
+            <div class="story-panel">
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                <div style="background:#f5ece0; border-radius:6px; padding:10px; border:0.5px solid #d4c5a8; text-align:center;">
+                  <div style="font-size:22px; font-weight:500; color:#4a2e14;">2</div>
+                  <div style="font-size:9px; color:#a08060; margin-top:2px;">Stamps collected</div>
+                </div>
+                <div style="background:#f5ece0; border-radius:6px; padding:10px; border:0.5px solid #d4c5a8; text-align:center;">
+                  <div style="font-size:22px; font-weight:500; color:#4a2e14;">12</div>
+                  <div style="font-size:9px; color:#a08060; margin-top:2px;">Total available</div>
+                </div>
+                <div style="background:#f5ece0; border-radius:6px; padding:10px; border:0.5px solid #d4c5a8; text-align:center;">
+                  <div style="font-size:22px; font-weight:500; color:#4a2e14;">1</div>
+                  <div style="font-size:9px; color:#a08060; margin-top:2px;">Stories done</div>
+                </div>
+                <div style="background:#f5ece0; border-radius:6px; padding:10px; border:0.5px solid #d4c5a8; text-align:center;">
+                  <div style="font-size:22px; font-weight:500; color:#4a2e14;">360°</div>
+                  <div style="font-size:9px; color:#a08060; margin-top:2px;">Images in archive</div>
+                </div>
+              </div>
+              <div style="margin-top:6px;">
+                <div style="font-size:9px; color:#a08060; margin-bottom:5px;">Overall completion</div>
+                <div class="progress-bar-bg" style="height:6px;">
+                  <div class="progress-bar-fill" style="width:17%; height:100%;"></div>
+                </div>
+                <div style="font-size:9px; color:#c0a060; margin-top:3px;">17% · Chapter I unlocked</div>
+              </div>
+              <button class="ctrl-btn" style="margin-top:6px; font-size:11px;" onclick="sendPrompt('How should stamps be unlocked progressively in the Hanoi memory diary project?')">
+                Design unlock logic ↗
+              </button>
+            </div>
+            <span class="page-num">6</span>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="flip-overlay" id="flip-overlay"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+let isOpen = false;
+let currentSpread = 0;
+const totalSpreads = 3;
+
+function toggleOpen() {
+  isOpen = !isOpen;
+  const cover = document.getElementById('book-cover');
+  const pages = document.getElementById('pages-area');
+  const btnOpen = document.getElementById('btn-open');
+  const btnPrev = document.getElementById('btn-prev');
+  const btnNext = document.getElementById('btn-next');
+  const pageLabel = document.getElementById('page-label');
+
+  if (isOpen) {
+    cover.classList.add('open');
+    pages.classList.add('visible');
+    btnOpen.innerHTML = '<i class="ti ti-book" aria-hidden="true"></i> Close diary';
+    btnPrev.style.display = 'flex';
+    btnNext.style.display = 'flex';
+    pageLabel.style.display = 'block';
+    updateLabel();
+  } else {
+    cover.classList.remove('open');
+    pages.classList.remove('visible');
+    btnOpen.innerHTML = '<i class="ti ti-book-2" aria-hidden="true"></i> Open diary';
+    btnPrev.style.display = 'none';
+    btnNext.style.display = 'none';
+    pageLabel.style.display = 'none';
+    currentSpread = 0;
+    showSpread(0);
+  }
+}
+
+function flipPage(dir) {
+  const next = currentSpread + dir;
+  if (next < 0 || next >= totalSpreads) return;
+
+  const overlay = document.getElementById('flip-overlay');
+  overlay.classList.add('flipping');
+  setTimeout(() => {
+    showSpread(next);
+    currentSpread = next;
+    updateLabel();
+    overlay.classList.remove('flipping');
+  }, 150);
+}
+
+function showSpread(index) {
+  document.querySelectorAll('.spread').forEach((s, i) => {
+    s.classList.toggle('active', i === index);
+  });
+}
+
+function updateLabel() {
+  const labels = ['Stamp collection', 'Data structure', 'Chapter II'];
+  document.getElementById('page-label').textContent = labels[currentSpread] + ` (${currentSpread + 1}/${totalSpreads})`;
+  document.getElementById('btn-prev').disabled = currentSpread === 0;
+  document.getElementById('btn-next').disabled = currentSpread === totalSpreads - 1;
+}
+</script>
