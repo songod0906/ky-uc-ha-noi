@@ -184,21 +184,15 @@ const TT_OC_YAWS: Record<string, { fwd: number; back: number }> = {
 };
 
 const CT_YAWS: Record<string, { fwd: number; back: number }> = {
-  'ct-01': { fwd: -93, back:   87 },
+  'ct-01': { fwd: -79, back:  101 },
   'ct-02': { fwd:   7, back: -173 },
-  'ct-03': { fwd:   0, back: -110 },
+  'ct-03': { fwd: -16, back:  164 },
   'ct-04': { fwd:   0, back: -102 },
 };
 
 // ─── Essy panorama sequences ──────────────────────────────────────────────────
 const ES_NG_YAWS: Record<string, { fwd: number; back: number }> = {
-  'es-ng-02': { fwd: -80, back:  100 },
-  'es-ng-04': { fwd:  80, back: -100 },
-  'es-ng-07': { fwd: -80, back:  100 },
-  'es-ng-08': { fwd:   0, back:  180 },
-  'es-ng-09': { fwd: -65, back:  115 },
-  'es-ng-11': { fwd:  90, back:  -90 }, // was es-ng-12 (es-ng-11 deleted)
-  'es-ng-13': { fwd:  80, back: -100 }, // was es-ng-14
+  'es-ng-01': { fwd:   2, back: -178 },
 };
 
 const essy_duong_vao_nha = [
@@ -270,8 +264,8 @@ const TRANG: Story = {
       bgGradient: 'linear-gradient(160deg, #f5e6c8 0%, #e8d5a3 40%, #d4b896 100%)',
       bgTone: '#c8a96e',
       bgTourNodes: withAudioSecs(withHistoric(applyYaws(makeNodes(ltk_cong_truong, [
-        { idx: 0, clueId: 'trang-tieng-trong', yaw: 9, pitch: -8, audioSec: 61 },
-        { idx: 2, clueId: 'trang-an-vat', yaw: -16, pitch: -8 },
+        { idx: 0, clueId: 'trang-tieng-trong', yaw: 30, pitch: -13, audioSec: 61 },
+        { idx: 3, clueId: 'trang-an-vat', yaw: 0, pitch: 0 },
       ], 'ct', [
         { idx: 3, scanUrl: '/scans/quan-an-vat.glb', label: 'View 3D Food Stall', yaw: 0, pitch: -10, clueId: 'trang-an-vat' },
       ], [
@@ -339,8 +333,7 @@ const TRANG: Story = {
       bgGradient: 'linear-gradient(160deg, #2a1f3d 0%, #3d2f5c 50%, #1a1228 100%)',
       bgTone: '#1a1228',
       bgTourNodes: withAudioSecs(withHistoric(applyYaws(makeNodes(ltk_quan_net, [
-        { idx: 5, clueId: 'trang-choi-net', yaw: 25, pitch: -8, audioSec: 437 },
-        { idx: 16, clueId: 'trang-tieng-chui', yaw: 103, pitch: -8 },
+        { idx: 11, clueId: 'trang-tieng-chui', yaw: -1, pitch: -2 },
       ], 'qn', [
         { idx: 16, scanUrl: '/scans/quan-net.glb', label: 'View 3D Net Café', yaw: 0, pitch: -10 },
       ], [
@@ -421,9 +414,8 @@ const TRANG: Story = {
       bgGradient: 'linear-gradient(160deg, #c8dde8 0%, #a3c4d5 40%, #7eaabf 100%)',
       bgTone: '#5a7a8a',
       bgTourNodes: withAudioSecs(withHistoric(applyYaws(makeNodes(ltk_ho_thanh_cong, [
-        { idx: 0, clueId: 'trang-xe-dap', yaw: 143, pitch: -8, audioSec: 609 },
-        { idx: 6, clueId: 'trang-nhac-aerobic', yaw: 25, pitch: -8 },
-        { idx: 10, clueId: 'trang-khu-tap-the', yaw: 25, pitch: -8 },
+        { idx: 0, clueId: 'trang-cong-sau', yaw: -175, pitch: -29 },
+        { idx: 5, clueId: 'trang-xe-dap', yaw: 25, pitch: -8, audioSec: 609 },
       ], 'htc', undefined, [
         [21.020390, 105.813167], // htc-01
         [21.020328, 105.813291], // htc-02
@@ -452,47 +444,33 @@ const TRANG: Story = {
       ],
       clues: [
         {
+          id: 'trang-cong-sau',
+          type: 'place',
+          label: 'The back gate that never opened fully',
+          quote:
+            '"Thanh Cong people never use the main entrance. The back gate was always stuck half-open — you had to squeeze your bike through and walk it down the steps."',
+          voiceNote:
+            'Real Thanh Cong residents never entered the lake through the main front gate facing the street. They used a small side gate that was always only half-open — no one knew why. You had to lift your bike over a raised threshold, squeeze through the narrow gap, and walk it down the uneven concrete steps. A very physical, obstacle-course ritual that served as an unspoken litmus test of belonging. That gate, along with all the iron park fences, was dismantled under the new open-park policy.',
+          planningImpact:
+            'All iron fences around Thanh Cong Lake have been removed per the city\'s open-park policy. The half-open side gate that generations of locals squeezed their bikes through no longer exists — the entire perimeter is now open.',
+          ambient: 'cicadas',
+          x: 20,
+          y: 50,
+        },
+        {
           id: 'trang-xe-dap',
           type: 'routine',
           label: 'Learning to ride a bicycle — and hating it',
           quote:
             '"I didn\'t care about Thanh Cong Lake. Back then, being forced to learn cycling made me hate it already."',
           voiceNote:
-            'On weekends, Kien\'s grandparents took him to the lake to practice riding a bicycle. Back then, the lake path was uneven concrete, not paved like now. Lots of dogs, and a fishy smell from dead fish floating around. Kien didn\'t like it because he was scared of falling in front of people — "I didn\'t want to practice where people could watch me fall." He preferred the backyard of his maternal grandmother\'s house. Also, entering the lake area wasn\'t through the main gate — "Thanh Cong people never use the main gate." They went through the back gate, a gate that never opened fully, where you had to squeeze your bike through. That gate has been removed under the park fence dismantling policy.',
+            'On weekends, Kien\'s grandparents took him to the lake to practice riding a bicycle. Back then, the lake path was uneven concrete, not paved like now. Lots of dogs, and a fishy smell from dead fish floating around. Kien didn\'t like it because he was scared of falling in front of people — "I didn\'t want to practice where people could watch me fall." He preferred the backyard of his maternal grandmother\'s house.',
           planningImpact:
-            'The road around Thanh Cong Lake will be paved with uniform granite stone, and all old iron fences will be removed to create an open space. The uneven concrete path and the half-open iron gate from childhood will disappear forever.',
+            'The road around Thanh Cong Lake will be paved with uniform granite stone. The uneven concrete path that made beginner cyclists wobble is gone — along with the particular embarrassment and vulnerability of learning to ride here.',
           ambient: 'cicadas',
           audioSrc: '/audio/trang-xe-dap.mp3',
           x: 45,
           y: 62,
-        },
-        {
-          id: 'trang-nhac-aerobic',
-          type: 'sound',
-          label: 'Afternoon aerobic music',
-          quote:
-            '"Every single afternoon, aerobic music blared from the old iron speaker in the yard — it was the sign that evening had arrived."',
-          voiceNote:
-            'Every afternoon at Thanh Cong Lake, the community speaker blared aerobic music. Local women and elders exercised rhythmically while kids watched. The music echoed through the entire neighborhood — everyone who lived here remembers it. Now it\'s gone.',
-          planningImpact:
-            'The old iron speaker blaring aerobic music every afternoon will be dismantled to be replaced by a smart sound system as part of the park\'s new landscape renovation project.',
-          ambient: 'aerobic',
-          x: 72,
-          y: 38,
-        },
-        {
-          id: 'trang-khu-tap-the',
-          type: 'loss',
-          label: 'A neighborhood as one home — a lifestyle about to fade',
-          quote:
-            '"A living environment where an entire street is an apartment complex, where everyone knows everyone and lives within one street — it\'s very rare."',
-          voiceNote:
-            'Kien regrets more than just childhood sounds. The Thanh Cong area represents a unique living model: the whole street is a collective housing quarter, everyone knows each other\'s names, and daily life revolves around a few small streets. When demolished, it\'s not just the buildings that disappear — the way people live together goes too. Now living in high-rises, nobody knows their neighbor\'s name.',
-          planningImpact:
-            'The old Thanh Cong collective housing quarters will be razed to execute a new commercial urban district project. A long-established and close-knit residential community will be dispersed to different resettlement areas.',
-          ambient: 'wind',
-          x: 30,
-          y: 35,
         },
       ],
     },
@@ -534,7 +512,6 @@ const ESSY: Story = {
       bgTone: '#6b5a3e',
       bgTourNodes: withAudioSecs(withHistoric(applyYaws(makeNodes(essy_duong_vao_nha, [
         { idx: 0, clueId: 'essy-ngo-kho', yaw: 25, pitch: -8, audioSec: 75 },
-        { idx: 7, clueId: 'essy-ngap-mua', yaw: 25, pitch: -8 },
         { idx: 13, clueId: 'essy-cay-xanh-ngo', yaw: 25, pitch: -8, audioSec: 20 },
       ], 'es-ng', [
         { idx: 13, scanUrl: '/scans/nha-essy.glb', label: 'View 3D House', yaw: 0, pitch: -10 },
@@ -599,19 +576,6 @@ const ESSY: Story = {
           x: 25,
           y: 38,
         },
-        {
-          id: 'essy-ngap-mua',
-          type: 'place',
-          label: 'Rainy season flooding — deep alleys, neighbors knowing each other',
-          quote: '"During the rainy season, the deep alleys often flood — but that is a part of home."',
-          voiceNote:
-            'In the rainy season in Hanoi, deep alleys like Essy\'s often flood. But what Essy remembers more is the community inside: people walking the familiar path would get to know each other — knowing the names of the fishmonger, the poultry seller, and being willing to buy on credit from one another. "Like a big family where everyone is willing to let you run a tab."',
-          planningImpact:
-            'The self-sustaining ecosystem and "trust credit" at the spontaneous market in alley 267 will be completely dismantled for the urban infrastructure project. The community lifestyle of buying groceries on credit based on absolute trust will fade into the past.',
-          ambient: 'kids-laughter',
-          x: 65,
-          y: 45,
-        },
       ],
     },
     {
@@ -627,8 +591,7 @@ const ESSY: Story = {
       bgGradient: 'linear-gradient(160deg, #a8c5a0 0%, #7da87a 40%, #5a8a56 100%)',
       bgTone: '#3a6a36',
       bgTourNodes: withAudioSecs(withHistoric(makeNodes(essy_playground, [
-        { idx: 0, clueId: 'essy-tre-con-gieng', yaw: 25, pitch: -8 },
-        { idx: 2, clueId: 'essy-gieng-mat', yaw: 25, pitch: -8, audioSec: 341 },
+        { idx: 0, clueId: 'essy-tre-con-gieng', yaw: 17, pitch: -8 },
         { idx: 3, clueId: 'essy-di-tich', yaw: 25, pitch: -8, audioSec: 362 },
       ], 'es-gk'), [
         { idx: 0, url: 'https://www.google.com/maps/embed?pb=!4v1781411941294!6m8!1m7!1s4kK0rMHW11aCh1X_sTPlaQ!2m2!1d21.04034879948579!2d105.817488961791!3f281.32678038512734!4f-16.875345166491712!5f0.7820865974627469' },
@@ -726,8 +689,8 @@ const TRANG_THAI_THINH: Story = {
       bgGradient: 'linear-gradient(160deg, #f0e4c8 0%, #d9c49a 40%, #c4a870 100%)',
       bgTone: '#c4a870',
       bgTourNodes: withAudioSecs(withHistoric(applyYaws(makeNodes(trang_di_hoc_them, [
-        { idx: 0, clueId: 'thai-thinh-hoc-them', yaw: 25, pitch: -8, audioSec: 66 },
-        { idx: 3, clueId: 'thai-thinh-pho-khong-xe', yaw: 25, pitch: -8 },
+        { idx: 0, clueId: 'thai-thinh-hoc-them', yaw: 68, pitch: -13, audioSec: 66 },
+        { idx: 0, clueId: 'thai-thinh-pho-khong-xe', yaw: 62, pitch: -4 },
       ], 'tt-hoc', undefined, [
         [21.010379, 105.819129], // tt-hoc-01
         [21.010477, 105.819357], // tt-hoc-02
@@ -801,8 +764,8 @@ const TRANG_THAI_THINH: Story = {
       bgGradient: 'linear-gradient(160deg, #b8d4b0 0%, #8aba88 40%, #6a9866 100%)',
       bgTone: '#6a9866',
       bgTourNodes: withAudioSecs(applyYaws(makeNodes(trang_playground, [
-        { idx: 1, clueId: 'thai-thinh-san-choi', yaw: -65, pitch: -8 },
-        { idx: 3, clueId: 'thai-thinh-tieng-cuoi', yaw: -65, pitch: -8, audioSec: 250 },
+        { idx: 0, clueId: 'thai-thinh-san-choi', yaw: 18, pitch: 0 },
+        { idx: 4, clueId: 'thai-thinh-tieng-cuoi', yaw: -24, pitch: -21, audioSec: 250 },
       ], 'tt-pg', undefined, [
         [21.010385, 105.819069], // tt-pg-01
         [21.010467, 105.818988], // tt-pg-02
@@ -872,7 +835,7 @@ const TRANG_THAI_THINH: Story = {
       isPanoramicVideo: true,
       vimeoUrl: 'https://player.vimeo.com/video/1201125509?badge=0&autopause=0&player_id=0&app_id=58479',
       bgTourNodes: withAudioSecs(withHistoric(applyYaws(makeNodes(trang_quan_oc, [
-        { idx: 0, clueId: 'thai-thinh-di-voi-me', yaw: 25, pitch: -8 },
+        { idx: 0, clueId: 'thai-thinh-di-voi-me', yaw: 36, pitch: 6 },
         { idx: 4, clueId: 'thai-thinh-vio-oc', yaw: 25, pitch: -8, audioSec: 428 },
       ], 'tt-oc', undefined, [
         [21.010715, 105.819921], // tt-oc-01
