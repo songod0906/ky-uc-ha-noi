@@ -32,7 +32,7 @@ export function GameStart({ onBegin }: GameStartProps) {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
           >
-            Hanoi Memories
+            Ký Ức Hà Nội
           </motion.h1>
 
         </div>

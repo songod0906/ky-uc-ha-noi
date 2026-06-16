@@ -1,14 +1,11 @@
 import { lazy, Suspense, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { MemorySpace as MemorySpaceType, Story, AmbientType } from '../types';
+import { MemorySpace as MemorySpaceType, Story } from '../types';
 import { ClueObject } from './ClueObject';
 import { ScanPlaceholder } from './ScanPlaceholder';
 import { PanoramicVideoViewer } from './PanoramicVideoViewer';
 import { AudioManager } from '../utils/AudioManager';
-import { AudioSynth } from '../utils/AudioSynth';
 
-// LOCAL TEST ONLY — PanoramaViewer.tsx is gitignored, do NOT push this import.
-// Revert to the commented-out version before committing.
 const PanoramaViewer = lazy(() =>
   import('./PanoramaViewer').then((m) => ({ default: m.PanoramaViewer }))
 );
@@ -20,11 +17,16 @@ interface MemorySpaceProps {
   onCollect: (clueId: string) => void;
 }
 
+function withAutoplay(url: string) {
+  if (url.includes('autoplay=')) return url;
+  return `${url}${url.includes('?') ? '&' : '?'}autoplay=1`;
+}
+
 export function MemorySpace({ space, story, collectedIds, onCollect }: MemorySpaceProps) {
   const hasTour = !!space.bgTourNodes?.length;
   const [videoExpanded, setVideoExpanded] = useState(false);
   const [currentNodeIndex, setCurrentNodeIndex] = useState(0);
-  const [isScanOpen, setIsScanOpen] = useState(false);
+  const [, setIsScanOpen] = useState(false);
   const driveMode = ['quan-net', 'nha-ngo', 'nha-hoc-them'].includes(space.id);
   const driveIntervalMs = space.id === 'nha-ngo' ? 2200 : space.id === 'nha-hoc-them' ? 3200 : 4500;
   const [demolitionFlash, setDemolitionFlash] = useState(false);
@@ -34,32 +36,12 @@ export function MemorySpace({ space, story, collectedIds, onCollect }: MemorySpa
   const fadeProgress = totalNodes > 1 ? currentNodeIndex / (totalNodes - 1) : 0;
   const sceneFilter = `saturate(${1 - fadeProgress * 0.4}) sepia(${fadeProgress * 0.2})`;
 
-  // Ambient atmosphere — only for spaces where continuous background sound makes sense.
-  // Clue-specific sounds (school-drum, keyboard) must NOT loop; they play only on clue press.
-  useEffect(() => {
-    let ambientType: AmbientType | undefined = undefined;
-
-    if (space.id === 'quan-net' && isScanOpen) {
-      // Keyboard clatter only plays while inside the 3D net-café scan
-      ambientType = 'keyboard';
-    } else if (space.id === 'quan-oc-violin' && currentNodeIndex >= 4) {
-      // Violin drifts in once you reach the stall itself
-      ambientType = 'violin';
-    }
-
-    if (ambientType) {
-      AudioSynth.startAmbient(ambientType);
-    } else {
-      AudioSynth.stopAmbient();
-    }
-
-    return () => { AudioSynth.stopAmbient(); };
-  }, [space.id, currentNodeIndex, isScanOpen]);
-
-  // Auto-expand video when reaching the last panorama node — flash demolition notice first
+  // Auto-expand only when the final node is not itself a clue moment.
+  // If the last node has a clue, the video stays as a button so it cannot cover the memory.
   useEffect(() => {
     const nodes = space.bgTourNodes;
-    if (space.isPanoramicVideo && nodes && nodes.length > 0 && currentNodeIndex >= nodes.length - 1) {
+    const finalNodeHasClue = !!nodes?.[nodes.length - 1]?.clueAnchors?.length;
+    if (space.isPanoramicVideo && nodes && nodes.length > 0 && !finalNodeHasClue && currentNodeIndex >= nodes.length - 1) {
       AudioManager.pause();
       setDemolitionFlash(true);
       const t = setTimeout(() => {
@@ -113,6 +95,7 @@ export function MemorySpace({ space, story, collectedIds, onCollect }: MemorySpa
               driveIntervalMs={driveIntervalMs}
               onScanChange={setIsScanOpen}
               audioSegmentSrc={space.audioSegment?.src}
+              spaceId={space.id}
             />
           </Suspense>
         </div>
@@ -292,7 +275,7 @@ export function MemorySpace({ space, story, collectedIds, onCollect }: MemorySpa
               <div className="flex-1 w-full h-full relative flex items-center justify-center p-2 sm:p-6 bg-black">
                 <div className="w-full h-full max-w-5xl aspect-video rounded-xl overflow-hidden border border-white/10 shadow-2xl relative">
                   <iframe
-                    src={space.vimeoUrl}
+                    src={withAutoplay(space.vimeoUrl)}
                     className="absolute inset-0 w-full h-full border-0"
                     allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; gyroscope; accelerometer"
                     referrerPolicy="strict-origin-when-cross-origin"

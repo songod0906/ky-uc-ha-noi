@@ -117,7 +117,7 @@ export function StoryLoadingScreen({ story, spaceIdx, onReady }: Props) {
       {/* Content */}
       <div className="relative flex flex-col items-center gap-3 text-center px-8 mb-16">
         <p className="font-mono text-[9px] text-white/30 uppercase tracking-[0.25em]">
-          Hanoi Memories
+          Ký Ức Hà Nội
         </p>
 
         <h1 className="font-serif text-4xl md:text-5xl text-amber-50/90 leading-tight mt-1">

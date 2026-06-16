@@ -395,7 +395,7 @@ function Scene({
   onCalibClueDragStart,
   onCalibClueDragEnd,
   clueIsDragging,
-  lastNavDir,
+  lastNavDirRef,
 }: {
   node: TourNode;
   collectedIds: string[];
@@ -416,12 +416,16 @@ function Scene({
   onCalibClueDragStart?: () => void;
   onCalibClueDragEnd?: () => void;
   clueIsDragging?: boolean;
-  lastNavDir?: 'fwd' | 'back' | 'none';
+  lastNavDirRef?: React.MutableRefObject<'fwd' | 'back' | 'none'>;
 }) {
   const { camera } = useThree();
   const controlsRef = useRef<any>(null);
 
   useEffect(() => {
+    // Read and immediately consume the nav direction — reset so future re-renders don't re-fire
+    const lastNavDir = lastNavDirRef?.current ?? 'none';
+    if (lastNavDirRef) lastNavDirRef.current = 'none';
+
     // 1. Determine target yaw
     let targetYaw = 0;
     let found = false;
@@ -442,7 +446,7 @@ function Scene({
       }
     }
 
-    // Fallback for initial entry (lastNavDir === 'none'): face the first clue if present,
+    // Fallback for initial entry: face the first clue if present,
     // otherwise face the forward nav anchor.
     if (!found) {
       const clueAnchor = node.clueAnchors?.[0];
@@ -471,7 +475,8 @@ function Scene({
       controlsRef.current.target.set(0, 0, 0);
       controlsRef.current.update();
     }
-  }, [node.id, lastNavDir, camera]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [node.id, camera]);
 
   return (
     <>
@@ -501,13 +506,13 @@ function Scene({
         ?.filter((anchor) => {
           const isBack = anchor.label === 'Quay lại';
           if (playgroundBlocked) return isBack;
-          if (suppressForwardNavigation) return isBack;
+          if (!calibrate && suppressForwardNavigation) return isBack;
           return true;
         })
         .map((anchor) => {
-          // Implement Option A: Clearance Zone / overlap nudging
+          // Visitor mode nudges nav away from clue cards. Calibration mode must show exact yaws.
           let adjustedAnchor = { ...anchor };
-          if (clueVisible && node.clueAnchors) {
+          if (!calibrate && clueVisible && node.clueAnchors) {
             for (const clueAnchor of node.clueAnchors) {
               let diff = (adjustedAnchor.yaw - clueAnchor.yaw) % 360;
               if (diff > 180) diff -= 360;
@@ -555,6 +560,7 @@ function MemoryAudioDock({
   onToggle,
   onClose,
   onOpenScan,
+  onOpenHistoric,
 }: {
   clue: Clue;
   playing: boolean;
@@ -566,6 +572,7 @@ function MemoryAudioDock({
   onToggle: () => void;
   onClose: () => void;
   onOpenScan?: () => void;
+  onOpenHistoric?: () => void;
 }) {
   const pct = duration > 0 ? Math.min(100, (progress / duration) * 100) : 0;
   const timeLeft = duration > 0 ? Math.max(0, Math.ceil(duration - progress)) : null;
@@ -612,6 +619,15 @@ function MemoryAudioDock({
                 >
                   <Box className="h-4 w-4" />
                   {scanLabel ?? 'View 3D artifact'}
+                </button>
+              )}
+              {onOpenHistoric && (
+                <button
+                  onClick={onOpenHistoric}
+                  className="flex min-h-10 items-center gap-2 rounded-xl border border-sky-200/25 bg-sky-200/12 px-3 py-2 font-serif text-xs font-semibold text-sky-100 transition-all hover:bg-sky-200/20 active:scale-95"
+                >
+                  <Camera className="h-4 w-4" />
+                  Compare with past
                 </button>
               )}
               {!clue.audioSrc && (
@@ -854,6 +870,7 @@ export function PanoramaViewer({
   backgroundMode = false,
   onScanChange,
   audioSegmentSrc,
+  spaceId,
 }: {
   nodes: TourNode[];
   startNodeId?: string;
@@ -868,6 +885,7 @@ export function PanoramaViewer({
   backgroundMode?: boolean;
   onScanChange?: (isOpen: boolean) => void;
   audioSegmentSrc?: string;
+  spaceId?: string;
 }) {
   // Stable key for this sequence (e.g. \"ct\" from \"ct-01\"), used for localStorage
   const seqKey = useRef(nodes[0]?.id.replace(/-\d+$/, '') ?? 'seq').current;
@@ -889,6 +907,8 @@ export function PanoramaViewer({
   const [memoryDuration, setMemoryDuration] = useState(0);
   const [activeScan, setActiveScan] = useState<string | null>(null);
   const [srtCues, setSrtCues] = useState<SrtCue[]>([]);
+  const [ambientEnabled, setAmbientEnabled] = useState(true);
+  const [nextNodeLoaded, setNextNodeLoaded] = useState(true);
 
   // Notify parent component of active 3D scan state changes
   useEffect(() => {
@@ -919,14 +939,6 @@ export function PanoramaViewer({
   const yawElRef = useRef<HTMLSpanElement>(null);
   // Only count dwell time after the player first drags at each node (not during narrator card)
   const nodeInteracted = useRef(false);
-
-  // Reset lastNavDir after it has been used in this render cycle
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      lastNavDirRef.current = 'none';
-    }, 100);
-    return () => clearTimeout(timer);
-  }, [nodeId]);
 
   // calibYaws: accumulated across ALL sequences via localStorage — restored on every mount
   const [calibYaws, setCalibYaws] = useState<Record<string, { fwd: number; back: number }>>(() => {
@@ -1015,11 +1027,11 @@ export function PanoramaViewer({
   const nodeIndex = localNodes.findIndex(n => n.id === nodeId);
   const rawNode = localNodes.find(n => n.id === nodeId) ?? localNodes[0];
   const fallbackHistoricUrl = localNodes[nodeIndex]?.historicMapUrl || localNodes.find(n => n.historicMapUrl)?.historicMapUrl;
-  const blockingClueId = driveMode
+  const blockingClueId = !CALIB_MODE && driveMode
     ? rawNode?.clueAnchors?.find((anchor) => !collectedIds.includes(anchor.clueId) && activeClue?.id !== anchor.clueId)?.clueId
     : undefined;
   const goNext = useCallback(() => {
-    if (blockingClueId) return;
+    if (!CALIB_MODE && blockingClueId) return;
     if (playgroundBlocked) return;
     if (nodeIndex < localNodes.length - 1) {
       lastNavDirRef.current = 'fwd';
@@ -1152,10 +1164,41 @@ export function PanoramaViewer({
     driveLastRef.current = Date.now();
   }, [drivePlaying, blockingClueId, memoryPlaying]);
 
-  // Duck ambient loop when memory narration plays
+  // Ambient sound management: follow the active clue first, then scan ambience.
   useEffect(() => {
-    AudioSynth.duckAmbient(memoryPlaying);
-  }, [memoryPlaying]);
+    if (!ambientEnabled) {
+      AudioSynth.stopAmbient();
+      return;
+    }
+    const inScan = activeScan !== null;
+
+    if (memoryPlaying && activeClue?.ambient) {
+      AudioSynth.startAmbient(activeClue.ambient);
+      AudioSynth.duckAmbient(true);
+      return;
+    }
+
+    if (!inScan) {
+      AudioSynth.stopAmbient();
+      return;
+    }
+
+    if (spaceId === 'quan-net') {
+      AudioSynth.startAmbient('keyboard');
+    } else if (spaceId === 'ho-thanh-cong') {
+      AudioSynth.startAmbient('aerobic');
+    } else if (spaceId === 'quan-oc-violin' && nodeIndex >= 4) {
+      AudioSynth.startAmbient('violin');
+    } else {
+      AudioSynth.stopAmbient();
+    }
+    AudioSynth.duckAmbient(false);
+  }, [spaceId, nodeIndex, memoryPlaying, activeClue?.id, activeClue?.ambient, ambientEnabled, activeScan]);
+
+  // Stop ambient when unmounting
+  useEffect(() => {
+    return () => { AudioSynth.stopAmbient(); };
+  }, []);
 
   // Drive mode: tick forward, auto-advance when timer expires
   useEffect(() => {
@@ -1193,19 +1236,33 @@ export function PanoramaViewer({
     }
   }, [nodeIndex, onNodeIndexChange]);
 
-  // Preload neighboring textures to speed up transition
+  // Preload neighboring textures; track whether next node is ready for navigation
   useEffect(() => {
-    const preloadImage = (url?: string) => {
-      if (!url) return;
-      const img = new Image();
-      img.src = url;
-    };
+    // Always preload prev
     if (nodeIndex > 0) {
-      preloadImage(localNodes[nodeIndex - 1]?.panorama);
+      const img = new Image();
+      img.src = localNodes[nodeIndex - 1]?.panorama ?? '';
     }
-    if (nodeIndex < localNodes.length - 1) {
-      preloadImage(localNodes[nodeIndex + 1]?.panorama);
+    const nextUrl = localNodes[nodeIndex + 1]?.panorama;
+    if (!nextUrl) {
+      setNextNodeLoaded(true);
+      return;
     }
+    const img = new Image();
+    img.src = nextUrl;
+    if (img.complete && img.naturalWidth > 0) {
+      setNextNodeLoaded(true);
+      return;
+    }
+    setNextNodeLoaded(false);
+    const onLoad = () => setNextNodeLoaded(true);
+    const onError = () => setNextNodeLoaded(true);
+    img.addEventListener('load', onLoad);
+    img.addEventListener('error', onError);
+    return () => {
+      img.removeEventListener('load', onLoad);
+      img.removeEventListener('error', onError);
+    };
   }, [nodeIndex, localNodes]);
 
   // Delete current node from localNodes, move to next/prev
@@ -1420,7 +1477,7 @@ export function PanoramaViewer({
           suppressForwardNavigation={!!blockingClueId}
           playgroundBlocked={playgroundBlocked}
           onInteract={() => { nodeInteracted.current = true; }}
-          lastNavDir={lastNavDirRef.current}
+          lastNavDirRef={lastNavDirRef}
           onCalibClueDrag={CALIB_MODE ? (clueId, yaw, pitch) => {
             setCalibClues(prev => {
               const filtered = prev.filter(c => !(c.nodeId === nodeId && c.clueId === clueId));
@@ -1466,10 +1523,13 @@ export function PanoramaViewer({
         </button>
       )}
       {SHOW_EDGE_NAV && !backgroundMode && nodeIndex < localNodes.length - 1 && !playgroundBlocked && !blockingClueId && (
-        <button onClick={goNext}
+        <button
+          onClick={nextNodeLoaded ? goNext : undefined}
           aria-label="Tiếp tục"
-          className="absolute right-3 top-1/2 -translate-y-1/2 z-40 bg-black/60 hover:bg-black/80 text-white rounded-xl px-3 py-4 font-mono text-lg transition-all">
-          ▶
+          disabled={!nextNodeLoaded}
+          className={`absolute right-3 top-1/2 -translate-y-1/2 z-40 rounded-xl px-3 py-4 font-mono text-lg transition-all ${nextNodeLoaded ? 'bg-black/60 hover:bg-black/80 text-white cursor-pointer' : 'bg-black/30 text-white/30 cursor-wait'}`}
+        >
+          {nextNodeLoaded ? '▶' : '⟳'}
         </button>
       )}
       {!backgroundMode && playgroundBlocked && (
@@ -1672,15 +1732,31 @@ export function PanoramaViewer({
         </div>
       )}
 
-      {/* Historic Street View toggle button */}
-      {!backgroundMode && fallbackHistoricUrl && !CALIB_MODE && (
+      {/* Ambient sound toggle — only shown in spaces with ambient */}
+      {!backgroundMode && !CALIB_MODE && ['quan-net', 'ho-thanh-cong', 'quan-oc-violin', 'cong-truong'].includes(spaceId ?? '') && (
         <button
-          onClick={() => setShowHistoric(v => !v)}
-          className="absolute top-4 right-4 z-30 flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-mono text-xs transition-all"
+          onClick={() => setAmbientEnabled(v => !v)}
+          className="absolute bottom-12 left-4 z-30 flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-mono text-[11px] transition-all select-none"
           style={{
-            background: showHistoric ? 'rgba(200,170,120,0.9)' : 'rgba(0,0,0,0.45)',
-            color: showHistoric ? '#1a1006' : 'rgba(255,255,255,0.75)',
-            border: showHistoric ? '1px solid rgba(200,170,120,0.4)' : '1px solid rgba(255,255,255,0.15)',
+            background: 'rgba(0,0,0,0.55)',
+            border: `1px solid ${ambientEnabled ? 'rgba(251,191,36,0.4)' : 'rgba(255,255,255,0.15)'}`,
+            color: ambientEnabled ? 'rgba(251,191,36,0.9)' : 'rgba(255,255,255,0.45)',
+            backdropFilter: 'blur(6px)',
+          }}
+        >
+          {ambientEnabled ? '♪ Sound on' : '♪ Sound off'}
+        </button>
+      )}
+
+      {/* Historic Street View toggle button */}
+      {!backgroundMode && fallbackHistoricUrl && !CALIB_MODE && !showHistoric && (
+        <button
+          onClick={() => setShowHistoric(true)}
+          className="absolute top-4 right-4 z-[65] flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-mono text-xs transition-all"
+          style={{
+            background: 'rgba(0,0,0,0.45)',
+            color: 'rgba(255,255,255,0.75)',
+            border: '1px solid rgba(255,255,255,0.15)',
             backdropFilter: 'blur(6px)',
           }}
         >
@@ -1708,9 +1784,22 @@ export function PanoramaViewer({
           <div className="absolute top-12 left-4 z-[62] bg-black/70 text-white font-mono text-[10px] uppercase tracking-widest px-3 py-1.5 rounded-lg pointer-events-none">
             2026 · Now
           </div>
-          <div className="absolute top-12 right-4 z-[62] bg-black/70 text-white font-mono text-[10px] uppercase tracking-widest px-3 py-1.5 rounded-lg pointer-events-none">
+          <div className="absolute top-12 left-1/2 translate-x-4 z-[62] bg-black/70 text-white font-mono text-[10px] uppercase tracking-widest px-3 py-1.5 rounded-lg pointer-events-none">
             Past · Google Street View
           </div>
+          {/* Close button — sits above everything in the overlay */}
+          <button
+            onClick={() => setShowHistoric(false)}
+            className="absolute top-4 right-4 z-[65] flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-mono text-xs transition-all"
+            style={{
+              background: 'rgba(200,170,120,0.9)',
+              color: '#1a1006',
+              border: '1px solid rgba(200,170,120,0.4)',
+              backdropFilter: 'blur(6px)',
+            }}
+          >
+            <Camera className="w-3 h-3" /> Close
+          </button>
         </>
       )}
 
@@ -1790,6 +1879,7 @@ export function PanoramaViewer({
               onToggle={toggleMemoryAudio}
               onClose={closeMemoryDock}
               onOpenScan={currentScanAnchor ? () => setActiveScan(currentScanAnchor.scanUrl) : undefined}
+              onOpenHistoric={fallbackHistoricUrl ? () => setShowHistoric(true) : undefined}
             />
           </>
         );

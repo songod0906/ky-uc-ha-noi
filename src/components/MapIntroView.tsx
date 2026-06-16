@@ -243,7 +243,7 @@ export function MapIntroView({ onSelect }: MapIntroViewProps) {
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2 }}
       >
         <div>{ALL_STORIES.reduce((n, s) => n + s.spaces.length, 0)} locations · {ALL_STORIES.length} narrators</div>
-        <div>Hanoi Memories · CAS3020 · VinUniversity</div>
+        <div>Ký Ức Hà Nội · CAS3020 · VinUniversity</div>
       </motion.div>
 
       {/* Space detail panel */}

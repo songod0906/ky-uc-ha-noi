@@ -192,7 +192,13 @@ const CT_YAWS: Record<string, { fwd: number; back: number }> = {
 
 // ─── Essy panorama sequences ──────────────────────────────────────────────────
 const ES_NG_YAWS: Record<string, { fwd: number; back: number }> = {
-  'es-ng-01': { fwd:   2, back: -178 },
+  'es-ng-01': { fwd:   0, back:  180 },
+  'es-ng-02': { fwd:   0, back:  180 },
+  'es-ng-03': { fwd:   0, back:  152 },
+  'es-ng-04': { fwd: -27, back: -162 },
+  'es-ng-05': { fwd: -26, back:  154 },
+  'es-ng-06': { fwd:  -5, back:  175 },
+  'es-ng-07': { fwd:  -3, back:  177 },
 };
 
 const essy_duong_vao_nha = [
@@ -240,6 +246,12 @@ const essy_playground = [
   'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/essy/playground/v2/shot-03.jpg',
   'https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/essy/playground/v2/shot-04.jpg',
 ];
+
+const ES_GK_YAWS: Record<string, { fwd: number; back: number }> = {
+  'es-gk-01': { fwd:   0, back:  180 },
+  'es-gk-03': { fwd: -31, back:  149 },
+  'es-gk-04': { fwd:  21, back: -159 },
+};
 
 // ─── Story A: LTK / Khu Thành Công ───────────────────────────────────────────
 const TRANG: Story = {
@@ -333,7 +345,8 @@ const TRANG: Story = {
       bgGradient: 'linear-gradient(160deg, #2a1f3d 0%, #3d2f5c 50%, #1a1228 100%)',
       bgTone: '#1a1228',
       bgTourNodes: withAudioSecs(withHistoric(applyYaws(makeNodes(ltk_quan_net, [
-        { idx: 11, clueId: 'trang-tieng-chui', yaw: -1, pitch: -2 },
+        { idx: 0, clueId: 'trang-choi-net', yaw: 0, pitch: 0, audioSec: 434.272 },
+        { idx: 14, clueId: 'trang-tieng-chui', yaw: -180, pitch: 0, audioSec: 497.692 },
       ], 'qn', [
         { idx: 16, scanUrl: '/scans/quan-net.glb', label: 'View 3D Net Café', yaw: 0, pitch: -10 },
       ], [
@@ -414,8 +427,8 @@ const TRANG: Story = {
       bgGradient: 'linear-gradient(160deg, #c8dde8 0%, #a3c4d5 40%, #7eaabf 100%)',
       bgTone: '#5a7a8a',
       bgTourNodes: withAudioSecs(withHistoric(applyYaws(makeNodes(ltk_ho_thanh_cong, [
-        { idx: 0, clueId: 'trang-cong-sau', yaw: -175, pitch: -29 },
-        { idx: 5, clueId: 'trang-xe-dap', yaw: 25, pitch: -8, audioSec: 609 },
+        { idx: 0, clueId: 'trang-cong-sau', yaw: -175, pitch: -29, audioSec: 552.852 },
+        { idx: 4, clueId: 'trang-xe-dap', yaw: -180, pitch: 0, audioSec: 609 },
       ], 'htc', undefined, [
         [21.020390, 105.813167], // htc-01
         [21.020328, 105.813291], // htc-02
@@ -454,6 +467,7 @@ const TRANG: Story = {
           planningImpact:
             'All iron fences around Thanh Cong Lake have been removed per the city\'s open-park policy. The half-open side gate that generations of locals squeezed their bikes through no longer exists — the entire perimeter is now open.',
           ambient: 'cicadas',
+          audioSrc: '/audio/trang-cong-sau.mp3',
           x: 20,
           y: 50,
         },
@@ -512,7 +526,7 @@ const ESSY: Story = {
       bgTone: '#6b5a3e',
       bgTourNodes: withAudioSecs(withHistoric(applyYaws(makeNodes(essy_duong_vao_nha, [
         { idx: 0, clueId: 'essy-ngo-kho', yaw: 25, pitch: -8, audioSec: 75 },
-        { idx: 13, clueId: 'essy-cay-xanh-ngo', yaw: 25, pitch: -8, audioSec: 20 },
+        { idx: 13, clueId: 'essy-cay-xanh-ngo', yaw: -17, pitch: -7, audioSec: 20 },
       ], 'es-ng', [
         { idx: 13, scanUrl: '/scans/nha-essy.glb', label: 'View 3D House', yaw: 0, pitch: -10 },
       ], [
@@ -590,10 +604,9 @@ const ESSY: Story = {
       vimeoUrl: 'https://player.vimeo.com/video/1201125560?badge=0&autopause=0&player_id=0&app_id=58479',
       bgGradient: 'linear-gradient(160deg, #a8c5a0 0%, #7da87a 40%, #5a8a56 100%)',
       bgTone: '#3a6a36',
-      bgTourNodes: withAudioSecs(withHistoric(makeNodes(essy_playground, [
+      bgTourNodes: withAudioSecs(withHistoric(applyYaws(makeNodes(essy_playground, [
         { idx: 0, clueId: 'essy-tre-con-gieng', yaw: 17, pitch: -8 },
-        { idx: 3, clueId: 'essy-di-tich', yaw: 25, pitch: -8, audioSec: 362 },
-      ], 'es-gk'), [
+      ], 'es-gk'), ES_GK_YAWS), [
         { idx: 0, url: 'https://www.google.com/maps/embed?pb=!4v1781411941294!6m8!1m7!1s4kK0rMHW11aCh1X_sTPlaQ!2m2!1d21.04034879948579!2d105.817488961791!3f281.32678038512734!4f-16.875345166491712!5f0.7820865974627469' },
       ]),
       // 0=leave HHT street/nice area(291s) 1=path only locals know/leads to well(298s)
@@ -690,7 +703,8 @@ const TRANG_THAI_THINH: Story = {
       bgTone: '#c4a870',
       bgTourNodes: withAudioSecs(withHistoric(applyYaws(makeNodes(trang_di_hoc_them, [
         { idx: 0, clueId: 'thai-thinh-hoc-them', yaw: 68, pitch: -13, audioSec: 66 },
-        { idx: 0, clueId: 'thai-thinh-pho-khong-xe', yaw: 62, pitch: -4 },
+        { idx: 1, clueId: 'thai-thinh-pho-khong-xe', yaw: 0, pitch: 0, audioSec: 85.72 },
+        { idx: 6, clueId: 'thai-thinh-pho-khong-xe', yaw: -16, pitch: -20, audioSec: 85.72 },
       ], 'tt-hoc', undefined, [
         [21.010379, 105.819129], // tt-hoc-01
         [21.010477, 105.819357], // tt-hoc-02
@@ -835,7 +849,7 @@ const TRANG_THAI_THINH: Story = {
       isPanoramicVideo: true,
       vimeoUrl: 'https://player.vimeo.com/video/1201125509?badge=0&autopause=0&player_id=0&app_id=58479',
       bgTourNodes: withAudioSecs(withHistoric(applyYaws(makeNodes(trang_quan_oc, [
-        { idx: 0, clueId: 'thai-thinh-di-voi-me', yaw: 36, pitch: 6 },
+        { idx: 0, clueId: 'thai-thinh-di-voi-me', yaw: 5, pitch: 2, audioSec: 344 },
         { idx: 4, clueId: 'thai-thinh-vio-oc', yaw: 25, pitch: -8, audioSec: 428 },
       ], 'tt-oc', undefined, [
         [21.010715, 105.819921], // tt-oc-01

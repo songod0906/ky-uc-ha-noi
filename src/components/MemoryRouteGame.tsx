@@ -143,6 +143,7 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, diary, addToDiary,
     return (
       <EndingCannotBeMoved
         story={story}
+        activeSpace={activeSpace}
         diary={diary.filter((e) => spaceClueIds.has(e.clueId))}
         onRestart={handleRestart}
         onChooseOther={handleBack}
