@@ -170,6 +170,7 @@ function ClueHotspot({
   anchor,
   clue,
   collected,
+  scanLabel,
   onPreview,
   onCalibDrag,
   onCalibRemove,
@@ -179,6 +180,7 @@ function ClueHotspot({
   anchor: TourClueAnchor;
   clue: Clue;
   collected: boolean;
+  scanLabel?: string;
   onPreview: (clue: Clue) => void;
   onCalibDrag?: (clueId: string, yaw: number, pitch: number) => void;
   onCalibRemove?: (clueId: string) => void;
@@ -224,10 +226,10 @@ function ClueHotspot({
           >✕</button>
         )}
         <div
-          className={`relative w-[112px] h-[142px] bg-[#fdfcf7] rounded-lg p-2 flex flex-col items-center justify-between border transition-all duration-300 ${
+          className={`relative w-[124px] h-[156px] bg-[#fdfcf7] rounded-lg p-2.5 flex flex-col items-center justify-between border transition-all duration-300 ${
             collected 
               ? 'border-amber-400/40 shadow-[0_0_20px_rgba(200,168,130,0.3)]' 
-              : 'border-stone-300/40 shadow-[0_0_12px_rgba(0,0,0,0.25)] opacity-85 hover:opacity-100 card-glitch'
+              : 'border-amber-500/60 shadow-[0_0_22px_rgba(251,191,36,0.38)] opacity-95 hover:opacity-100 card-glitch'
           }`}
           style={{
             transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) scale(${isHovered ? 1.08 : 1})`,
@@ -262,7 +264,7 @@ function ClueHotspot({
           <div className="absolute top-1 right-1 flex gap-0.5 z-10">
             {!collected ? (
               <span className="text-[5px] font-mono font-bold bg-amber-600/10 text-amber-700 px-1 py-0.5 rounded border border-amber-600/20 uppercase tracking-tight scale-85 origin-top-right">
-                Memory
+                Click me
               </span>
             ) : (
               <span className="text-[5px] font-mono font-bold bg-emerald-600/10 text-emerald-700 px-1 py-0.5 rounded border border-emerald-600/20 uppercase tracking-tight scale-85 origin-top-right">
@@ -281,7 +283,7 @@ function ClueHotspot({
           {/* Polaroid label text */}
           <div className="w-full flex-1 flex flex-col justify-center text-center px-0.5 pt-1.5 overflow-hidden">
             <span 
-              className="font-serif text-[7.5px] leading-tight text-stone-800 font-bold whitespace-normal w-full"
+              className="font-serif text-[8.5px] leading-tight text-stone-900 font-bold whitespace-normal w-full"
               style={{
                 display: '-webkit-box',
                 WebkitLineClamp: 2,
@@ -292,9 +294,14 @@ function ClueHotspot({
             >
               {clue.label}
             </span>
-            <span className="font-mono text-[5.5px] text-stone-400 uppercase tracking-widest mt-0.5">
-              {collected ? 'Saved' : 'Click to listen'}
+            <span className={`font-mono text-[6.5px] uppercase tracking-widest mt-1 ${collected ? 'text-emerald-700' : 'text-amber-700 font-bold'}`}>
+              {collected ? 'Saved' : 'Tap to hear'}
             </span>
+            {scanLabel && (
+              <span className="font-mono text-[5.5px] text-amber-700 uppercase tracking-tight mt-0.5 leading-tight">
+                Inside {scanLabel.replace(/^View /, '').replace(/^Inspect /, '')}
+              </span>
+            )}
           </div>
 
           {/* Active glow ring behind the card */}
@@ -487,12 +494,14 @@ function Scene({
       {clueVisible && node.clueAnchors?.map((anchor) => {
         const clue = allClues.find((c) => c.id === anchor.clueId);
         if (!clue) return null;
+        const scanLabel = node.scanAnchors?.find((scan) => scan.clueId === anchor.clueId)?.label;
         return (
           <ClueHotspot
             key={anchor.clueId}
             anchor={anchor}
             clue={clue}
             collected={collectedIds.includes(anchor.clueId)}
+            scanLabel={scanLabel}
             onPreview={onPreview}
             onCalibDrag={calibrate ? onCalibClueDrag : undefined}
             onCalibRemove={calibrate ? onCalibClueRemove : undefined}
@@ -556,7 +565,6 @@ function MemoryAudioDock({
   duration,
   saved,
   scanLabel,
-  raised,
   onToggle,
   onClose,
   onOpenScan,
@@ -568,7 +576,6 @@ function MemoryAudioDock({
   duration: number;
   saved: boolean;
   scanLabel?: string;
-  raised?: boolean;
   onToggle: () => void;
   onClose: () => void;
   onOpenScan?: () => void;
@@ -578,7 +585,7 @@ function MemoryAudioDock({
   const timeLeft = duration > 0 ? Math.max(0, Math.ceil(duration - progress)) : null;
 
   return (
-    <div className={`absolute inset-x-3 ${raised ? 'bottom-20' : 'bottom-4'} z-[90] flex justify-center pointer-events-none`}>
+    <div className="absolute inset-x-3 bottom-20 z-[90] flex justify-center pointer-events-none">
       <div className="w-full max-w-2xl rounded-2xl border border-white/15 bg-[#0b0907]/88 shadow-2xl backdrop-blur-md pointer-events-auto overflow-hidden">
         <div className="h-1 bg-white/10">
           <div className="h-full bg-amber-400 transition-[width] duration-300" style={{ width: `${pct}%` }} />
@@ -1131,8 +1138,11 @@ export function PanoramaViewer({
     return () => stopMemoryAudio();
   }, [stopMemoryAudio]);
 
-  // Reset historic overlay and show drag hint when moving to a different node
-  useEffect(() => { setShowHistoric(false); setDragHintVisible(true); }, [nodeId]);
+  // Reset temporary overlays when moving to a different point.
+  useEffect(() => {
+    setShowHistoric(false);
+    setDragHintVisible(true);
+  }, [nodeId]);
 
   // Auto-fade the drag hint after 4 seconds
   useEffect(() => {
@@ -1722,11 +1732,13 @@ export function PanoramaViewer({
               <button
                 key={n.id}
                 onClick={() => setNodeId(n.id)}
-                className={`h-2 rounded-full transition-all duration-300 ${
-                  n.id === nodeId ? 'w-5 bg-amber-400' : 'w-2 bg-white/40 hover:bg-white/70'
+                className={`h-6 min-w-6 rounded-full px-2 font-mono text-[10px] font-bold transition-all duration-300 ${
+                  n.id === nodeId ? 'bg-amber-400 text-black shadow-lg' : 'bg-black/55 text-white/75 hover:bg-black/75 hover:text-white'
                 }`}
                 title={`Go to point ${i + 1}`}
-              />
+              >
+                {i + 1}
+              </button>
             ))}
           </div>
         </div>
@@ -1856,9 +1868,9 @@ export function PanoramaViewer({
       {activeClue && (() => {
         const t = activeClueAudioSecRef.current + memoryProgress;
         const cueText = memoryPlaying ? (srtCues.find(c => t >= c.start && t <= c.end)?.text ?? '') : '';
-        // Subtitle sits above the dock — dock is ~130px tall at bottom-4 (16px), so top edge ~146px.
-        // Raised dock (scan open) is at bottom-20 (80px), top edge ~210px.
-        const subBottom = activeScan ? 'bottom-[228px]' : 'bottom-44';
+        const activeClueScanAnchor = node.scanAnchors?.find((anchor) => anchor.clueId === activeClue.id);
+        // Subtitle sits above the audio dock so it does not cover route controls.
+        const subBottom = activeScan ? 'bottom-[228px]' : 'bottom-[228px]';
         return (
           <>
             {cueText && (
@@ -1874,11 +1886,10 @@ export function PanoramaViewer({
               progress={memoryProgress}
               duration={memoryDuration}
               saved={collectedIds.includes(activeClue.id)}
-              scanLabel={currentScanAnchor?.label}
-              raised={!!activeScan}
+              scanLabel={activeClueScanAnchor?.label}
               onToggle={toggleMemoryAudio}
               onClose={closeMemoryDock}
-              onOpenScan={currentScanAnchor ? () => setActiveScan(currentScanAnchor.scanUrl) : undefined}
+              onOpenScan={activeClueScanAnchor ? () => setActiveScan(activeClueScanAnchor.scanUrl) : undefined}
               onOpenHistoric={fallbackHistoricUrl ? () => setShowHistoric(true) : undefined}
             />
           </>

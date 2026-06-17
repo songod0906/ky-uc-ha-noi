@@ -40,6 +40,9 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, diary, addToDiary,
       .filter((clue) => diary.some((entry) => entry.clueId === clue.id))
       .map((clue) => clue.id) ?? [];
   const [collectedIds, setCollectedIds] = useState<string[]>(getDiaryIdsForSpace);
+  const requiredClueCount = activeSpace?.clues.length ?? 0;
+  const foundInSpaceCount = activeSpace?.clues.filter((clue) => collectedIds.includes(clue.id)).length ?? 0;
+  const archiveReady = requiredClueCount > 0 && foundInSpaceCount >= requiredClueCount;
 
   // Kill any lingering audio on mount/unmount
   useEffect(() => {
@@ -71,6 +74,7 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, diary, addToDiary,
   };
 
   const handleFinish = () => {
+    if (!archiveReady) return;
     if (finishing) return;
     playClick();
     OralHistoryAudio.stop();
@@ -175,10 +179,11 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, diary, addToDiary,
         </div>
 
         <button
-          onClick={collectedIds.length > 0 ? handleFinish : undefined}
-          title={collectedIds.length === 0 ? 'Collect at least one memory fragment first' : undefined}
+          onClick={archiveReady ? handleFinish : undefined}
+          disabled={!archiveReady}
+          title={archiveReady ? undefined : `Find all ${requiredClueCount} memory fragments first`}
           className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl font-serif text-sm transition-all"
-          style={collectedIds.length > 0 ? {
+          style={archiveReady ? {
             background: narratorColor,
             border: `1px solid ${narratorColor}`,
             color: '#0a0806',
@@ -192,6 +197,9 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, diary, addToDiary,
         >
           <CheckSquare className="w-3.5 h-3.5" />
           Complete Archive
+          <span className="font-mono text-[10px] opacity-70">
+            {foundInSpaceCount}/{requiredClueCount}
+          </span>
         </button>
       </header>
 

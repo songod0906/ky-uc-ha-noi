@@ -4,20 +4,6 @@ import { DiaryEntry, MemorySpace, Story } from '../types';
 import { AudioSynth } from '../utils/AudioSynth';
 import { StampDiary } from './StampDiary';
 
-// Narrative bridge: after each story, what connects to the next
-const STORY_BRIDGE: Record<string, { nextId: string; nextNarrator: string; bridge: string }> = {
-  'trang': {
-    nextId: 'essy',
-    nextNarrator: 'Essy',
-    bridge: 'A few kilometers west, in alley 267 Hoang Hoa Tham, someone else is also packing her last memories of a place that is about to disappear.',
-  },
-  'essy': {
-    nextId: 'thai-thinh',
-    nextNarrator: 'Trang',
-    bridge: 'And just a few streets away in the Trung Liet lanes, the afternoon light is turning golden. A violin is still playing from a sidewalk stall.',
-  },
-};
-
 interface EndingCannotBeMovedProps {
   story: Story;
   activeSpace: MemorySpace;
@@ -27,49 +13,23 @@ interface EndingCannotBeMovedProps {
   onNextStory?: (storyId: string) => void;
 }
 
-const SWEEP_TEXTS: Record<string, string[]> = {
-  'trang': [
-    'Hanoi, 2026.',
-    'The land clearance and urban redevelopment project in Thanh Cong officially begins.',
-    'Excavators and hammers echo by the lake. The old collective apartments begin to crumble...',
-    'The expanded school yard, the manga shop, and the net café disappear forever under construction dust.',
-    'But you have successfully found and preserved Kien\'s fragments of memory.',
-    'The memory file has been sealed inside the Digital Archive.',
-  ],
-  'thai-thinh': [
-    'Hanoi, 2026.',
-    'The Nguyen Van Tuyet street expansion project completes land clearance.',
-    'The small tutoring alley is demolished. The playground is fenced and dismantled...',
-    'The rustic violin notes at the sidewalk snail stall are silenced under honking traffic.',
-    'But you have successfully found and preserved Trang\'s fragments of memory.',
-    'The memory file has been sealed inside the Digital Archive.',
-  ],
-  'essy': [
-    'Hanoi, 2026.',
-    'The Tam Da slope connecting to alley 267 Hoang Hoa Tham officially opens to traffic.',
-    'Secluded rows of houses are reclaimed, walls fall, lemon trees and jasmine are chopped down...',
-    'The ancient well is filled, the maze of alleys disappears forever under smooth black asphalt.',
-    'But you have successfully found and preserved Essy\'s fragments of memory.',
-    'The memory file has been sealed inside the Digital Archive.',
-  ],
-};
-
 export function EndingCannotBeMoved({ story, activeSpace, diary, onRestart, onChooseOther, onNextStory }: EndingCannotBeMovedProps) {
   const [sweepPhase, setSweepPhase] = useState<'intro' | 'showCase'>('intro');
-  const [typewriterIndex, setTypewriterIndex] = useState(0);
+  const [typewriterIndex, setTypewriterIndex] = useState(1);
 
-  const lines = SWEEP_TEXTS[story.id] ?? [
+  const lines = [
     'Hanoi, 2026.',
-    'Neighborhood land clearance and urban planning.',
-    'The old spaces have vanished under asphalt.',
-    'But the memories have been successfully archived.',
+    `${activeSpace.label} is entered into the clearance archive.`,
+    'The physical place may change, close, or disappear.',
+    `But you found and preserved ${story.narrator}'s memory fragments from this place.`,
+    'This memory file has been sealed inside the Digital Archive.',
   ];
 
   useEffect(() => {
     AudioSynth.stopAmbient();
   }, []);
 
-  // Typewriter effect controller
+  // Keep the ending from ever looking like an empty black screen.
   useEffect(() => {
     if (sweepPhase !== 'intro') return;
     if (typewriterIndex < lines.length) {
@@ -100,7 +60,7 @@ export function EndingCannotBeMoved({ story, activeSpace, diary, onRestart, onCh
               transition={{ duration: 0.6 }}
               className={idx === lines.length - 1 ? "text-amber-400 font-bold mt-2" : ""}
             >
-              &gt; {line}
+              {line}
             </motion.p>
           ))}
 

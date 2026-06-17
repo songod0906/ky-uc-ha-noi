@@ -8,11 +8,6 @@ const PanoramaViewer = lazy(() =>
   import('./PanoramaViewer').then((m) => ({ default: m.PanoramaViewer }))
 );
 
-const STORY_BRIDGE: Record<string, { nextId: string; nextNarrator: string }> = {
-  trang: { nextId: 'essy', nextNarrator: 'Essy' },
-  essy: { nextId: 'thai-thinh', nextNarrator: 'Trang' },
-};
-
 const CLUE_EMOJI: Record<string, string> = {
   place: '📍',
   sound: '🔊',
@@ -44,7 +39,6 @@ interface StampDiaryProps {
 export function StampDiary({ story, activeSpace, diary, onRestart, onChooseOther, onNextStory }: StampDiaryProps) {
   const allClues = activeSpace.clues;
   const collectedSet = new Set(diary.map(e => e.clueId));
-  const bridge = STORY_BRIDGE[story.id];
 
   const [selectedClueId, setSelectedClueId] = useState<string | null>(
     () => diary[0]?.clueId ?? null
@@ -433,13 +427,13 @@ export function StampDiary({ story, activeSpace, diary, onRestart, onChooseOther
           >
             Map
           </button>
-          {bridge && onNextStory && (
+          {onNextStory && (
             <button
-              onClick={() => onNextStory(bridge.nextId)}
+              onClick={onChooseOther}
               className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg font-serif font-semibold transition-all active:scale-95"
               style={{ background: '#5a3e28', color: '#f5e6c8', fontSize: 12 }}
             >
-              Follow {bridge.nextNarrator} →
+              Choose another location
             </button>
           )}
         </div>
