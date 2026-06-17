@@ -1263,11 +1263,13 @@ export function PanoramaViewer({
 
   // Preload neighboring textures; track whether next node is ready for navigation
   useEffect(() => {
-    // Always preload prev
+    // Always preload prev and 2 ahead speculatively
     if (nodeIndex > 0) {
       const img = new Image();
       img.src = localNodes[nodeIndex - 1]?.panorama ?? '';
     }
+    const n2 = localNodes[nodeIndex + 2]?.panorama;
+    if (n2) { const img2 = new Image(); img2.src = n2; }
     const nextUrl = localNodes[nodeIndex + 1]?.panorama;
     if (!nextUrl) {
       setNextNodeLoaded(true);
@@ -1522,7 +1524,7 @@ export function PanoramaViewer({
       </Canvas>
 
       {!backgroundMode && !CALIB_MODE && allClues.length > 0 && (
-        <div className="absolute left-4 top-24 z-30 pointer-events-none">
+        <div data-tutorial="fragments" className="absolute left-4 top-24 z-30 pointer-events-none">
           <div className="rounded-2xl border border-black/10 bg-[#FCFAF2]/90 px-4 py-3 shadow-lg backdrop-blur-md">
             <p className="font-mono text-[10px] uppercase tracking-widest text-muctim-faded">
               Memory fragments

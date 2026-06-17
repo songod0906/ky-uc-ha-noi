@@ -12,18 +12,26 @@ import { SpaceDossier } from './SpaceDossier';
 
 const EXPLORE_TUTORIAL: TutorialStep[] = [
   {
-    id: 'clue',
-    selector: '[data-tutorial="clue"]',
+    id: 'drag',
+    selector: '#__none__',
     placement: 'below',
-    title: 'Memory fragment found',
-    body: 'Click this Polaroid card to listen to a memory. Rotate the view to find more fragments hidden in each space.',
+    title: 'Look around in 360°',
+    body: 'Click and drag anywhere to rotate the view. Memory fragments are hidden in different directions — explore to find them all.',
+    showDragHint: true,
+  },
+  {
+    id: 'fragments',
+    selector: '[data-tutorial="fragments"]',
+    placement: 'right',
+    title: 'Find memory fragments',
+    body: 'Polaroid cards with memory stories are scattered in the panorama. Click one when you spot it to unlock and listen.',
   },
   {
     id: 'archive',
     selector: '[data-tutorial="archive"]',
     placement: 'below',
-    title: 'Seal your archive',
-    body: 'Once you\'ve found all memory fragments, this button lights up. Press it to preserve them in the Memory Passport.',
+    title: 'Seal the archive',
+    body: "Once you've collected all fragments, this button lights up. Press it to preserve your memories forever.",
     cta: 'Start exploring!',
   },
 ];

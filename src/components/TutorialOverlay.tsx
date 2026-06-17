@@ -4,7 +4,7 @@ import { X } from 'lucide-react';
 
 export interface TutorialStep {
   id: string;
-  /** CSS selector of the element to spotlight */
+  /** CSS selector of the element to spotlight — use '#__none__' to center without spotlight */
   selector: string;
   /** Where to place the tooltip relative to the spotlight */
   placement: 'above' | 'below' | 'left' | 'right';
@@ -12,6 +12,8 @@ export interface TutorialStep {
   body: string;
   /** Label on the advance button */
   cta?: string;
+  /** Show an animated drag hand hint between body and button */
+  showDragHint?: boolean;
 }
 
 interface Rect {
@@ -47,7 +49,8 @@ export function TutorialOverlay({ steps, onDone }: TutorialOverlayProps) {
   // Uses a rAF retry to catch elements that mount on the same frame.
   const measure = useCallback(() => {
     if (!step) return;
-    const el = document.querySelector(step.selector);
+    let el: Element | null = null;
+    try { el = document.querySelector(step.selector); } catch (_) {}
     if (!el) { setRect(null); return; }
     const r = el.getBoundingClientRect();
     setRect({
@@ -265,7 +268,20 @@ export function TutorialOverlay({ steps, onDone }: TutorialOverlayProps) {
             </div>
 
             <h3 className="font-serif text-base font-bold text-muctim mb-1.5">{step.title}</h3>
-            <p className="font-serif text-sm text-muctim-faded leading-relaxed mb-4">{step.body}</p>
+            <p className="font-serif text-sm text-muctim-faded leading-relaxed mb-3">{step.body}</p>
+
+            {step.showDragHint && (
+              <div className="flex items-center justify-center gap-2 mb-3 py-1.5 rounded-xl bg-muctim/5 border border-muctim/10">
+                <motion.span
+                  className="text-xl select-none"
+                  animate={{ x: [-14, 14, -14] }}
+                  transition={{ repeat: Infinity, duration: 1.6, ease: 'easeInOut' }}
+                >
+                  🖐️
+                </motion.span>
+                <span className="font-mono text-[10px] uppercase tracking-wider text-muctim/50">click &amp; drag to rotate</span>
+              </div>
+            )}
 
             <button
               onClick={advance}
