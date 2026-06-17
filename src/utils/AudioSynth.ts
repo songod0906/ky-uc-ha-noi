@@ -10,6 +10,7 @@ const AMBIENT_MAP: Partial<Record<AmbientType, string>> = {
 // --- HTML Audio Player (for MP3s) ---
 let ambientEl: HTMLAudioElement | null = null;
 let htmlFadeTimer: number | null = null;
+let currentAmbientType: AmbientType | null = null;
 
 const clearHtmlFade = () => {
   if (htmlFadeTimer) {
@@ -172,8 +173,10 @@ export const AudioSynth = {
   },
 
   startAmbient(type: AmbientType) {
+    if (currentAmbientType === type) return;
     // 1. Stop whatever is currently playing
     this.stopAmbient();
+    currentAmbientType = type;
 
     const mp3Src = AMBIENT_MAP[type];
     if (mp3Src) {
@@ -201,6 +204,7 @@ export const AudioSynth = {
   },
 
   stopAmbient() {
+    currentAmbientType = null;
     // 1. Stop HTML Audio
     clearHtmlFade();
     if (ambientEl) {
