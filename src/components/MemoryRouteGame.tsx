@@ -3,11 +3,30 @@ import { motion, AnimatePresence } from 'motion/react';
 import { DiaryEntry, Story } from '../types';
 import { MemorySpace as MemorySpaceComponent } from './MemorySpace';
 import { EndingCannotBeMoved } from './EndingCannotBeMoved';
+import { TutorialOverlay, TutorialStep } from './TutorialOverlay';
 import { AudioSynth, playClick, playDiscover } from '../utils/AudioSynth';
 import { AudioManager } from '../utils/AudioManager';
 import { OralHistoryAudio } from '../utils/OralHistoryAudio';
 import { ChevronLeft, CheckSquare } from 'lucide-react';
 import { SpaceDossier } from './SpaceDossier';
+
+const EXPLORE_TUTORIAL: TutorialStep[] = [
+  {
+    id: 'clue',
+    selector: '[data-tutorial="clue"]',
+    placement: 'below',
+    title: 'Memory fragment found',
+    body: 'Click this Polaroid card to listen to a memory. Rotate the view to find more fragments hidden in each space.',
+  },
+  {
+    id: 'archive',
+    selector: '[data-tutorial="archive"]',
+    placement: 'below',
+    title: 'Seal your archive',
+    body: 'Once you\'ve found all memory fragments, this button lights up. Press it to preserve them in the Memory Passport.',
+    cta: 'Start exploring!',
+  },
+];
 
 const NARRATOR_COLOR: Record<string, string> = {
   'Lê Trung Kiên': '#C8A882',
@@ -33,6 +52,7 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, diary, addToDiary,
   const [phase, setPhase] = useState<Phase>('dossier');
   const [finishing, setFinishing] = useState(false);
   const [spaceIndex] = useState(initialSpaceIdx);
+  const [tutorialDone, setTutorialDone] = useState(false);
   const narratorColor = NARRATOR_COLOR[story.narrator] ?? '#C8B89A';
   const activeSpace = story.spaces[spaceIndex];
   const getDiaryIdsForSpace = () =>
@@ -178,6 +198,7 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, diary, addToDiary,
         </div>
 
         <button
+          data-tutorial="archive"
           onClick={archiveReady ? handleFinish : undefined}
           disabled={!archiveReady}
           title={archiveReady ? undefined : `Find all ${requiredClueCount} memory fragments first`}
@@ -224,6 +245,14 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, diary, addToDiary,
           />
         )}
       </AnimatePresence>
+
+      {/* Tutorial overlay — shown once per explore entry */}
+      {!tutorialDone && (
+        <TutorialOverlay
+          steps={EXPLORE_TUTORIAL}
+          onDone={() => setTutorialDone(true)}
+        />
+      )}
     </div>
   );
 }

@@ -226,9 +226,10 @@ function ClueHotspot({
           >✕</button>
         )}
         <div
+          data-tutorial="clue"
           className={`relative w-[124px] h-[156px] bg-[#fdfcf7] rounded-lg p-2.5 flex flex-col items-center justify-between border transition-all duration-300 ${
-            collected 
-              ? 'border-amber-400/40 shadow-[0_0_20px_rgba(200,168,130,0.3)]' 
+            collected
+              ? 'border-amber-400/40 shadow-[0_0_20px_rgba(200,168,130,0.3)]'
               : 'border-amber-500/60 shadow-[0_0_22px_rgba(251,191,36,0.38)] opacity-95 hover:opacity-100 card-glitch'
           }`}
           style={{
@@ -1199,7 +1200,6 @@ export function PanoramaViewer({
 
     if (memoryPlaying && activeClue?.ambient) {
       AudioSynth.startAmbient(activeClue.ambient);
-      AudioSynth.duckAmbient(true);
       return;
     }
 
