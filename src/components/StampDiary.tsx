@@ -216,10 +216,11 @@ export function StampDiary({ story, activeSpace, diary, onRestart, onChooseOther
               Stamps collected
             </span>
             <span
-              className="font-mono text-[7px] px-1.5 py-0.5 rounded"
+              className="font-mono text-[7px] px-1.5 py-0.5 rounded max-w-[86px] truncate"
               style={{ background: '#e8d8b8', color: '#7a5c38' }}
+              title={pageSpace.label}
             >
-              {pageSpace.label.split(' ')[0]}
+              {pageSpace.label}
             </span>
           </div>
 

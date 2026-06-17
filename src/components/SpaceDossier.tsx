@@ -233,6 +233,9 @@ export function SpaceDossier({ story, space, narratorColor, onEnter }: SpaceDoss
           <p className="font-mono text-[9px] uppercase tracking-[0.28em] text-amber-200/30">
             {space.clues.length} memory fragments · {story.title}
           </p>
+          <p className="max-w-[300px] text-center font-serif text-[12px] leading-relaxed text-amber-100/45">
+            Find every fragment in this place, then add the saved stamps to the Memory Passport.
+          </p>
 
           <button
             onClick={handlePlay}

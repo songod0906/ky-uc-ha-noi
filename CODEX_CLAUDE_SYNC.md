@@ -341,6 +341,52 @@ Also note: after `a678f0d`, `trang-choi-net` is not anchored, so this has to be 
 4. Recheck HTC yaws and QN node 6.
 5. Only then push final website polish.
 
+## Codex Update: UX Polish After Dumb-Agent Pass
+
+Added on 2026-06-17.
+
+The user accepted the dumb-agent observations and asked for the visitor flow to feel clearer and less confusing. This pass intentionally stayed on the main visitor site and did not touch calibration exports, raw voice memo files, scan URLs, or Supabase asset URLs.
+
+Changes made:
+
+- Map now receives the session diary and shows per-location progress in the location strip.
+  - `0` saved still reads as the fragment count.
+  - partial locations show labels like `1/2 saved`.
+  - complete locations show `Complete`.
+- Map header copy now states the actual purpose:
+  - preserve disappearing places,
+  - enter a location,
+  - listen for fragments,
+  - seal stamps into the Memory Passport.
+- Space cassette/dossier screen now tells visitors to find fragments and add saved stamps to the passport before entering.
+- Auto-moving routes now show a clearer route badge:
+  - `Moving route`,
+  - `Route paused`,
+  - `Memory stop`,
+  - plus `Point X / Y`.
+- When a blocking clue pauses an auto route, the side note now says the route is paused and tells the visitor to click the Polaroid in front of them.
+- Opening or auto-opening a video now dispatches a stop event for the panorama memory dock and stops clue ambience before the video starts. This prevents video audio from overlapping an already-playing clue audio dock.
+- Diary page labels now use the full space label instead of only the first word, so pages no longer show vague labels like just `Thanh` or `Net`.
+
+Manual browser check:
+
+- Opened `http://localhost:3003/?story=trang&space=1`.
+- Entered Net Café from the cassette screen.
+- Confirmed the first route stop shows:
+  - memory stop,
+  - `Point 1 / 17`,
+  - route-paused clue guidance.
+- Collected the first Net Café stamp.
+- Confirmed the dock opens and `Complete Archive` moves to `1/2`.
+- Returned to the map and confirmed the map copy appears and Net Café shows `1/2 saved`.
+
+Verification:
+
+- `npm run lint`
+- `npm run build`
+
+Build passed with existing Vite chunk-size/dynamic-import warnings only.
+
 ## Files To Be Careful With
 
 - `src/data/stories.ts`: central story/clue/anchor route data.

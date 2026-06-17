@@ -1144,6 +1144,15 @@ export function PanoramaViewer({
     return () => stopMemoryAudio();
   }, [stopMemoryAudio]);
 
+  useEffect(() => {
+    const stopForVideo = () => {
+      closeMemoryDock();
+      AudioSynth.stopAmbient();
+    };
+    window.addEventListener('kyuc:stop-memory-audio', stopForVideo);
+    return () => window.removeEventListener('kyuc:stop-memory-audio', stopForVideo);
+  }, [closeMemoryDock]);
+
   // Reset temporary overlays when moving to a different point.
   useEffect(() => {
     setShowHistoric(false);
@@ -1522,8 +1531,8 @@ export function PanoramaViewer({
               {foundCount} / {allClues.length} found
             </p>
             {blockingClueId && (
-              <p className="mt-2.5 max-w-[210px] font-serif text-[11px] leading-relaxed text-[#c25e42] flex items-center gap-1.5 border-t border-dashed border-[#c25e42]/20 pt-2 font-medium">
-                <span className="animate-pulse">📍</span> A memory fragment is here. Click the Polaroid card to archive it.
+              <p className="mt-2.5 max-w-[230px] font-serif text-[11px] leading-relaxed text-[#c25e42] flex items-center gap-1.5 border-t border-dashed border-[#c25e42]/20 pt-2 font-medium">
+                <span className="animate-pulse">📍</span> The route is paused here. Click the Polaroid in front of you to save this memory.
               </p>
             )}
           </div>
@@ -1704,7 +1713,7 @@ export function PanoramaViewer({
           {/* "Đang đi" badge — top centre label */}
           <div className="absolute top-[52px] left-1/2 -translate-x-1/2 z-30 pointer-events-none">
             <div
-              className="flex items-center gap-1.5 px-3 py-1 rounded-full font-mono text-[10px]"
+              className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-2xl font-mono text-[10px] text-center"
               style={{
                 background: 'rgba(0,0,0,0.5)',
                 border: '1px solid rgba(255,255,255,0.15)',
@@ -1712,7 +1721,12 @@ export function PanoramaViewer({
                 backdropFilter: 'blur(4px)',
               }}
             >
-              {drivePlaying ? 'Navigating...' : 'Paused'}
+              <span className="uppercase tracking-widest text-white/80">
+                {blockingClueId ? 'Memory stop' : drivePlaying ? 'Moving route' : 'Route paused'}
+              </span>
+              <span className="text-white/55">
+                Point {nodeIndex + 1} / {localNodes.length}
+              </span>
             </div>
           </div>
         </>

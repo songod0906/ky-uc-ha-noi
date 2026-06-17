@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ArrowRight, X, MapPin } from 'lucide-react';
-import { Story, MemorySpace } from '../types';
+import { DiaryEntry, Story, MemorySpace } from '../types';
 import { ALL_STORIES } from '../data/stories';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
 interface MapIntroViewProps {
   onSelect: (story: Story, spaceIdx: number) => void;
+  diary?: DiaryEntry[];
 }
 
 // Color per narrator
@@ -59,11 +60,22 @@ function makePinIcon(color: string) {
   });
 }
 
-export function MapIntroView({ onSelect }: MapIntroViewProps) {
+export function MapIntroView({ onSelect, diary = [] }: MapIntroViewProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const [selected, setSelected] = useState<SpacePin | null>(null);
   const pins = getAllSpacePins();
+  const collectedIds = new Set(diary.map((entry) => entry.clueId));
+
+  const getSavedCount = (space: MemorySpace) =>
+    space.clues.filter((clue) => collectedIds.has(clue.id)).length;
+
+  const getSaveLabel = (space: MemorySpace) => {
+    const saved = getSavedCount(space);
+    if (saved === 0) return `${space.clues.length} fragments`;
+    if (saved >= space.clues.length) return 'Complete';
+    return `${saved}/${space.clues.length} saved`;
+  };
 
   const selectPin = (pin: SpacePin) => {
     setSelected(pin);
@@ -170,13 +182,13 @@ export function MapIntroView({ onSelect }: MapIntroViewProps) {
           className="font-serif text-2xl md:text-3xl font-bold text-amber-50/90 text-center drop-shadow-lg"
           initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}
         >
-          Are you ready to explore?
+          Preserve these places before they disappear
         </motion.h1>
         <motion.p
-          className="font-serif text-xs text-amber-200/50 mt-1 text-center"
+          className="font-serif text-xs text-amber-200/60 mt-1 text-center max-w-[320px] leading-relaxed"
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.9 }}
         >
-          Select a disappearing location to enter
+          Enter a location, listen for memory fragments, then seal the stamps into the passport.
         </motion.p>
       </div>
 
@@ -206,6 +218,8 @@ export function MapIntroView({ onSelect }: MapIntroViewProps) {
           <div className="mx-auto flex max-w-3xl gap-2 overflow-x-auto rounded-2xl border border-amber-200/10 bg-black/65 p-2 shadow-2xl backdrop-blur-md">
             {pins.map((pin) => {
               const pinColor = NARRATOR_COLOR[pin.story.narrator] ?? '#fff';
+              const saved = getSavedCount(pin.space);
+              const complete = saved >= pin.space.clues.length;
               return (
                 <button
                   key={`${pin.story.id}-${pin.space.id}`}
@@ -223,7 +237,19 @@ export function MapIntroView({ onSelect }: MapIntroViewProps) {
                     {pin.space.label}
                   </span>
                   <span className="mt-1 block font-mono text-[9px] uppercase tracking-wider text-amber-200/40">
-                    {pin.space.clues.length} fragments
+                    {getSaveLabel(pin.space)}
+                  </span>
+                  <span
+                    className="mt-1.5 block h-1 rounded-full overflow-hidden"
+                    style={{ background: 'rgba(245,230,200,0.12)' }}
+                  >
+                    <span
+                      className="block h-full rounded-full transition-all"
+                      style={{
+                        width: `${(saved / Math.max(pin.space.clues.length, 1)) * 100}%`,
+                        background: complete ? '#f5d38a' : pinColor,
+                      }}
+                    />
                   </span>
                   {pin.spaceIdx === 0 && STORY_ORDER[pin.story.id] && (
                     <span className="mt-1.5 inline-block font-mono text-[8px] uppercase tracking-widest px-1.5 py-0.5 rounded" style={{ background: `${pinColor}22`, color: pinColor }}>
@@ -268,6 +294,22 @@ export function MapIntroView({ onSelect }: MapIntroViewProps) {
               <div className="h-0.5 w-full" style={{ background: color }} />
 
               <div className="p-5 relative">
+                {(() => {
+                  const saved = getSavedCount(selected.space);
+                  const complete = saved >= selected.space.clues.length;
+                  return (
+                    <div
+                      className="absolute top-4 left-5 font-mono text-[8px] uppercase tracking-widest px-2 py-1 rounded-full"
+                      style={{
+                        background: complete ? 'rgba(245,211,138,0.16)' : `${color}16`,
+                        color: complete ? '#f5d38a' : color,
+                        border: complete ? '1px solid rgba(245,211,138,0.35)' : `1px solid ${color}33`,
+                      }}
+                    >
+                      {saved} / {selected.space.clues.length} saved
+                    </div>
+                  );
+                })()}
                 <button
                   onClick={() => setSelected(null)}
                   className="absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center"
@@ -277,7 +319,7 @@ export function MapIntroView({ onSelect }: MapIntroViewProps) {
                 </button>
 
                 {/* Narrator + location */}
-                <div className="flex items-center gap-2 mb-3">
+                <div className="flex items-center gap-2 mb-3 pt-8">
                   <MapPin className="w-3.5 h-3.5 flex-shrink-0" style={{ color }} />
                   <span className="font-mono text-[9px] uppercase tracking-widest" style={{ color }}>
                     {selected.story.narrator} · {selected.story.title}
@@ -290,6 +332,9 @@ export function MapIntroView({ onSelect }: MapIntroViewProps) {
                 <p className="font-serif text-sm text-amber-200/50 leading-relaxed mb-4">
                   {selected.space.sublabel}
                 </p>
+                <p className="font-serif text-xs text-amber-100/55 leading-relaxed mb-4">
+                  Save the fragments here so this place becomes a page in the Memory Passport.
+                </p>
 
                 {/* Clue count */}
                 <div className="flex items-center gap-2 mb-5">
@@ -297,7 +342,7 @@ export function MapIntroView({ onSelect }: MapIntroViewProps) {
                     className="font-mono text-[9px] uppercase tracking-widest px-2.5 py-1 rounded-full"
                     style={{ background: `${color}18`, color, border: `1px solid ${color}33` }}
                   >
-                    {selected.space.clues.length} memory fragments
+                    {getSaveLabel(selected.space)}
                   </span>
                   {selected.space.bgTourNodes && (
                     <span

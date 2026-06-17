@@ -5,6 +5,7 @@ import { ClueObject } from './ClueObject';
 import { ScanPlaceholder } from './ScanPlaceholder';
 import { PanoramicVideoViewer } from './PanoramicVideoViewer';
 import { AudioManager } from '../utils/AudioManager';
+import { AudioSynth } from '../utils/AudioSynth';
 
 const PanoramaViewer = lazy(() =>
   import('./PanoramaViewer').then((m) => ({ default: m.PanoramaViewer }))
@@ -20,6 +21,12 @@ interface MemorySpaceProps {
 function withAutoplay(url: string) {
   if (url.includes('autoplay=')) return url;
   return `${url}${url.includes('?') ? '&' : '?'}autoplay=1`;
+}
+
+function stopMemoryLayerAudio() {
+  window.dispatchEvent(new Event('kyuc:stop-memory-audio'));
+  AudioSynth.stopAmbient();
+  AudioManager.pause();
 }
 
 export function MemorySpace({ space, story, collectedIds, onCollect }: MemorySpaceProps) {
@@ -42,7 +49,7 @@ export function MemorySpace({ space, story, collectedIds, onCollect }: MemorySpa
     const nodes = space.bgTourNodes;
     const finalNodeHasClue = !!nodes?.[nodes.length - 1]?.clueAnchors?.length;
     if (space.isPanoramicVideo && nodes && nodes.length > 0 && !finalNodeHasClue && currentNodeIndex >= nodes.length - 1) {
-      AudioManager.pause();
+      stopMemoryLayerAudio();
       setDemolitionFlash(true);
       const t = setTimeout(() => {
         setDemolitionFlash(false);
@@ -53,8 +60,8 @@ export function MemorySpace({ space, story, collectedIds, onCollect }: MemorySpa
   }, [space.isPanoramicVideo, currentNodeIndex, space.bgTourNodes]);
 
   const handleOpenVideo = () => {
+    stopMemoryLayerAudio();
     setVideoExpanded(true);
-    AudioManager.pause();
   };
 
   const handleCloseVideo = () => {

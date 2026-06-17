@@ -92,7 +92,7 @@ export default function App() {
           <PrologueViewer key="prologue" onEnter={() => setPhase('select')} />
         )}
         {phase === 'select' && (
-          <MapIntroView key="select" onSelect={handleSelectSpace} />
+          <MapIntroView key="select" onSelect={handleSelectSpace} diary={diary} />
         )}
         {phase === 'loading' && activeStory && (
           <StoryLoadingScreen
