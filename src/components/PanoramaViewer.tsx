@@ -881,6 +881,7 @@ export function PanoramaViewer({
   onNodeIndexChange,
   driveMode = false,
   driveIntervalMs = 4500,
+  tutorialDone = true,
   backgroundMode = false,
   onScanChange,
   audioSegmentSrc,
@@ -896,6 +897,7 @@ export function PanoramaViewer({
   onNodeIndexChange?: (idx: number) => void;
   driveMode?: boolean;
   driveIntervalMs?: number;
+  tutorialDone?: boolean;
   backgroundMode?: boolean;
   onScanChange?: (isOpen: boolean) => void;
   audioSegmentSrc?: string;
@@ -1229,7 +1231,7 @@ export function PanoramaViewer({
   useEffect(() => {
     if (!driveMode) return;
     const id = setInterval(() => {
-      if (!drivePlaying || blockingClueId || memoryPlaying) {
+      if (!drivePlaying || blockingClueId || memoryPlaying || !tutorialDone) {
         driveLastRef.current = Date.now();
         return;
       }
@@ -1252,7 +1254,7 @@ export function PanoramaViewer({
       }
     }, 80);
     return () => clearInterval(id);
-  }, [driveMode, drivePlaying, blockingClueId, memoryPlaying, driveIntervalMs, localNodes]);
+  }, [driveMode, drivePlaying, blockingClueId, memoryPlaying, tutorialDone, driveIntervalMs, localNodes]);
 
   // Notify parent component of the current node index change
   useEffect(() => {

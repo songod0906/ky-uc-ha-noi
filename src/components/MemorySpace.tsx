@@ -16,6 +16,7 @@ interface MemorySpaceProps {
   story: Story;
   collectedIds: string[];
   onCollect: (clueId: string) => void;
+  tutorialDone?: boolean;
 }
 
 function withAutoplay(url: string) {
@@ -29,7 +30,7 @@ function stopMemoryLayerAudio() {
   AudioManager.pause();
 }
 
-export function MemorySpace({ space, story, collectedIds, onCollect }: MemorySpaceProps) {
+export function MemorySpace({ space, story, collectedIds, onCollect, tutorialDone }: MemorySpaceProps) {
   const hasTour = !!space.bgTourNodes?.length;
   const [videoExpanded, setVideoExpanded] = useState(false);
   const [currentNodeIndex, setCurrentNodeIndex] = useState(0);
@@ -100,6 +101,7 @@ export function MemorySpace({ space, story, collectedIds, onCollect }: MemorySpa
               onNodeIndexChange={setCurrentNodeIndex}
               driveMode={driveMode}
               driveIntervalMs={driveIntervalMs}
+              tutorialDone={tutorialDone}
               onScanChange={setIsScanOpen}
               audioSegmentSrc={space.audioSegment?.src}
               spaceId={space.id}

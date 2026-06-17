@@ -239,6 +239,7 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, diary, addToDiary,
           story={story}
           collectedIds={collectedIds}
           onCollect={handleCollect}
+          tutorialDone={tutorialDone}
         />
       </main>
 
