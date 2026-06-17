@@ -197,8 +197,6 @@ export const AudioSynth = {
         el.volume = volume;
         if (volume >= 0.25) clearHtmlFade();
       }, 50);
-    } else {
-      // Synthesized background loops (wind, cicadas, kids-laughter, plucks) are disabled.
     }
   },
 

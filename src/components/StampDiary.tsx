@@ -205,7 +205,12 @@ export function StampDiary({ story, activeSpace, diary, onRestart, onChooseOther
         {/* LEFT PAGE — stamp collection */}
         <div
           className="flex-shrink-0 flex flex-col overflow-hidden border-r"
-          style={{ width: 210, background: '#fdf8f0', borderColor: '#c8b89a' }}
+          style={{
+            width: 210,
+            background: '#fdf8f0',
+            borderColor: '#c8b89a',
+            backgroundImage: 'repeating-linear-gradient(transparent, transparent 22px, rgba(196,176,144,0.22) 22px, rgba(196,176,144,0.22) 23px)',
+          }}
         >
           {/* Page header */}
           <div
@@ -252,15 +257,24 @@ export function StampDiary({ story, activeSpace, diary, onRestart, onChooseOther
                   >
                     {collected ? (
                       <>
-                        {/* Perforation top */}
+                        {/* Perforation — all 4 sides */}
                         <div className="absolute top-0 left-0 right-0 flex justify-around px-0.5 -translate-y-1/2 pointer-events-none">
                           {[0,1,2,3].map(i => (
                             <div key={i} className="w-1 h-1 rounded-full" style={{ background: '#F0E8D8' }} />
                           ))}
                         </div>
-                        {/* Perforation bottom */}
                         <div className="absolute bottom-0 left-0 right-0 flex justify-around px-0.5 translate-y-1/2 pointer-events-none">
                           {[0,1,2,3].map(i => (
+                            <div key={i} className="w-1 h-1 rounded-full" style={{ background: '#F0E8D8' }} />
+                          ))}
+                        </div>
+                        <div className="absolute left-0 top-0 bottom-0 flex flex-col justify-around py-0.5 -translate-x-1/2 pointer-events-none">
+                          {[0,1,2].map(i => (
+                            <div key={i} className="w-1 h-1 rounded-full" style={{ background: '#F0E8D8' }} />
+                          ))}
+                        </div>
+                        <div className="absolute right-0 top-0 bottom-0 flex flex-col justify-around py-0.5 translate-x-1/2 pointer-events-none">
+                          {[0,1,2].map(i => (
                             <div key={i} className="w-1 h-1 rounded-full" style={{ background: '#F0E8D8' }} />
                           ))}
                         </div>
@@ -271,8 +285,8 @@ export function StampDiary({ story, activeSpace, diary, onRestart, onChooseOther
                         >
                           {clue.label.split('—')[0].split('–')[0].trim()}
                         </span>
-                        <span style={{ fontSize: 5.5, color: '#a08060' }} className="font-mono uppercase tracking-wide">
-                          {clue.type}
+                        <span style={{ fontSize: 5, color: '#8b6240' }} className="font-mono uppercase tracking-wide line-clamp-1 text-center px-0.5">
+                          {pageSpace.label}
                         </span>
                       </>
                     ) : (
@@ -314,7 +328,10 @@ export function StampDiary({ story, activeSpace, diary, onRestart, onChooseOther
         </div>
 
         {/* RIGHT PAGE — selected stamp content */}
-        <div className="flex-1 flex flex-col overflow-hidden" style={{ background: '#fdf8f0' }}>
+        <div className="flex-1 flex flex-col overflow-hidden" style={{
+          background: '#fdf8f0',
+          backgroundImage: 'repeating-linear-gradient(transparent, transparent 22px, rgba(196,176,144,0.22) 22px, rgba(196,176,144,0.22) 23px)',
+        }}>
           {selectedClue ? (
             <>
               {/* Clue header */}
@@ -460,6 +477,19 @@ export function StampDiary({ story, activeSpace, diary, onRestart, onChooseOther
                   >
                     {selectedClue.voiceNote}
                   </p>
+                )}
+                {selectedClue.planningImpact && (
+                  <div
+                    className="mt-4 rounded-lg px-3 py-2.5"
+                    style={{ background: 'rgba(160,50,30,0.07)', borderLeft: '2px solid rgba(160,50,30,0.25)' }}
+                  >
+                    <p className="font-mono uppercase tracking-widest mb-1" style={{ fontSize: 7, color: '#8b3820' }}>
+                      Urban planning impact
+                    </p>
+                    <p className="font-serif leading-relaxed" style={{ fontSize: 10, color: '#7a3020', opacity: 0.85 }}>
+                      {selectedClue.planningImpact}
+                    </p>
+                  </div>
                 )}
               </div>
             </>

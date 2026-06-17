@@ -703,8 +703,7 @@ const TRANG_THAI_THINH: Story = {
       bgTone: '#c4a870',
       bgTourNodes: withAudioSecs(withHistoric(applyYaws(makeNodes(trang_di_hoc_them, [
         { idx: 0, clueId: 'thai-thinh-hoc-them', yaw: 68, pitch: -13, audioSec: 66 },
-        { idx: 1, clueId: 'thai-thinh-pho-khong-xe', yaw: 0, pitch: 0, audioSec: 85.72 },
-        { idx: 6, clueId: 'thai-thinh-pho-khong-xe', yaw: -16, pitch: -20, audioSec: 85.72 },
+        { idx: 6, clueId: 'thai-thinh-pho-khong-xe', yaw: -16, pitch: -20, audioSec: 152 },
       ], 'tt-hoc', undefined, [
         [21.010379, 105.819129], // tt-hoc-01
         [21.010477, 105.819357], // tt-hoc-02
@@ -817,7 +816,7 @@ const TRANG_THAI_THINH: Story = {
         {
           id: 'thai-thinh-tieng-cuoi',
           type: 'sound',
-          label: 'Laughter from the playground — heard when passing by',
+          label: 'Passing by — a wordless feeling that still comes back every time',
           quote:
             '"It\'s a feeling that only I can sense, and it cannot be put into words."',
           voiceNote:
@@ -891,7 +890,7 @@ const TRANG_THAI_THINH: Story = {
         {
           id: 'thai-thinh-di-voi-me',
           type: 'routine',
-          label: 'Snail stall once known only to locals — now viral on TikTok',
+          label: 'Before it went viral — a discovery no child will ever have again',
           quote:
             '"No child will ever see a violin for the first time in a snail stall again."',
           voiceNote:
