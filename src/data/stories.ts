@@ -764,13 +764,13 @@ const TRANG_THAI_THINH: Story = {
         {
           id: 'thai-thinh-pho-khong-xe',
           type: 'sound',
-          label: 'A street where only neighbors knew each other',
+          label: 'The extra class alley — last seen without a single car',
           quote:
-            '"My childhood was spent in that very peaceful street, no traffic, no passersby — mostly just neighbors who knew each other."',
+            '"The last time I saw the alley to my extra class, there had never been a car there. Then the other day, coming back from work, I saw one parked there — it was quite a surprise."',
           voiceNote:
-            'Returning home from work along her old route, Trang found a car parked in the alley — something she had never seen as a child. Over a decade, the sounds of that peaceful street had shifted entirely: footsteps of familiar neighbors gave way to engine noise and strangers passing through.',
+            'Every afternoon Trang\'s mother walked her through this alley to extra class. In her memory it was always carless — the ditch next to it kept through traffic away. Returning as an adult she saw a parked car for the first time, a small moment that made a decade of change suddenly visible.',
           planningImpact:
-            'The residential alley will be absorbed into the expanded road corridor. The last sounds of a neighborhood where everyone knew each other will disappear.',
+            'The alley leading to the tutor\'s house sits in the clearance zone for the widening of Nguyen Van Tuyet street. Once it is gone, the quiet passage Trang walked as a five-year-old will not exist in any form.',
           ambient: 'wind',
           audioSrc: '/audio/thai-thinh-pho-khong-xe.mp3',
           x: 65,
