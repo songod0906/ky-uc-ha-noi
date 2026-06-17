@@ -703,7 +703,7 @@ const TRANG_THAI_THINH: Story = {
       bgTone: '#c4a870',
       bgTourNodes: withAudioSecs(withHistoric(applyYaws(makeNodes(trang_di_hoc_them, [
         { idx: 0, clueId: 'thai-thinh-hoc-them', yaw: 68, pitch: -13, audioSec: 66 },
-        { idx: 2, clueId: 'thai-thinh-nguyen-van-tuyet', yaw: 0, pitch: -15, audioSec: 156 },
+        { idx: 1, clueId: 'thai-thinh-nguyen-van-tuyet', yaw: 0, pitch: -15, audioSec: 156 },
         { idx: 6, clueId: 'thai-thinh-pho-khong-xe', yaw: -16, pitch: -20, audioSec: 204 },
       ], 'tt-hoc', undefined, [
         [21.010379, 105.819129], // tt-hoc-01
@@ -720,7 +720,7 @@ const TRANG_THAI_THINH: Story = {
         { idx: 3, url: 'https://www.google.com/maps/embed?pb=!4v1781408364592!6m8!1m7!1s_n6SQubPSlBt-Zd_87SShA!2m2!1d21.01075480596271!2d105.8196807127992!3f324.39853889627045!4f-6.447499879491232!5f0.7820865974627469' },
         { idx: 4, url: 'https://www.google.com/maps/embed?pb=!4v1781408422825!6m8!1m7!1s1XpIx8FMLqaQpo6_jUhk7A!2m2!1d21.01095812934958!2d105.8195033436658!3f317.37933527468243!4f-3.6715733113441473!5f0.7820865974627469' },
       ]),
-      // 0=extra classes near mom's shop(27s) 1=4-5PM mom walks me(63s) 2=Nguyen Van Tuyet ditch(156s)
+      // 0=extra classes near mom's shop(27s) 1=Nguyen Van Tuyet ditch(156s) 2=not many cars(79s)
       // 3=walking back from work surprised(87s) 4=last time I saw alley no cars(98s)
       // 5=motorbikes replaced by cars(125s) 6=peaceful street neighbors knew each other(204s)
       [27, 63, 79, 87, 98, 125, 152]),
@@ -757,7 +757,7 @@ const TRANG_THAI_THINH: Story = {
           planningImpact:
             'The culverting of the ditch and opening of Nguyen Van Tuyet street introduced heavy traffic into what was a quiet residential area. It is now slated for further widening to 4 lanes.',
           ambient: 'wind',
-          audioSrc: undefined,
+          audioSrc: '/audio/thai-thinh-nguyen-van-tuyet.mp3',
           x: 55,
           y: 45,
         },
