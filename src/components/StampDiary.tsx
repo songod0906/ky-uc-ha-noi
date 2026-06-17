@@ -1,8 +1,10 @@
 import { lazy, Suspense, useState, useEffect, useRef } from 'react';
 import { motion } from 'motion/react';
 import { Story, MemorySpace, DiaryEntry, TourNode } from '../types';
-import { RotateCcw, Play, Pause, MapPin, Box } from 'lucide-react';
+import { RotateCcw, Play, Pause, MapPin, Box, ChevronLeft, ChevronRight } from 'lucide-react';
 import { CompassMotif } from './CompassMotif';
+import { AudioSynth } from '../utils/AudioSynth';
+import { ALL_STORIES } from '../data/stories';
 
 const PanoramaViewer = lazy(() =>
   import('./PanoramaViewer').then((m) => ({ default: m.PanoramaViewer }))
@@ -29,6 +31,11 @@ function findClueScan(clueId: string, nodes?: TourNode[]) {
     .find(anchor => anchor.clueId === clueId);
 }
 
+function toRoman(num: number) {
+  const numerals = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
+  return numerals[num - 1] ?? String(num);
+}
+
 function formatTime(s: number) {
   if (!isFinite(s) || s < 0) return '0:00';
   const m = Math.floor(s / 60);
@@ -46,11 +53,21 @@ interface StampDiaryProps {
 }
 
 export function StampDiary({ story, activeSpace, diary, onRestart, onChooseOther, onNextStory }: StampDiaryProps) {
-  const allClues = activeSpace.clues;
   const collectedSet = new Set(diary.map(e => e.clueId));
+  const diaryPages = ALL_STORIES.flatMap(pageStory =>
+    pageStory.spaces
+      .filter(space => space.id === activeSpace.id || space.clues.some(clue => collectedSet.has(clue.id)))
+      .map(space => ({ story: pageStory, space }))
+  );
+  const activePageIndex = Math.max(0, diaryPages.findIndex(page => page.space.id === activeSpace.id));
+  const [pageIndex, setPageIndex] = useState(activePageIndex);
+  const currentPage = diaryPages[Math.min(pageIndex, diaryPages.length - 1)] ?? { story, space: activeSpace };
+  const pageStory = currentPage.story;
+  const pageSpace = currentPage.space;
+  const allClues = pageSpace.clues;
 
   const [selectedClueId, setSelectedClueId] = useState<string | null>(
-    () => diary[0]?.clueId ?? null
+    () => pageSpace.clues.find(clue => collectedSet.has(clue.id))?.id ?? null
   );
 
   // Audio player
@@ -62,14 +79,24 @@ export function StampDiary({ story, activeSpace, diary, onRestart, onChooseOther
 
   const selectedClue = allClues.find(c => c.id === selectedClueId) ?? null;
   const selectedNode = selectedClueId
-    ? findClueNode(selectedClueId, activeSpace.bgTourNodes)
+    ? findClueNode(selectedClueId, pageSpace.bgTourNodes)
     : null;
   const selectedScan = selectedClueId
-    ? findClueScan(selectedClueId, activeSpace.bgTourNodes)
+    ? findClueScan(selectedClueId, pageSpace.bgTourNodes)
     : null;
+
+  useEffect(() => {
+    setPageIndex(activePageIndex);
+  }, [activePageIndex]);
+
+  useEffect(() => {
+    setSelectedClueId(pageSpace.clues.find(clue => collectedSet.has(clue.id))?.id ?? null);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pageSpace.id, diary.length]);
 
   // Stop audio and reset when selected clue changes
   useEffect(() => {
+    AudioSynth.stopAmbient();
     if (progressTimerRef.current) window.clearInterval(progressTimerRef.current);
     if (audioRef.current) {
       audioRef.current.pause();
@@ -86,6 +113,7 @@ export function StampDiary({ story, activeSpace, diary, onRestart, onChooseOther
     return () => {
       if (progressTimerRef.current) window.clearInterval(progressTimerRef.current);
       if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
+      AudioSynth.stopAmbient();
     };
   }, []);
 
@@ -99,16 +127,19 @@ export function StampDiary({ story, activeSpace, diary, onRestart, onChooseOther
       el.addEventListener('ended', () => {
         setAudioPlaying(false);
         setAudioProgress(el.duration);
+        AudioSynth.stopAmbient();
         if (progressTimerRef.current) window.clearInterval(progressTimerRef.current);
       });
     }
 
     if (audioPlaying) {
       audioRef.current.pause();
+      AudioSynth.stopAmbient();
       if (progressTimerRef.current) window.clearInterval(progressTimerRef.current);
       setAudioPlaying(false);
     } else {
       audioRef.current.play().catch(() => {});
+      AudioSynth.startAmbient(selectedClue.ambient);
       setAudioPlaying(true);
       progressTimerRef.current = window.setInterval(() => {
         if (audioRef.current) setAudioProgress(audioRef.current.currentTime);
@@ -142,17 +173,17 @@ export function StampDiary({ story, activeSpace, diary, onRestart, onChooseOther
           <div className="w-5 h-5 border border-[#c8a97a] rounded flex items-center justify-center text-[#c8a97a] text-xs">✦</div>
           <div>
             <p className="font-mono text-[8px] text-[#c8a97a]/60 uppercase tracking-widest">Ký Ức Hà Nội · Memory Passport</p>
-            <p className="font-serif text-sm font-bold text-[#f5e6c8]">{story.narrator} · {activeSpace.label}</p>
+            <p className="font-serif text-sm font-bold text-[#f5e6c8]">{pageStory.narrator} · {pageSpace.label}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <span className="font-mono text-[9px] text-[#c8a97a]/60">
-            {diary.length} / {allClues.length} stamps
+            {allClues.filter(clue => collectedSet.has(clue.id)).length} / {allClues.length} stamps
           </span>
           <div className="w-16 h-1 rounded-full overflow-hidden" style={{ background: '#5a3e28' }}>
             <div
               className="h-full rounded-full transition-all"
-              style={{ width: `${(diary.length / Math.max(allClues.length, 1)) * 100}%`, background: '#c8a97a' }}
+              style={{ width: `${(allClues.filter(clue => collectedSet.has(clue.id)).length / Math.max(allClues.length, 1)) * 100}%`, background: '#c8a97a' }}
             />
           </div>
         </div>
@@ -188,7 +219,7 @@ export function StampDiary({ story, activeSpace, diary, onRestart, onChooseOther
               className="font-mono text-[7px] px-1.5 py-0.5 rounded"
               style={{ background: '#e8d8b8', color: '#7a5c38' }}
             >
-              {activeSpace.label.split(' ')[0]}
+              {pageSpace.label.split(' ')[0]}
             </span>
           </div>
 
@@ -256,8 +287,28 @@ export function StampDiary({ story, activeSpace, diary, onRestart, onChooseOther
           </div>
 
           {/* Page number */}
-          <div className="flex-none px-3 py-1.5 border-t" style={{ borderColor: '#d4c5a8' }}>
-            <span className="font-mono text-[7px]" style={{ color: '#c0a880' }}>p. I</span>
+          <div className="flex-none flex items-center justify-between gap-2 px-3 py-1.5 border-t" style={{ borderColor: '#d4c5a8' }}>
+            <button
+              onClick={() => setPageIndex(i => Math.max(0, i - 1))}
+              disabled={pageIndex === 0}
+              className="h-6 w-6 rounded border flex items-center justify-center transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+              style={{ borderColor: '#c0a880', color: '#7a5c38', background: 'rgba(255,255,255,0.45)' }}
+              title="Previous diary page"
+            >
+              <ChevronLeft className="w-3.5 h-3.5" />
+            </button>
+            <span className="font-mono text-[7px] text-center" style={{ color: '#a08060' }}>
+              p. {toRoman(pageIndex + 1)} / {toRoman(Math.max(diaryPages.length, 1))}
+            </span>
+            <button
+              onClick={() => setPageIndex(i => Math.min(diaryPages.length - 1, i + 1))}
+              disabled={pageIndex >= diaryPages.length - 1}
+              className="h-6 w-6 rounded border flex items-center justify-center transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+              style={{ borderColor: '#c0a880', color: '#7a5c38', background: 'rgba(255,255,255,0.45)' }}
+              title="Next diary page"
+            >
+              <ChevronRight className="w-3.5 h-3.5" />
+            </button>
           </div>
         </div>
 
@@ -272,7 +323,7 @@ export function StampDiary({ story, activeSpace, diary, onRestart, onChooseOther
               >
                 <div className="min-w-0">
                   <p className="font-mono text-[8px] uppercase tracking-widest mb-0.5" style={{ color: '#a08060' }}>
-                    {activeSpace.label} · {story.narrator}
+                    {pageSpace.label} · {pageStory.narrator}
                   </p>
                   <h3
                     className="font-serif font-bold leading-snug truncate"
@@ -299,33 +350,33 @@ export function StampDiary({ story, activeSpace, diary, onRestart, onChooseOther
                   }>
                     <ScanViewer url={selectedScan.scanUrl} />
                   </Suspense>
-                ) : activeSpace.bgTourNodes?.length ? (
+                ) : pageSpace.bgTourNodes?.length ? (
                   <Suspense fallback={
                     <div className="w-full h-full flex items-center justify-center" style={{ background: '#1a1206' }}>
                       <p className="font-mono text-[9px] text-amber-400/60">Loading 360°...</p>
                     </div>
                   }>
                     <PanoramaViewer
-                      nodes={activeSpace.bgTourNodes}
+                      nodes={pageSpace.bgTourNodes}
                       startNodeId={selectedNode?.id}
                       collectedIds={[selectedClue.id]}
                       onCollect={() => {}}
                       allClues={[]}
                       backgroundMode={true}
-                      spaceId={activeSpace.id}
+                      spaceId={pageSpace.id}
                     />
                   </Suspense>
-                ) : activeSpace.bgImage ? (
+                ) : pageSpace.bgImage ? (
                   <div
                     className="w-full h-full"
                     style={{
-                      backgroundImage: `url(${activeSpace.bgImage})`,
+                      backgroundImage: `url(${pageSpace.bgImage})`,
                       backgroundSize: 'cover',
                       backgroundPosition: 'center',
                     }}
                   />
                 ) : (
-                  <div className="w-full h-full" style={{ background: activeSpace.bgGradient }} />
+                  <div className="w-full h-full" style={{ background: pageSpace.bgGradient }} />
                 )}
                 {/* Corner label */}
                 <div

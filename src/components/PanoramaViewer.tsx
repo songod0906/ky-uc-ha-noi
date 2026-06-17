@@ -1868,7 +1868,9 @@ export function PanoramaViewer({
       {activeClue && (() => {
         const t = activeClueAudioSecRef.current + memoryProgress;
         const cueText = memoryPlaying ? (srtCues.find(c => t >= c.start && t <= c.end)?.text ?? '') : '';
-        const activeClueScanAnchor = node.scanAnchors?.find((anchor) => anchor.clueId === activeClue.id);
+        const activeClueScanAnchor = localNodes
+          .flatMap((candidate) => candidate.scanAnchors ?? [])
+          .find((anchor) => anchor.clueId === activeClue.id);
         // Subtitle sits above the audio dock so it does not cover route controls.
         const subBottom = activeScan ? 'bottom-[228px]' : 'bottom-[228px]';
         return (

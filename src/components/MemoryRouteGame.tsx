@@ -143,12 +143,11 @@ export function MemoryRouteGame({ story, initialSpaceIdx = 0, diary, addToDiary,
 
   // ── Ending phase ──
   if (phase === 'ending') {
-    const spaceClueIds = new Set(activeSpace.clues.map((c) => c.id));
     return (
       <EndingCannotBeMoved
         story={story}
         activeSpace={activeSpace}
-        diary={diary.filter((e) => spaceClueIds.has(e.clueId))}
+        diary={diary}
         onRestart={handleRestart}
         onChooseOther={handleBack}
         onNextStory={onNextStory}

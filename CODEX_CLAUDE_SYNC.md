@@ -135,6 +135,57 @@ Verification commands:
 - `npm run lint`: passed.
 - `npm run build`: passed.
 
+## Codex Update: Stamp Diary Page Flip + Stamp Sound Effects
+
+Date: 2026-06-17
+
+New changes made after commit `7c055e1`:
+
+- `src/components/StampDiary.tsx`
+  - Stamp audio playback now starts the selected clue's `ambient` sound effect through `AudioSynth.startAmbient(selectedClue.ambient)`.
+  - The ambient loop stops when the stamp audio is paused, ended, changed, or when the diary unmounts.
+  - This restores the intended behavior for stamp playback:
+    - `trang-tieng-trong` uses `school-drum` -> `/audio/sound-trong-truong.mp3`.
+    - Quan Net clues use `keyboard` -> `/audio/sound-net.mp3`.
+    - Violin Snail Stall clues use `violin` -> `/audio/sound-violin.mp3`.
+  - The diary now builds pages from the full session diary across `ALL_STORIES`, not only from the active space.
+  - The diary opens on the space just completed, but shows previous/next page buttons when stamps from other spaces exist.
+  - The selected page drives the stamp grid, panorama/scan preview, audio, quote, narrator, and page label.
+  - The earlier linked-scan fix is preserved: Lemon ice cream still shows `3D Food Stall · drag to inspect`.
+  - The Net Cafe sound stamp now opens the Net Cafe scan because `trang-tieng-chui` is linked to `/scans/quan-net.glb`.
+
+- `src/components/MemoryRouteGame.tsx`
+  - Ending now passes the full `diary` to `EndingCannotBeMoved` instead of filtering it down to the active space.
+  - This is required for the diary to flip between collected pages from the same session.
+
+- `src/components/PanoramaViewer.tsx`
+  - The audio dock now looks across all route nodes for a scan linked to the active clue, not only the current node.
+  - This lets the `The two sounds of the net cafe` clue offer/open `View 3D Net Cafe` even when the scan anchor lives on the next route node.
+
+- `src/data/stories.ts`
+  - Added `clueId: 'trang-tieng-chui'` to the Quan Net scan anchor at `qn-17`.
+
+Browser verification:
+
+- Starting from the current local app session, collected both School Gate stamps, then collected both Net Cafe stamps.
+- Completed the Net Cafe archive and opened the memory file.
+- The diary showed `p. II / II` on the Net Cafe page.
+- Clicking `Previous diary page` flipped to School Gate and showed `p. I / II`.
+- School Gate page still showed Lemon ice cream with `3D Food Stall · drag to inspect`.
+- Net Cafe page showed the two Net Cafe stamps and active stamp audio.
+- Net Cafe `The two sounds...` stamp is intended to show/open the linked `3D Net Cafe` scan and play the `keyboard` ambience when the stamp audio plays.
+
+Verification commands:
+
+- `npm run lint`: passed.
+- `npm run build`: passed.
+
+Notes for Claude:
+
+- Do not re-copy the raw `assets/SOUND` files unless public audio is missing. The live app reads the tracked public paths in `public/audio/sound-*.mp3`.
+- The untracked `public/audio/ambient-*.mp3` files are not used by the current `AudioSynth` map.
+- Quan Net's 3D scan still starts keyboard ambience in `PanoramaViewer` while the scan is open via the `spaceId === 'quan-net' && activeScan` branch.
+
 ## Current Rule From User
 
 - Do not redo the subtitle investigation. Claude already fixed the subtitle logic.

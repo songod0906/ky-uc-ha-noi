@@ -348,7 +348,7 @@ const TRANG: Story = {
         { idx: 0, clueId: 'trang-choi-net', yaw: 0, pitch: 0, audioSec: 434.272 },
         { idx: 14, clueId: 'trang-tieng-chui', yaw: -180, pitch: 0, audioSec: 497.692 },
       ], 'qn', [
-        { idx: 16, scanUrl: '/scans/quan-net.glb', label: 'View 3D Net Café', yaw: 0, pitch: -10 },
+        { idx: 16, scanUrl: '/scans/quan-net.glb', label: 'View 3D Net Café', yaw: 0, pitch: -10, clueId: 'trang-tieng-chui' },
       ], [
         [21.023344, 105.812717], // qn-01
         [21.023403, 105.813224], // qn-02
