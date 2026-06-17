@@ -704,7 +704,7 @@ const TRANG_THAI_THINH: Story = {
       bgTourNodes: withAudioSecs(withHistoric(applyYaws(makeNodes(trang_di_hoc_them, [
         { idx: 0, clueId: 'thai-thinh-hoc-them', yaw: 68, pitch: -13, audioSec: 66 },
         { idx: 1, clueId: 'thai-thinh-nguyen-van-tuyet', yaw: 0, pitch: -15, audioSec: 156 },
-        { idx: 6, clueId: 'thai-thinh-pho-khong-xe', yaw: -16, pitch: -20, audioSec: 204 },
+        { idx: 6, clueId: 'thai-thinh-pho-khong-xe', yaw: -16, pitch: -20, audioSec: 87 },
       ], 'tt-hoc', undefined, [
         [21.010379, 105.819129], // tt-hoc-01
         [21.010477, 105.819357], // tt-hoc-02
