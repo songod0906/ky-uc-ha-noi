@@ -17,12 +17,22 @@ export function EndingCannotBeMoved({ story, activeSpace, diary, onRestart, onCh
   const [sweepPhase, setSweepPhase] = useState<'intro' | 'showCase'>('intro');
   const [typewriterIndex, setTypewriterIndex] = useState(1);
 
-  const lines = [
-    'Hanoi, 2026.',
-    `${activeSpace.label} is entered into the clearance archive.`,
-    'The physical place may change, close, or disappear.',
-    `But you found and preserved ${story.narrator}'s memory fragments from this place.`,
-    'This memory file has been sealed inside the Digital Archive.',
+  const spaceEntries = diary.filter(e => activeSpace.clues.some(c => c.id === e.clueId));
+
+  type LineKind = 'normal' | 'quote' | 'accent';
+  interface Line { text: string; kind: LineKind; }
+
+  const lines: Line[] = [
+    { text: 'Hanoi, 2026.', kind: 'normal' },
+    { text: `${activeSpace.label} — scheduled for clearance.`, kind: 'normal' },
+    ...spaceEntries.map(e => ({ text: `"${e.clueLabel}"`, kind: 'quote' as LineKind })),
+    {
+      text: spaceEntries.length > 0
+        ? `${spaceEntries.length === 1 ? 'This fragment is' : 'These fragments are'} now part of ${story.narrator}'s archive.`
+        : `${story.narrator}'s memory of this place has been sealed.`,
+      kind: 'normal',
+    },
+    { text: 'The streets will change. These voices will not.', kind: 'accent' },
   ];
 
   useEffect(() => {
@@ -58,9 +68,15 @@ export function EndingCannotBeMoved({ story, activeSpace, diary, onRestart, onCh
               initial={{ opacity: 0, x: -5 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6 }}
-              className={idx === lines.length - 1 ? "text-amber-400 font-bold mt-2" : ""}
+              className={
+                line.kind === 'accent'
+                  ? 'text-amber-400 font-bold mt-2'
+                  : line.kind === 'quote'
+                  ? 'text-amber-200/80 italic pl-3 border-l border-amber-500/30'
+                  : ''
+              }
             >
-              {line}
+              {line.text}
             </motion.p>
           ))}
 

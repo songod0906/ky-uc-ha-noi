@@ -315,11 +315,11 @@ const TRANG: Story = {
         {
           id: 'trang-tieng-trong',
           type: 'sound',
-          label: 'School drum — and the sounds due to no air conditioning',
+          label: 'School drum — the rush and fear of being late',
           quote:
-            '"Without air conditioning, doors had to stay open — so we heard everything: birds chirping, adjacent classrooms, and teachers scolding each other."',
+            '"That drum sound, especially when you were still at the gate eating snacks — you felt so rushed, so scared of being late."',
           voiceNote:
-            'The elementary classrooms at Thanh Cong A didn\'t have A/C until grade 3 or 4. The windows were always open — letting outside noise flood in. Kien remembers the teachers often having drama: one class being noisy affecting another, the teacher next door coming over to argue. The school drum sound especially triggered strong feelings — "especially feeling rushed and scared of being late, particularly when snacking at the school gate." Now with doors closed and A/C on, those sounds are gone.',
+            'The school drum marked the boundary between safe and late. Kien remembers eating lemon ice cream at the gate when it rang — the sudden panic, the scramble to get inside. Because classrooms had no A/C until grade 3 or 4, windows stayed open, and the drum\'s echo carried through the entire alley. So did everything else: birds, adjacent classroom noise, teachers from next door scolding each other. The new 5-story building planned for 2026 will have central A/C and soundproof glass — sealing that world off completely.',
           planningImpact:
             'The renovation plan for Thanh Cong A Elementary School in 2026 will construct new closed 5-story buildings with central A/C and soundproof glass windows. Lecturing sounds leaking to other classes or school drums echoing into the alleys will be completely blocked.',
           ambient: 'school-drum',
