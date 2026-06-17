@@ -1,11 +1,14 @@
 import { lazy, Suspense, useState, useEffect, useRef } from 'react';
 import { motion } from 'motion/react';
 import { Story, MemorySpace, DiaryEntry, TourNode } from '../types';
-import { RotateCcw, Play, Pause, MapPin } from 'lucide-react';
+import { RotateCcw, Play, Pause, MapPin, Box } from 'lucide-react';
 import { CompassMotif } from './CompassMotif';
 
 const PanoramaViewer = lazy(() =>
   import('./PanoramaViewer').then((m) => ({ default: m.PanoramaViewer }))
+);
+const ScanViewer = lazy(() =>
+  import('./ScanViewer').then((m) => ({ default: m.ScanViewer }))
 );
 
 const CLUE_EMOJI: Record<string, string> = {
@@ -18,6 +21,12 @@ const CLUE_EMOJI: Record<string, string> = {
 
 function findClueNode(clueId: string, nodes?: TourNode[]): TourNode | undefined {
   return nodes?.find(n => n.clueAnchors?.some(a => a.clueId === clueId));
+}
+
+function findClueScan(clueId: string, nodes?: TourNode[]) {
+  return nodes
+    ?.flatMap(n => n.scanAnchors ?? [])
+    .find(anchor => anchor.clueId === clueId);
 }
 
 function formatTime(s: number) {
@@ -54,6 +63,9 @@ export function StampDiary({ story, activeSpace, diary, onRestart, onChooseOther
   const selectedClue = allClues.find(c => c.id === selectedClueId) ?? null;
   const selectedNode = selectedClueId
     ? findClueNode(selectedClueId, activeSpace.bgTourNodes)
+    : null;
+  const selectedScan = selectedClueId
+    ? findClueScan(selectedClueId, activeSpace.bgTourNodes)
     : null;
 
   // Stop audio and reset when selected clue changes
@@ -279,7 +291,15 @@ export function StampDiary({ story, activeSpace, diary, onRestart, onChooseOther
 
               {/* 360° panorama viewer */}
               <div className="relative overflow-hidden" style={{ height: '42%', flexShrink: 0 }}>
-                {activeSpace.bgTourNodes?.length ? (
+                {selectedScan ? (
+                  <Suspense fallback={
+                    <div className="w-full h-full flex items-center justify-center" style={{ background: '#0d0b08' }}>
+                      <p className="font-mono text-[9px] text-amber-400/60">Loading 3D artifact...</p>
+                    </div>
+                  }>
+                    <ScanViewer url={selectedScan.scanUrl} />
+                  </Suspense>
+                ) : activeSpace.bgTourNodes?.length ? (
                   <Suspense fallback={
                     <div className="w-full h-full flex items-center justify-center" style={{ background: '#1a1206' }}>
                       <p className="font-mono text-[9px] text-amber-400/60">Loading 360°...</p>
@@ -312,8 +332,14 @@ export function StampDiary({ story, activeSpace, diary, onRestart, onChooseOther
                   className="absolute bottom-2 right-2 font-mono text-[8px] px-2 py-1 rounded"
                   style={{ background: 'rgba(0,0,0,0.55)', color: 'rgba(255,255,255,0.7)' }}
                 >
-                  <MapPin className="inline w-2.5 h-2.5 mr-1" />
-                  360° · drag to explore
+                  {selectedScan ? (
+                    <Box className="inline w-2.5 h-2.5 mr-1" />
+                  ) : (
+                    <MapPin className="inline w-2.5 h-2.5 mr-1" />
+                  )}
+                  {selectedScan
+                    ? `${selectedScan.label.replace(/^View /, '').replace(/^Inspect /, '')} · drag to inspect`
+                    : '360° · drag to explore'}
                 </div>
               </div>
 
