@@ -703,7 +703,8 @@ const TRANG_THAI_THINH: Story = {
       bgTone: '#c4a870',
       bgTourNodes: withAudioSecs(withHistoric(applyYaws(makeNodes(trang_di_hoc_them, [
         { idx: 0, clueId: 'thai-thinh-hoc-them', yaw: 68, pitch: -13, audioSec: 66 },
-        { idx: 6, clueId: 'thai-thinh-pho-khong-xe', yaw: -16, pitch: -20, audioSec: 152 },
+        { idx: 2, clueId: 'thai-thinh-nguyen-van-tuyet', yaw: 0, pitch: -15, audioSec: 156 },
+        { idx: 6, clueId: 'thai-thinh-pho-khong-xe', yaw: -16, pitch: -20, audioSec: 204 },
       ], 'tt-hoc', undefined, [
         [21.010379, 105.819129], // tt-hoc-01
         [21.010477, 105.819357], // tt-hoc-02
@@ -719,9 +720,9 @@ const TRANG_THAI_THINH: Story = {
         { idx: 3, url: 'https://www.google.com/maps/embed?pb=!4v1781408364592!6m8!1m7!1s_n6SQubPSlBt-Zd_87SShA!2m2!1d21.01075480596271!2d105.8196807127992!3f324.39853889627045!4f-6.447499879491232!5f0.7820865974627469' },
         { idx: 4, url: 'https://www.google.com/maps/embed?pb=!4v1781408422825!6m8!1m7!1s1XpIx8FMLqaQpo6_jUhk7A!2m2!1d21.01095812934958!2d105.8195033436658!3f317.37933527468243!4f-3.6715733113441473!5f0.7820865974627469' },
       ]),
-      // 0=extra classes near mom's shop(27s) 1=4-5PM mom walks me(63s) 2=not many cars(79s)
+      // 0=extra classes near mom's shop(27s) 1=4-5PM mom walks me(63s) 2=Nguyen Van Tuyet ditch(156s)
       // 3=walking back from work surprised(87s) 4=last time I saw alley no cars(98s)
-      // 5=motorbikes replaced by cars(125s) 6=Nguyen Van Tuyet was a ditch(152s)
+      // 5=motorbikes replaced by cars(125s) 6=peaceful street neighbors knew each other(204s)
       [27, 63, 79, 87, 98, 125, 152]),
       memoryEchoes: [
         '"Walking to class around 4 or 5 PM..."',
@@ -746,15 +747,30 @@ const TRANG_THAI_THINH: Story = {
           y: 55,
         },
         {
+          id: 'thai-thinh-nguyen-van-tuyet',
+          type: 'place',
+          label: 'Nguyễn Văn Tuyết — a road built over a forgotten ditch',
+          quote:
+            '"Before they opened the road called Nguyen Van Tuyet, it used to be a ditch. No vehicles passed through at all — the street was very quiet."',
+          voiceNote:
+            'What is now Nguyen Van Tuyet street was an open drainage ditch during Trang\'s childhood. No cars, no foot traffic — just neighbors who knew each other. After the ditch was culverted and paved, it became a crowded food street. By 2026 it\'s always noisy, with bar music thumping at night.',
+          planningImpact:
+            'The culverting of the ditch and opening of Nguyen Van Tuyet street introduced heavy traffic into what was a quiet residential area. It is now slated for further widening to 4 lanes.',
+          ambient: 'wind',
+          audioSrc: undefined,
+          x: 55,
+          y: 45,
+        },
+        {
           id: 'thai-thinh-pho-khong-xe',
           type: 'sound',
-          label: 'Quiet street — sounds before the ditch became a road',
+          label: 'A street where only neighbors knew each other',
           quote:
             '"My childhood was spent in that very peaceful street, no traffic, no passersby — mostly just neighbors who knew each other."',
           voiceNote:
-            'Nguyen Van Tuyet street was once a drainage ditch — no cars, no noise. After the ditch was culverted and paved, it became a crowded food street. "At night, there\'s the thumping bass of bar music." Trang calls this a strange feeling: the same place, a dozen years apart, motorbikes replaced by cars.',
+            'Returning home from work along her old route, Trang found a car parked in the alley — something she had never seen as a child. Over a decade, the sounds of that peaceful street had shifted entirely: footsteps of familiar neighbors gave way to engine noise and strangers passing through.',
           planningImpact:
-            'Nguyen Van Tuyet street (formerly a ditch) has been completely culverted to build a busy food street. The peaceful childhood sounds are replaced by honking horns and thumping music from bars.',
+            'The residential alley will be absorbed into the expanded road corridor. The last sounds of a neighborhood where everyone knew each other will disappear.',
           ambient: 'wind',
           audioSrc: '/audio/thai-thinh-pho-khong-xe.mp3',
           x: 65,
