@@ -436,8 +436,14 @@ function Scene({
     // 1. Determine target yaw
     let targetYaw = 0;
     let found = false;
+    const uncollectedClueAnchor = clueVisible
+      ? node.clueAnchors?.find((anchor) => !collectedIds.includes(anchor.clueId))
+      : undefined;
 
-    if (lastNavDir === 'fwd') {
+    if (!calibrate && uncollectedClueAnchor) {
+      targetYaw = uncollectedClueAnchor.yaw;
+      found = true;
+    } else if (lastNavDir === 'fwd') {
       const fwdAnchor = node.navAnchors?.find(
         (a) => a.label === 'Tiếp tục' || a.label === 'Đi tiếp' || !a.label
       );

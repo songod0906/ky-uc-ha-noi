@@ -161,6 +161,9 @@ New changes made after commit `7c055e1`:
 - `src/components/PanoramaViewer.tsx`
   - The audio dock now looks across all route nodes for a scan linked to the active clue, not only the current node.
   - This lets the `The two sounds of the net cafe` clue offer/open `View 3D Net Cafe` even when the scan anchor lives on the next route node.
+  - Visitor camera landing now prioritizes the first uncollected clue on a node before facing the forward navigation arrow.
+  - This fixes Quan Net-style cases where the route says a clue is here, but the visitor lands looking away from the clue card.
+  - Calibration mode is not affected by this camera-facing change.
 
 - `src/data/stories.ts`
   - Added `clueId: 'trang-tieng-chui'` to the Quan Net scan anchor at `qn-17`.
