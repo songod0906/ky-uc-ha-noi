@@ -1,0 +1,39 @@
+name: Keep Supabase active
+
+on:
+  schedule:
+    # Supabase free projects pause after a week with too little activity.
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Request a public Supabase asset
+        env:
+          SUPABASE_ASSET_URL: https://mcbwpmptykgjlwksokic.supabase.co/storage/v1/object/public/assets/tours/ltk/truoc-cong-truong/shot-01.jpg
+        run: |
+          set -euo pipefail
+
+          status="$(curl \
+            --silent \
+            --show-error \
+            --location \
+            --output /dev/null \
+            --range 0-0 \
+            --write-out '%{http_code}' \
+            "$SUPABASE_ASSET_URL")"
+
+          case "$status" in
+            2??|3??)
+              echo "Supabase responded with HTTP $status."
+              ;;
+            *)
+              echo "Supabase ping returned HTTP $status."
+              exit 1
+              ;;
+          esac
