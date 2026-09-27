@@ -6,6 +6,7 @@ import { ScanPlaceholder } from './ScanPlaceholder';
 import { PanoramicVideoViewer } from './PanoramicVideoViewer';
 import { AudioManager } from '../utils/AudioManager';
 import { AudioSynth } from '../utils/AudioSynth';
+import { withGoogleMapsApiKey } from '../utils/googleMaps';
 
 const PanoramaViewer = lazy(() =>
   import('./PanoramaViewer').then((m) => ({ default: m.PanoramaViewer }))
@@ -165,7 +166,7 @@ export function MemorySpace({ space, story, collectedIds, onCollect, tutorialDon
       {/* Street View panorama — Google Maps embed, placeholder until 360 scan is ready */}
       {!hasTour && space.bgStreetView && (
         <iframe
-          src={space.bgStreetView}
+          src={withGoogleMapsApiKey(space.bgStreetView)}
           className="absolute inset-0 w-full h-full border-0 z-0"
           allowFullScreen
           loading="lazy"

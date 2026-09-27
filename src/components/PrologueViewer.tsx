@@ -1,6 +1,7 @@
 import { motion } from 'motion/react';
 import { PanoramaViewer } from './PanoramaViewer';
 import { DE_LA_THANH_NODES } from '../data/stories';
+import { withGoogleMapsApiKey } from '../utils/googleMaps';
 
 const MAPS_EMBED =
   'https://www.google.com/maps/embed?pb=!4v1781153201193!6m8!1m7!1sCAoSFkNJSE0wb2dLRUlDQWdJQ0JpdFNsVVE.!2m2!1d21.02346815940092!2d105.8194551494558!3f288.85439157941465!4f-5.542974504707246!5f0.7820865974627469';
@@ -28,7 +29,7 @@ export function PrologueViewer({ onEnter }: { onEnter: () => void }) {
       {/* Right panel: Google Maps Street View 2022 */}
       <div className="w-1/2 h-full relative">
         <iframe
-          src={MAPS_EMBED}
+          src={withGoogleMapsApiKey(MAPS_EMBED)}
           className="w-full h-full border-0"
           allowFullScreen
           loading="lazy"

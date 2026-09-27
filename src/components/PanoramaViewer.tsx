@@ -21,6 +21,7 @@ import { ScanViewer } from './ScanViewer';
 import { DriveMinimap } from './DriveMinimap';
 import { MemoryClueIllustration } from './MemoryClueIllustration';
 import { AudioSynth } from '../utils/AudioSynth';
+import { withGoogleMapsApiKey } from '../utils/googleMaps';
 
 // ---------- helpers ----------
 
@@ -1806,7 +1807,7 @@ export function PanoramaViewer({
           {/* Right half: historic Street View */}
           <div className="absolute inset-y-0 right-0 w-1/2 z-[60] flex flex-col">
             <iframe
-              src={fallbackHistoricUrl}
+              src={withGoogleMapsApiKey(fallbackHistoricUrl)}
               className="flex-1 w-full border-0"
               allowFullScreen
               loading="lazy"

@@ -396,6 +396,32 @@ Build passed with existing Vite chunk-size/dynamic-import warnings only.
 - `public/audio/`: clue audio files live here.
 - `public/subtitles/`: full oral-history SRTs live here.
 
+## Codex Update: Google Maps Embed Key Wiring
+
+Added on 2026-09-27.
+
+The Google Maps key was captured from the user's clipboard into a private local file outside the repo and copied into `.env.local`, which remains ignored by git.
+
+Code change:
+
+- Added `src/utils/googleMaps.ts`.
+- Google Maps embed iframes now call `withGoogleMapsApiKey(url)`.
+- The helper appends `VITE_GOOGLE_MAPS_API_KEY` only to `https://www.google.com/maps/embed...` URLs.
+- If the env var is missing, the app keeps using the original embed URL instead of breaking.
+- `.env.example` documents `VITE_GOOGLE_MAPS_API_KEY` without including the real key.
+
+Touched iframe surfaces:
+
+- `src/components/PrologueViewer.tsx`
+- `src/components/PanoramaViewer.tsx`
+- `src/components/MemorySpace.tsx`
+
+Verification:
+
+- `npm run lint`
+- `npm run build`
+- checked that the real key is not present in tracked source diffs
+
 ## Do Not Do
 
 - Do not regenerate all subtitles unless the user asks.
