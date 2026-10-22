@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import type L from 'leaflet';
 import type { TourNode } from '../types';
+import { CARTO_TILE_URL, CARTO_ATTRIBUTION } from '../utils/carto';
 import 'leaflet/dist/leaflet.css';
 
 interface DriveMinimapProps {
@@ -55,17 +56,18 @@ export function DriveMinimap({ nodes, currentIndex }: DriveMinimapProps) {
 
       const map = Lf.map(containerRef.current, {
         zoomControl: false,
-        attributionControl: false,
+        attributionControl: true,
         dragging: false,
         scrollWheelZoom: false,
         doubleClickZoom: false,
         touchZoom: false,
         keyboard: false,
       });
+      map.attributionControl.setPosition('topright').setPrefix(false);
 
       Lf.tileLayer(
-        'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-        { maxZoom: 19 }
+        CARTO_TILE_URL,
+        { maxZoom: 19, subdomains: 'abcd', attribution: CARTO_ATTRIBUTION }
       ).addTo(map);
 
       const coords = coordsRef.current;

@@ -4,6 +4,7 @@ import { ArrowRight, X, MapPin } from 'lucide-react';
 import { DiaryEntry, Story, MemorySpace } from '../types';
 import { ALL_STORIES } from '../data/stories';
 import L from 'leaflet';
+import { CARTO_TILE_URL, CARTO_ATTRIBUTION } from '../utils/carto';
 import 'leaflet/dist/leaflet.css';
 
 interface MapIntroViewProps {
@@ -120,9 +121,9 @@ export function MapIntroView({ onSelect, diary = [] }: MapIntroViewProps) {
     });
 
     L.tileLayer(
-      'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+      CARTO_TILE_URL,
       {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        attribution: CARTO_ATTRIBUTION,
         subdomains: 'abcd',
         maxZoom: 19,
       }

@@ -400,7 +400,7 @@ Build passed with existing Vite chunk-size/dynamic-import warnings only.
 
 Added on 2026-09-27.
 
-The Google Maps key was captured from the user's clipboard into a private local file outside the repo and copied into `.env.local`, which remains ignored by git.
+Correction (2026-10-22): the clipboard key was actually for CARTO, not Google Maps. The wiring described below was a mistaken change and has now been removed. See the CARTO correction below.
 
 Code change:
 
@@ -421,6 +421,21 @@ Verification:
 - `npm run lint`
 - `npm run build`
 - checked that the real key is not present in tracked source diffs
+
+## Codex Update: CARTO Map Key Correction
+
+Added on 2026-10-22.
+
+- The location selector and route minimap both use CARTO Dark Matter tiles. CARTO now requires a basemap key; unauthenticated requests can return HTTP 200 images containing an "API KEY REQUIRED" watermark. HTTP success alone does not prove the map works.
+- `src/utils/carto.ts` shares the tile URL and attribution across `MapIntroView` and `DriveMinimap`, appending the documented `key` query parameter from `VITE_CARTO_API_KEY`.
+- Restored the original Google Street View iframe URLs in PrologueViewer, PanoramaViewer, and MemorySpace; deleted the incorrect Google key helper.
+- Replaced the mistaken local Google variable with the CARTO variable in ignored `.env.local`. The captured value remains outside git. `.env.example` documents configuration without containing a real key.
+- Vite browser keys are visible in delivered JavaScript and tile requests. Use CARTO's website restrictions for the exhibition domains. This is a browser basemap credential, not a server secret.
+- Enabled CARTO/OpenStreetMap attribution on the route minimap and placed it above the bottom route label.
+- Verified the supplied key against a Hanoi tile with the production site's Referer: authenticated tile displayed streets; the same request without the key returned a watermark tile. Local browser selector loaded 24/24 authenticated tiles and displayed the map without watermarks. Type checking and production build passed (existing bundle warnings remain).
+- Deployment configuration: after the user approved team access, `VITE_CARTO_API_KEY` was set on Vercel project `ky-uc-ha-noi` for production, preview, and development. It is injected at build time; changing it requires a new deployment.
+- Route check: Net Cafe minimap loaded 4/4 authenticated tiles and its street layout was visually verified. Existing nearby location pins overlap at the selector's initial zoom; the bottom location cards remain usable. That pre-existing selection issue is outside this credential correction.
+- Provider reference: https://www.carto.com/basemaps/apikey/ (parameter name is `key`).
 
 ## Do Not Do
 
